@@ -1,0 +1,8 @@
+[package]
+name = "arduino_enocean_heater_control"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+atsam3x8e = { path = "../atsam3x8e", features = ["rt"] }
+cortex-m-rt = { version = "0.7" }

@@ -1,0 +1,12 @@
+[package]
+name = "atsam3x8e"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cortex-m = { version = "0.7" }
+cortex-m-rt = { version = "0.7", optional = true }
+vcell = { version = "0.1" }
+
+[features]
+rt = ["cortex-m-rt/device"]
