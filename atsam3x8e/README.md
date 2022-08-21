@@ -5,5 +5,5 @@ Third-party files have been obtained from the following sources:
 
 To regenerate the source files, `cargo install svd2rust` and then run:
 
-    svd2rust -i ATSAM3X8E.svd -o . --target cortex-m
-    mv lib.rs src
+    svd2rust -i ATSAM3X8E.svd --output-dir . --target cortex-m
+    mv lib.rs src/
