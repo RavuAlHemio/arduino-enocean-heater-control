@@ -3,6 +3,7 @@
 
 
 mod atsam3x8e_ext;
+mod click_spi;
 
 
 use core::panic::PanicInfo;
