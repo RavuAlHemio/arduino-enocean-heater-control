@@ -2,7 +2,6 @@ use core::cell::UnsafeCell;
 use core::time::Duration;
 
 use cortex_m::Peripherals;
-use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m_rt::exception;
 
 
