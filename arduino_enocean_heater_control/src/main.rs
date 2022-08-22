@@ -14,6 +14,7 @@ use atsam3x8e::uart::mr::{CHMODE_A, PAR_A};
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
 
+use crate::atsam3x8e_ext::nop;
 use crate::atsam3x8e_ext::setup::system_init;
 use crate::atsam3x8e_ext::tick::{delay, enable_tick_clock};
 
@@ -105,7 +106,49 @@ fn main() -> ! {
         .chmode().variant(CHMODE_A::NORMAL)
     );
 
-    uart_send(&mut peripherals, b"One fart smellow, he smelled fart.\r\n");
+    uart_send(&mut peripherals, b"system and UART initialization complete\r\n");
+
+    // reset the display
+    // Reset pin is on PL0/RST = PC14; make it an output
+    unsafe {
+        peripherals.PIOC.oer.write_with_zero(|w| w.p14().set_bit())
+    };
+    // set PC14 high
+    unsafe {
+        peripherals.PIOC.sodr.write_with_zero(|w| w.p14().set_bit())
+    };
+    // wait a bit
+    delay(Duration::from_millis(100));
+    // set PC14 low (triggers reset)
+    unsafe {
+        peripherals.PIOC.codr.write_with_zero(|w| w.p14().set_bit())
+    };
+    // wait a bit
+    delay(Duration::from_millis(100));
+    // set PC14 high
+    unsafe {
+        peripherals.PIOC.sodr.write_with_zero(|w| w.p14().set_bit())
+    };
+
+    // set up SPI
+    click_spi::setup_pins_controller(&mut peripherals);
+    click_spi::switch_to_cs1(&mut peripherals);
+
+    // tell the display to turn on
+    // Data/Command pin is on PE3/PWM = PC28; make it an output
+    unsafe {
+        peripherals.PIOC.oer.write_with_zero(|w| w.p28().set_bit())
+    };
+    // say it's a command = set PC28 low
+    unsafe { 
+        peripherals.PIOC.codr.write_with_zero(|w| w.p28().set_bit())
+    };
+    // wait a bit
+    delay(Duration::from_millis(100));
+    // bitbang 0xAF (display on)
+    click_spi::bitbang::<16>(&mut peripherals, 0xAF);
+
+    // do nothing
 
     // PB27 = internal LED
 

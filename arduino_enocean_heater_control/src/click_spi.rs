@@ -11,15 +11,11 @@
 
 
 use crate::Peripherals;
+use crate::atsam3x8e_ext::nop;
 
 
-#[inline]
-fn nop() {
-    unsafe { core::arch::asm!("nop") };
-}
-
-
-fn setup_pins_controller(peripherals: &mut Peripherals) {
+/// Set up the SPI pins, assuming the role of controller (as opposed to peripheral).
+pub fn setup_pins_controller(peripherals: &mut Peripherals) {
     // take over pins from peripherals
     unsafe {
         peripherals.PIOB.per.write_with_zero(|w| w
@@ -121,23 +117,33 @@ define_cs_functions!(pub cs3_low, cs3_high, PIOC, p18);
 define_cs_functions!(clock_low, clock_high, PIOB, p21);
 define_cs_functions!(copi_low, copi_high, PIOC, p12);
 
-fn switch_to_cs1(peripherals: &mut Peripherals) {
+/// Selects the first Click Shield as the target of SPI communication.
+pub fn switch_to_cs1(peripherals: &mut Peripherals) {
     cs2_high(peripherals);
     cs3_high(peripherals);
     cs1_low(peripherals);
 }
-fn switch_to_cs2(peripherals: &mut Peripherals) {
+
+/// Selects the second Click Shield as the target of SPI communication.
+pub fn switch_to_cs2(peripherals: &mut Peripherals) {
     cs1_high(peripherals);
     cs3_high(peripherals);
     cs2_low(peripherals);
 }
-fn switch_to_cs3(peripherals: &mut Peripherals) {
+
+/// Selects the third Click Shield as the target of SPI communication.
+pub fn switch_to_cs3(peripherals: &mut Peripherals) {
     cs1_high(peripherals);
     cs2_high(peripherals);
     cs3_low(peripherals);
 }
 
-fn bitbang<const NOPCOUNT: usize>(peripherals: &mut Peripherals, write_byte: u8) -> u8 {
+/// Sends eight bits worth of information and reads back eight bits worth of information from the
+/// SPI bus.
+///
+/// Assumes the output byte is sent most-significant-bit first and the input byte is received
+/// most-significant-bit first.
+pub fn bitbang<const NOPCOUNT: usize>(peripherals: &mut Peripherals, write_byte: u8) -> u8 {
     let mut read_byte: u8 = 0;
 
     for i in 0..8 {
