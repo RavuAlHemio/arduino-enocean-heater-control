@@ -1,3 +1,4 @@
+#[macro_use] pub(crate) mod pin;
 pub(crate) mod setup;
 pub(crate) mod tick;
 

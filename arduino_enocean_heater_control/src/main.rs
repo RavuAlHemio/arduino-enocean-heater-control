@@ -66,20 +66,10 @@ fn main() -> ! {
 
     // PIOA PDR bits 8 and 9 to 1 = pins A8 and A9 are disabled on the PIO controller
     // => the peripheral (UART) may use them
-    unsafe {
-        peripherals.PIOA.pdr.write_with_zero(|w| w
-            .p8().set_bit()
-            .p9().set_bit()
-        )
-    };
+    sam_pin!(disable_io, peripherals, PIOA, p8, p9);
 
     // PIOA ABSR bits 8 and 9 to 0 = pins A8 and A9 are used by peripheral A (UART)
-    unsafe {
-        peripherals.PIOA.absr.modify(|_, w| w
-            .p8().clear_bit()
-            .p9().clear_bit()
-        )
-    };
+    sam_pin!(peripheral_ab, peripherals, PIOA, p8, clear_bit, p9, clear_bit);
 
     // enable UART transmitter
     unsafe {
@@ -109,44 +99,42 @@ fn main() -> ! {
     uart_send(&mut peripherals, b"system and UART initialization complete\r\n");
 
     // reset the display
+
+    // R/W pin (ADC0/PF0 = PA16) and Power Supply Enable pin (PB4/INT = PA27)
+    // must be set to low
+    sam_pin!(enable_io, peripherals, PIOA, p16, p27);
+    sam_pin!(make_output, peripherals, PIOA, p16, p27);
+    sam_pin!(set_low, peripherals, PIOA, p16, p27);
+
     // Reset pin is on PL0/RST = PC14; make it an output
-    unsafe {
-        peripherals.PIOC.oer.write_with_zero(|w| w.p14().set_bit())
-    };
-    // set PC14 high
-    unsafe {
-        peripherals.PIOC.sodr.write_with_zero(|w| w.p14().set_bit())
-    };
+    // Data/Command pin is on PE3/PWM = PC28; make it an output
+    sam_pin!(enable_io, peripherals, PIOC, p14, p28);
+    sam_pin!(make_output, peripherals, PIOC, p14, p28);
+    // set Reset pin high
+    sam_pin!(set_high, peripherals, PIOC, p14);
     // wait a bit
     delay(Duration::from_millis(100));
-    // set PC14 low (triggers reset)
-    unsafe {
-        peripherals.PIOC.codr.write_with_zero(|w| w.p14().set_bit())
-    };
+    // set Reset pin low (triggers reset)
+    sam_pin!(set_low, peripherals, PIOC, p14);
     // wait a bit
     delay(Duration::from_millis(100));
-    // set PC14 high
-    unsafe {
-        peripherals.PIOC.sodr.write_with_zero(|w| w.p14().set_bit())
-    };
+    // set Reset pin and Power Supply Enable pin high
+    sam_pin!(set_high, peripherals, PIOC, p14);
+    sam_pin!(set_high, peripherals, PIOA, p27);
 
     // set up SPI
     click_spi::setup_pins_controller(&mut peripherals);
-    click_spi::switch_to_cs1(&mut peripherals);
 
-    // tell the display to turn on
-    // Data/Command pin is on PE3/PWM = PC28; make it an output
-    unsafe {
-        peripherals.PIOC.oer.write_with_zero(|w| w.p28().set_bit())
-    };
-    // say it's a command = set PC28 low
-    unsafe { 
-        peripherals.PIOC.codr.write_with_zero(|w| w.p28().set_bit())
-    };
+    // say it's a command (not data) = set PC28 low
+    sam_pin!(set_low, peripherals, PIOC, p28);
     // wait a bit
     delay(Duration::from_millis(100));
     // bitbang 0xAF (display on)
-    click_spi::bitbang::<16>(&mut peripherals, 0xAF);
+    click_spi::cs1_low(&mut peripherals);
+    delay(Duration::from_millis(100));
+    click_spi::bitbang::<65536>(&mut peripherals, 0xAF);
+    delay(Duration::from_millis(100));
+    click_spi::cs1_high(&mut peripherals);
 
     // do nothing
 
@@ -154,27 +142,18 @@ fn main() -> ! {
 
     // PIOB OER bit 27 to 1 = pin B27 is now an output
     // (the rest remain inputs)
-    unsafe {
-        peripherals
-            .PIOB.oer.write_with_zero(|w| w.p27().set_bit());
-    }
+    sam_pin!(make_output, peripherals, PIOB, p27);
 
     // blinking!
     loop {
         // PIOB CODR bit 27 to 1 = pin B27 is driven down
-        unsafe {
-            peripherals
-                .PIOB.codr.write_with_zero(|w| w.p27().set_bit());
-        }
+        sam_pin!(set_low, peripherals, PIOB, p27);
         uart_send(&mut peripherals, b"-");
 
         delay(Duration::from_millis(1000));
 
         // PIOB SODR bit 27 to 1 = pin B27 is driven up
-        unsafe {
-            peripherals
-                .PIOB.sodr.write_with_zero(|w| w.p27().set_bit());
-        }
+        sam_pin!(set_high, peripherals, PIOB, p27);
         uart_send(&mut peripherals, b"+");
 
         // wait a bit
