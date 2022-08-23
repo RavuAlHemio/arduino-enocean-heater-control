@@ -110,30 +110,34 @@ fn main() -> ! {
     // Data/Command pin is on PE3/PWM = PC28; make it an output
     sam_pin!(enable_io, peripherals, PIOC, p14, p28);
     sam_pin!(make_output, peripherals, PIOC, p14, p28);
-    // set Reset pin high
-    sam_pin!(set_high, peripherals, PIOC, p14);
-    // wait a bit
-    delay(Duration::from_millis(100));
-    // set Reset pin low (triggers reset)
-    sam_pin!(set_low, peripherals, PIOC, p14);
-    // wait a bit
-    delay(Duration::from_millis(100));
-    // set Reset pin and Power Supply Enable pin high
-    sam_pin!(set_high, peripherals, PIOC, p14);
-    sam_pin!(set_high, peripherals, PIOA, p27);
+
+    // say the next thing is a command (not data) = set PC28 low
+    sam_pin!(set_low, peripherals, PIOC, p28);
 
     // set up SPI
     click_spi::setup_pins_controller(&mut peripherals);
 
-    // say it's a command (not data) = set PC28 low
-    sam_pin!(set_low, peripherals, PIOC, p28);
+    // turn on Power Supply Enable pin
+    sam_pin!(set_high, peripherals, PIOA, p27);
+
+    // set Reset pin high
+    sam_pin!(set_high, peripherals, PIOC, p14);
     // wait a bit
-    delay(Duration::from_millis(100));
+    multinop::<1024>();
+    // set Reset pin low (triggers reset)
+    sam_pin!(set_low, peripherals, PIOC, p14);
+    // wait a bit
+    multinop::<1024>();
+    // set Reset pin high
+    sam_pin!(set_high, peripherals, PIOC, p14);
+
+    // wait a bit
+    multinop::<1024>();
     // bitbang 0xAF (display on)
     click_spi::cs1_low(&mut peripherals);
-    delay(Duration::from_millis(100));
-    click_spi::bitbang::<65536>(&mut peripherals, 0xAF);
-    delay(Duration::from_millis(100));
+    multinop::<1024>();
+    click_spi::bitbang::<1024>(&mut peripherals, 0xAF);
+    multinop::<1024>();
     click_spi::cs1_high(&mut peripherals);
 
     // do nothing

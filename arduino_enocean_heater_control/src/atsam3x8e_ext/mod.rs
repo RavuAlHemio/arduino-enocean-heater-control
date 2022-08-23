@@ -6,3 +6,10 @@ pub(crate) mod tick;
 pub(crate) fn nop() {
     unsafe { core::arch::asm!("nop") };
 }
+
+#[inline]
+pub(crate) fn multinop<const COUNT: usize>() {
+    for _ in 0..COUNT {
+        nop();
+    }
+}
