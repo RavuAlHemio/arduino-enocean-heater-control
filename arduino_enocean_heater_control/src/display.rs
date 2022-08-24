@@ -1,39 +1,42 @@
+use core::time::Duration;
+
 use atsam3x8e::Peripherals;
 
-use crate::sam_pin;
+use crate::{delay, sam_pin};
 use crate::atsam3x8e_ext::multinop;
 use crate::click_spi;
 
 
-pub fn send_command(peripherals: &mut Peripherals, command: u8, args: &[u8]) {
-    // D/C should be down by default
+const MULTINOP_COUNT: usize = 65536;
 
+
+pub fn send_command(peripherals: &mut Peripherals, command: u8, args: &[u8]) {
+    // select device
     click_spi::cs1_low(peripherals);
-    multinop::<1024>();
-    click_spi::bitbang::<1024>(peripherals, command);
-    multinop::<1024>();
-    click_spi::cs1_high(peripherals);
+    multinop::<MULTINOP_COUNT>();
+
+    // set D/C low for command
+    sam_pin!(set_low, peripherals, PIOC, p25);
+    multinop::<MULTINOP_COUNT>();
+
+    // send command
+    click_spi::bitbang::<MULTINOP_COUNT>(peripherals, command);
+    multinop::<MULTINOP_COUNT>();
+
+    // set D/C high for data (default)
+    sam_pin!(set_high, peripherals, PIOC, p25);
+    multinop::<MULTINOP_COUNT>();
 
     if args.len() > 0 {
-        multinop::<1024>();
-
-        // D/C high (data)
-        sam_pin!(set_high, peripherals, PIOC, p25);
-        multinop::<1024>();
-
         for arg in args {
-            click_spi::cs1_low(peripherals);
-            multinop::<1024>();
-            click_spi::bitbang::<1024>(peripherals, *arg);
-            multinop::<1024>();
-            click_spi::cs1_high(peripherals);
-            multinop::<1024>();
+            click_spi::bitbang::<MULTINOP_COUNT>(peripherals, *arg);
+            multinop::<MULTINOP_COUNT>();
         }
-
-        // D/C low (command; default)
-        sam_pin!(set_low, peripherals, PIOC, p25);
-        multinop::<1024>();
     }
+
+    // deselect device
+    click_spi::cs1_high(peripherals);
+    multinop::<MULTINOP_COUNT>();
 }
 
 
@@ -57,21 +60,29 @@ pub fn init_display(peripherals: &mut Peripherals) {
     sam_pin!(make_output, peripherals, PIOA, p16, p28);
     sam_pin!(make_output, peripherals, PIOC, p14, p25);
 
-    // R/W is low (permanently), D/C is low (command), RST is high, EN is high
-    sam_pin!(set_low, peripherals, PIOA, p16);
-    sam_pin!(set_low, peripherals, PIOC, p25);
-    sam_pin!(set_high, peripherals, PIOC, p14);
+    // R/W is low (permanently), D/C is high (data), RST is high, EN starts out low
+    sam_pin!(set_low, peripherals, PIOA, p16, p28);
+    sam_pin!(set_low, peripherals, PIOC, p14);
+    sam_pin!(set_high, peripherals, PIOC, p25);
+
+    // wait a bit
+    delay(Duration::from_millis(1));
+
+    // set EN high (turn display power on)
     sam_pin!(set_high, peripherals, PIOA, p28);
 
     // wait a bit while the power supply stabilizes
-    multinop::<1024>();
+    delay(Duration::from_millis(1));
 
     // bounce the RST pin (triggers the reset)
-    sam_pin!(set_low, peripherals, PIOC, p14);
-    multinop::<1024>();
     sam_pin!(set_high, peripherals, PIOC, p14);
-    multinop::<1024>();
+    delay(Duration::from_millis(1));
+    sam_pin!(set_low, peripherals, PIOC, p14);
+    delay(Duration::from_millis(1));
+    sam_pin!(set_high, peripherals, PIOC, p14);
+    delay(Duration::from_millis(100));
 
-    // bitbang 0xAF (display on)
+    // turn on display
     send_command(peripherals, 0xAF, &[]);
+    delay(Duration::from_millis(1000));
 }
