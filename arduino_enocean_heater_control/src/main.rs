@@ -4,6 +4,7 @@
 
 mod atsam3x8e_ext;
 mod click_spi;
+mod display;
 
 
 use core::panic::PanicInfo;
@@ -98,49 +99,11 @@ fn main() -> ! {
 
     uart_send(&mut peripherals, b"system and UART initialization complete\r\n");
 
-    // reset the display
-
-    // R/W pin (ADC0/PF0 = PA16) and Power Supply Enable pin (PB4/INT = PA27)
-    // must be set to low
-    sam_pin!(enable_io, peripherals, PIOA, p16, p27);
-    sam_pin!(make_output, peripherals, PIOA, p16, p27);
-    sam_pin!(set_low, peripherals, PIOA, p16, p27);
-
-    // Reset pin is on PL0/RST = PC14; make it an output
-    // Data/Command pin is on PE3/PWM = PC28; make it an output
-    sam_pin!(enable_io, peripherals, PIOC, p14, p28);
-    sam_pin!(make_output, peripherals, PIOC, p14, p28);
-
-    // say the next thing is a command (not data) = set PC28 low
-    sam_pin!(set_low, peripherals, PIOC, p28);
-
     // set up SPI
     click_spi::setup_pins_controller(&mut peripherals);
 
-    // turn on Power Supply Enable pin
-    sam_pin!(set_high, peripherals, PIOA, p27);
-
-    // set Reset pin high
-    sam_pin!(set_high, peripherals, PIOC, p14);
-    // wait a bit
-    multinop::<1024>();
-    // set Reset pin low (triggers reset)
-    sam_pin!(set_low, peripherals, PIOC, p14);
-    // wait a bit
-    multinop::<1024>();
-    // set Reset pin high
-    sam_pin!(set_high, peripherals, PIOC, p14);
-
-    // wait a bit
-    multinop::<1024>();
-    // bitbang 0xAF (display on)
-    click_spi::cs1_low(&mut peripherals);
-    multinop::<1024>();
-    click_spi::bitbang::<1024>(&mut peripherals, 0xAF);
-    multinop::<1024>();
-    click_spi::cs1_high(&mut peripherals);
-
-    // do nothing
+    // reset the display
+    display::init_display(&mut peripherals);
 
     // PB27 = internal LED
 
