@@ -10,7 +10,7 @@ pub fn send_command(peripherals: &mut Peripherals, command: u8, args: &[u8]) {
 
     click_spi::cs1_low(peripherals);
     multinop::<1024>();
-    click_spi::bitbang::<1024>(&mut peripherals, command);
+    click_spi::bitbang::<1024>(peripherals, command);
     multinop::<1024>();
     click_spi::cs1_high(peripherals);
 
@@ -24,7 +24,7 @@ pub fn send_command(peripherals: &mut Peripherals, command: u8, args: &[u8]) {
         for arg in args {
             click_spi::cs1_low(peripherals);
             multinop::<1024>();
-            click_spi::bitbang::<1024>(&mut peripherals, *arg);
+            click_spi::bitbang::<1024>(peripherals, *arg);
             multinop::<1024>();
             click_spi::cs1_high(peripherals);
             multinop::<1024>();
