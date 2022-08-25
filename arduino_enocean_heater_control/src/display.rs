@@ -7,7 +7,7 @@ use crate::atsam3x8e_ext::multinop;
 use crate::click_spi;
 
 
-const MULTINOP_COUNT: usize = 65536;
+const MULTINOP_COUNT: usize = 128;
 
 
 pub fn send_command(peripherals: &mut Peripherals, command: u8, args: &[u8]) {
@@ -82,7 +82,18 @@ pub fn init_display(peripherals: &mut Peripherals) {
     sam_pin!(set_high, peripherals, PIOC, p14);
     delay(Duration::from_millis(100));
 
+    // the display only has 96x96 pixels while RAM is 128x128
+    // columns are centered, rows are top-aligned
+    send_command(peripherals, 0x15, &[16, 111]);
+    delay(Duration::from_millis(1000));
+    send_command(peripherals, 0x75, &[0, 95]);
+    delay(Duration::from_millis(1000));
+
     // turn on display
     send_command(peripherals, 0xAF, &[]);
+    delay(Duration::from_millis(1000));
+
+    // fill display with data
+    send_command(peripherals, 0x5C, include_bytes!("picture.data"));
     delay(Duration::from_millis(1000));
 }
