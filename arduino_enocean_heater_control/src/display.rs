@@ -10,7 +10,7 @@ use crate::click_spi;
 const MULTINOP_COUNT: usize = 1;
 
 
-pub fn send_command(peripherals: &mut Peripherals, command: u8, args: &[u8]) {
+pub fn send_command<A: IntoIterator<Item = u8>>(peripherals: &mut Peripherals, command: u8, args: A) {
     // select device
     click_spi::cs1_low(peripherals);
     multinop::<MULTINOP_COUNT>();
@@ -27,11 +27,9 @@ pub fn send_command(peripherals: &mut Peripherals, command: u8, args: &[u8]) {
     sam_pin!(set_high, peripherals, PIOC, p25);
     multinop::<MULTINOP_COUNT>();
 
-    if args.len() > 0 {
-        for arg in args {
-            click_spi::bitbang::<MULTINOP_COUNT>(peripherals, *arg);
-            multinop::<MULTINOP_COUNT>();
-        }
+    for arg in args {
+        click_spi::bitbang::<MULTINOP_COUNT>(peripherals, arg);
+        multinop::<MULTINOP_COUNT>();
     }
 
     // deselect device
@@ -84,12 +82,17 @@ pub fn init_display(peripherals: &mut Peripherals) {
 
     // the display only has 96x96 pixels while RAM is 128x128
     // columns are centered, rows are top-aligned
-    send_command(peripherals, 0x15, &[16, 111]);
-    send_command(peripherals, 0x75, &[0, 95]);
+    send_command(peripherals, 0x15, [16, 111]);
+    send_command(peripherals, 0x75, [0, 95]);
+
+    // set display to black
+    send_command(peripherals, 0x5C, (0..96*96*2).map(|_| 0x00));
 
     // turn on display
-    send_command(peripherals, 0xAF, &[]);
+    send_command(peripherals, 0xAF, []);
 
-    // fill display with data
-    send_command(peripherals, 0x5C, include_bytes!("picture.data"));
+    delay(Duration::from_secs(5));
+
+    // turn off display
+    send_command(peripherals, 0xAE, []);
 }
