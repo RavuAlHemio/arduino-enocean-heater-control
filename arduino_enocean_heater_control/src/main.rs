@@ -3,6 +3,7 @@
 
 
 mod atsam3x8e_ext;
+mod bit_field;
 mod click_spi;
 mod display;
 
@@ -102,7 +103,7 @@ fn main() -> ! {
     // set up SPI
     click_spi::setup_pins_controller(&mut peripherals);
 
-    // reset the display
+    // initialize the display
     display::init_display(&mut peripherals);
 
     // PB27 = internal LED
