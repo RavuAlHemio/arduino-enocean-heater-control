@@ -1,4 +1,5 @@
 /// An efficient storage of boolean values as bit flags.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) struct BitField<const SIZE_BYTES: usize> {
     field: [u8; SIZE_BYTES],
 }
@@ -6,6 +7,13 @@ impl<const SIZE_BYTES: usize> BitField<SIZE_BYTES> {
     #[inline]
     const fn byte_bit_index(index: usize) -> (usize, usize) {
         (index / 8, index % 8)
+    }
+
+    #[inline]
+    pub const fn from_bytes(bytes: [u8; SIZE_BYTES]) -> Self {
+        Self {
+            field: bytes,
+        }
     }
 
     /// Sets the bit in the bit field, i.e. sets it to 1.
@@ -62,6 +70,18 @@ impl<const SIZE_BYTES: usize> BitField<SIZE_BYTES> {
             } else {
                 self.clear_bit(i);
             }
+        }
+    }
+
+    /// Return a reference the array of bytes backing this bit field.
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.field
+    }
+}
+impl<const SIZE_BYTES: usize> Default for BitField<SIZE_BYTES> {
+    fn default() -> Self {
+        Self {
+            field: [0; SIZE_BYTES],
         }
     }
 }

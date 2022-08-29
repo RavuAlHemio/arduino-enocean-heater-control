@@ -7,3 +7,4 @@ edition = "2021"
 atsam3x8e = { path = "../atsam3x8e", features = ["rt"] }
 cortex-m = { version = "0.7" }
 cortex-m-rt = { version = "0.7" }
+from-to-repr = { version = "0.1" }

@@ -9,6 +9,7 @@ dependencies = [
  "atsam3x8e",
  "cortex-m",
  "cortex-m-rt",
+ "from-to-repr",
 ]
 
 [[package]]
@@ -75,6 +76,17 @@ checksum = "35949884794ad573cf46071e41c9b60efb0cb311e3ca01f7af807af1debc66ff"
 dependencies = [
  "nb 0.1.3",
  "void",
+]
+
+[[package]]
+name = "from-to-repr"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7dd5c7d3bed8bde25e3113b097772935f126cc1021c3545c7bc5821a5c3f4f7d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

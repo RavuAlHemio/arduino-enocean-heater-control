@@ -106,6 +106,9 @@ fn main() -> ! {
     // initialize the display
     display::init_display(&mut peripherals);
 
+    // read buttons
+
+
     // PB27 = internal LED
 
     // PIOB OER bit 27 to 1 = pin B27 is now an output
