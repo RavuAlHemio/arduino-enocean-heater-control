@@ -385,25 +385,13 @@ pub fn init_display(peripherals: &mut Peripherals) {
 
     // the display only has 96x96 pixels while RAM is 128x128
     // columns are centered, rows are top-aligned
-    send_command(peripherals, DisplayCommand::SetColumnAddress {
-        first: DISPLAY_OFFSET_X.try_into().unwrap(),
-        last: (DISPLAY_OFFSET_X + DISPLAY_WIDTH - 1).try_into().unwrap(),
-    });
-    send_command(peripherals, DisplayCommand::SetRowAddress {
-        first: DISPLAY_OFFSET_Y.try_into().unwrap(),
-        last: (DISPLAY_OFFSET_Y + DISPLAY_HEIGHT - 1).try_into().unwrap(),
-    });
+    set_default_dimensions(peripherals);
 
     // set display to black
     send_low_level_command(peripherals, 0x5C, (0..96*96*2).map(|_| 0x00));
 
     // turn on display
     send_command(peripherals, DisplayCommand::SetSleepMode(false));
-
-    delay(Duration::from_secs(5));
-
-    // turn off display
-    send_command(peripherals, DisplayCommand::SetSleepMode(true));
 }
 
 fn str_to_char_indexes(text: &str) -> ([usize; MAX_LETTERS_PER_ROW], usize) {
@@ -440,48 +428,56 @@ fn char_by_index(index: usize) -> [[bool; LETTER_WIDTH]; LETTER_HEIGHT] {
     ret
 }
 
-pub fn write_line(x: u32, y: u32, fg_color: [u8; 2], bg_color: [u8; 2], text: &str) {
+fn set_default_dimensions(peripherals: &mut Peripherals) {
+    send_command(peripherals, DisplayCommand::SetColumnAddress {
+        first: DISPLAY_OFFSET_X.try_into().unwrap(),
+        last: (DISPLAY_OFFSET_X + DISPLAY_WIDTH - 1).try_into().unwrap(),
+    });
+    send_command(peripherals, DisplayCommand::SetRowAddress {
+        first: DISPLAY_OFFSET_Y.try_into().unwrap(),
+        last: (DISPLAY_OFFSET_Y + DISPLAY_HEIGHT - 1).try_into().unwrap(),
+    });
+}
+
+pub fn write_line(
+    peripherals: &mut Peripherals,
+    x: u32, y: u32,
+    fg_color: [u8; 2], bg_color: [u8; 2],
+    text: &str,
+) {
     const COLOR_DEPTH: usize = 2;
     let (char_indexes, char_count) = str_to_char_indexes(text);
 
-    // collect characters
-    let mut chars = [[[bool; LETTER_WIDTH]; LETTER_HEIGHT]; MAX_LETTERS_PER_ROW];
+    if usize::try_from(y).unwrap() > DISPLAY_HEIGHT {
+        return;
+    }
+
     for i in 0..char_count {
-        chars[i] = char_by_index(i);
-    }
-
-    // assemble line (electronic Linotype?)
-    let mut pixels = [[[0u8; COLOR_DEPTH]; LETTER_WIDTH * MAX_LETTERS_PER_ROW]; LETTER_HEIGHT];
-    for (i, char) in chars.iter().take(char_count).enumerate() {
-        let offset_within_row = i * LETTER_WIDTH;
-        for row in 0..LETTER_HEIGHT {
-            for col in 0..LETTER_WIDTH {
-                pixels[row][offset_within_row + col] = if char[row][col] {
-                    fg_color
-                } else {
-                    bg_color
-                };
-            }
+        let first_col: u32 = x + u32::try_from(i * LETTER_WIDTH).unwrap();
+        let first_col_usize: usize = first_col.try_into().unwrap();
+        if first_col_usize > DISPLAY_WIDTH {
+            break;
         }
+
+        let character = char_by_index(char_indexes[i]);
+
+        send_command(peripherals, DisplayCommand::SetColumnAddress {
+            first: (DISPLAY_OFFSET_X + first_col_usize).try_into().unwrap(),
+            last: (DISPLAY_OFFSET_X + first_col_usize + LETTER_WIDTH - 1).try_into().unwrap(),
+        });
+        send_command(peripherals, DisplayCommand::SetRowAddress {
+            first: (DISPLAY_OFFSET_Y + usize::try_from(y).unwrap()).try_into().unwrap(),
+            last: (DISPLAY_OFFSET_Y + usize::try_from(y).unwrap() + LETTER_HEIGHT - 1).try_into().unwrap(),
+        });
+
+        // write image data
+        let character_colors = character.iter().flat_map(|row|
+            row.iter().flat_map(|pixel|
+                if *pixel { fg_color } else { bg_color }
+            )
+        );
+        send_low_level_command(peripherals, 0x5C, character_colors);
     }
 
-    // flatten the rows
-    // (not the whole image; we'll be bitbanging it row by row)
-    let mut flat_lines = [[0u8; COLOR_DEPTH * LETTER_WIDTH * MAX_LETTERS_PER_ROW]; LETTER_HEIGHT];
-    for (r, pixel_row) in pixels.iter().take(char_count).enumerate() {
-        let mut i = 0;
-        for pixel in pixel_row {
-            for color in pixel {
-                flat_lines[r][i] = color;
-                i += 1;
-            }
-        }
-    }
-
-    // get actual dimensions
-    let actual_width = (char_count * LETTER_WIDTH).min(DISPLAY_WIDTH - x);
-    let actual_height = LETTER_HEIGHT.min(DISPLAY_HEIGHT - y);
-
-    // bitbang!
-    todo!();
+    set_default_dimensions(peripherals);
 }

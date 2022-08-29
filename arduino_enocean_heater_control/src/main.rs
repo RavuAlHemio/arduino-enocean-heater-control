@@ -19,6 +19,7 @@ use cortex_m_rt::{entry, exception};
 use crate::atsam3x8e_ext::nop;
 use crate::atsam3x8e_ext::setup::system_init;
 use crate::atsam3x8e_ext::tick::{delay, enable_tick_clock};
+use crate::display::DisplayCommand;
 
 
 #[exception]
@@ -106,8 +107,22 @@ fn main() -> ! {
     // initialize the display
     display::init_display(&mut peripherals);
 
-    // read buttons
+    // write some stuff
+    display::write_line(
+        &mut peripherals,
+        0, 0,
+        [0xFF, 0xFF],
+        [0x00, 0x00],
+        "GOOD MORNING",
+    );
 
+    // give it a few seconds
+    delay(Duration::from_secs(10));
+
+    // turn off the display
+    display::send_command(&mut peripherals, DisplayCommand::SetSleepMode(true));
+
+    // read buttons (TODO)
 
     // PB27 = internal LED
 
