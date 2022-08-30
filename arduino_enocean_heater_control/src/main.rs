@@ -5,14 +5,16 @@
 mod atsam3x8e_ext;
 mod bit_field;
 mod click_spi;
+mod crc8;
 mod display;
+mod uart;
+mod usart;
 
 
 use core::panic::PanicInfo;
 use core::time::Duration;
 
 use atsam3x8e::Peripherals;
-use atsam3x8e::uart::mr::{CHMODE_A, PAR_A};
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
 
@@ -20,6 +22,7 @@ use crate::atsam3x8e_ext::nop;
 use crate::atsam3x8e_ext::setup::system_init;
 use crate::atsam3x8e_ext::tick::{delay, enable_tick_clock};
 use crate::display::DisplayCommand;
+use crate::usart::{Usart, Usart3};
 
 
 #[exception]
@@ -52,6 +55,33 @@ fn uart_send(peripherals: &mut Peripherals, buffer: &[u8]) {
     }
 }
 
+#[inline]
+fn nibble_to_hex(byte: u8) -> u8 {
+    match byte {
+        0..=9 => byte + 0x30, // '0'
+        10..=15 => byte - 10 + 0x41, // 'A'
+        _ => 0x00,
+    }
+}
+
+fn hex_dump(bytes: &[u8], hex: &mut [u8]) -> usize {
+    let mut i = 0;
+    for b in bytes {
+        if i >= hex.len() {
+            break;
+        }
+        hex[i] = nibble_to_hex(*b >> 4);
+        i += 1;
+
+        if i >= hex.len() {
+            break;
+        }
+        hex[i] = nibble_to_hex(*b & 0x0F);
+        i += 1;
+    }
+    i
+}
+
 
 #[entry]
 fn main() -> ! {
@@ -67,42 +97,64 @@ fn main() -> ! {
     let mut clock = system_init(&mut peripherals);
     enable_tick_clock(&mut core_peripherals, clock.clock_speed / 1000);
 
-    // PIOA PDR bits 8 and 9 to 1 = pins A8 and A9 are disabled on the PIO controller
-    // => the peripheral (UART) may use them
-    sam_pin!(disable_io, peripherals, PIOA, p8, p9);
-
-    // PIOA ABSR bits 8 and 9 to 0 = pins A8 and A9 are used by peripheral A (UART)
-    sam_pin!(peripheral_ab, peripherals, PIOA, p8, clear_bit, p9, clear_bit);
-
-    // enable UART transmitter
-    unsafe {
-        peripherals.UART.cr.write_with_zero(|w| w
-            .txen().set_bit()
-        )
-    };
-
-    // set baud rate
-    // baud = clockfreq/(16*cd)
-    // cd = clockfreq/(16*baud)
-    // cd = clockfreq/(16*115200)
-    // assume clockfreq is 84MHz
-    // cd = 84_000_000/(16*115200)
-    // cd = 84_000_000/1_843_200
-    // cd ~ 46
-    peripherals.UART.brgr.write(|w| w
-        .cd().variant(46)
-    );
-
-    // no parity bit, no test mode
-    peripherals.UART.mr.write(|w| w
-        .par().variant(PAR_A::NO)
-        .chmode().variant(CHMODE_A::NORMAL)
-    );
-
-    uart_send(&mut peripherals, b"system and UART initialization complete\r\n");
+    uart::init(&mut peripherals);
+    let mut clock_hex = [0u8; 4*2];
+    hex_dump(&clock.clock_speed.to_be_bytes(), &mut clock_hex);
+    uart::send(&mut peripherals, b"clock speed: 0x");
+    uart::send(&mut peripherals, &clock_hex);
+    uart::send(&mut peripherals, b"\r\n");
+    uart::send(&mut peripherals, b"system and UART initialization complete\r\n");
 
     // set up SPI
     click_spi::setup_pins_controller(&mut peripherals);
+
+    // disable RESET on the TCM515
+    sam_pin!(make_output, peripherals, PIOC, p16);
+    sam_pin!(set_low, peripherals, PIOC, p16);
+    delay(Duration::from_millis(1000));
+    sam_pin!(set_high, peripherals, PIOC, p16);
+
+    // set up the connection to the TCM515
+    Usart3::enable_clock(&mut peripherals);
+    uart::send(&mut peripherals, b"CLOCK ENABLED\r\n");
+    Usart3::disable_pdc(&mut peripherals);
+    uart::send(&mut peripherals, b"PDC disabled\r\n");
+    Usart3::reset_and_disable(&mut peripherals);
+    uart::send(&mut peripherals, b"USART RESET\r\n");
+    Usart3::set_standard_params(&mut peripherals);
+    uart::send(&mut peripherals, b"STANDARD PARAMS SET\r\n");
+    Usart3::set_baud_rate(&clock, &mut peripherals, 57600);
+    uart::send(&mut peripherals, b"BAUD RATE SET\r\n");
+    Usart3::enable_transmitter(&mut peripherals);
+    uart::send(&mut peripherals, b"TRANSMITTER ENABLED\r\n");
+    Usart3::enable_receiver(&mut peripherals);
+    uart::send(&mut peripherals, b"RECEIVER ENABLED\r\n");
+
+    // wait five seconds
+    delay(Duration::from_secs(5));
+
+    // prepare a packet (CO_RD_VERSION)
+    let mut read_version_packet = [
+        0x55, // sync byte
+        0x00, 0x01, // data length
+        0x00, // optional length
+        0x05, // packet type (COMMON_COMMAND)
+        0x00, // space for the header CRC
+        0x03, // command code (CO_RD_VERSION)
+        0x00, // space for the data CRC
+    ];
+    read_version_packet[5] = crc8::crc8_ccitt(&read_version_packet[1..5]);
+    read_version_packet[7] = crc8::crc8_ccitt(&read_version_packet[6..7]);
+
+    // toss it over
+    Usart3::transmit(&mut peripherals, &read_version_packet);
+
+    // read the response
+    let mut b = [0u8];
+    Usart3::receive_exact(&mut peripherals, &mut b);
+    let mut hex = [0u8; 2];
+    hex_dump(&b, &mut hex);
+    uart::send(&mut peripherals, &hex);
 
     // initialize the display
     display::init_display(&mut peripherals);
@@ -117,7 +169,7 @@ fn main() -> ! {
     );
 
     // give it a few seconds
-    delay(Duration::from_secs(10));
+    delay(Duration::from_secs(5));
 
     // turn off the display
     display::send_command(&mut peripherals, DisplayCommand::SetSleepMode(true));
