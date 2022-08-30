@@ -1,0 +1,150 @@
+#[doc = "Register `MATRIX_MRCR` reader"]
+pub struct R(crate::R<MATRIX_MRCR_SPEC>);
+impl core::ops::Deref for R {
+    type Target = crate::R<MATRIX_MRCR_SPEC>;
+    #[inline(always)]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl From<crate::R<MATRIX_MRCR_SPEC>> for R {
+    #[inline(always)]
+    fn from(reader: crate::R<MATRIX_MRCR_SPEC>) -> Self {
+        R(reader)
+    }
+}
+#[doc = "Register `MATRIX_MRCR` writer"]
+pub struct W(crate::W<MATRIX_MRCR_SPEC>);
+impl core::ops::Deref for W {
+    type Target = crate::W<MATRIX_MRCR_SPEC>;
+    #[inline(always)]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl core::ops::DerefMut for W {
+    #[inline(always)]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+impl From<crate::W<MATRIX_MRCR_SPEC>> for W {
+    #[inline(always)]
+    fn from(writer: crate::W<MATRIX_MRCR_SPEC>) -> Self {
+        W(writer)
+    }
+}
+#[doc = "Field `RCB0` reader - Remap Command Bit for AHB Master 0"]
+pub type RCB0_R = crate::BitReader<bool>;
+#[doc = "Field `RCB0` writer - Remap Command Bit for AHB Master 0"]
+pub type RCB0_W<'a, const O: u8> = crate::BitWriter<'a, u32, MATRIX_MRCR_SPEC, bool, O>;
+#[doc = "Field `RCB1` reader - Remap Command Bit for AHB Master 1"]
+pub type RCB1_R = crate::BitReader<bool>;
+#[doc = "Field `RCB1` writer - Remap Command Bit for AHB Master 1"]
+pub type RCB1_W<'a, const O: u8> = crate::BitWriter<'a, u32, MATRIX_MRCR_SPEC, bool, O>;
+#[doc = "Field `RCB2` reader - Remap Command Bit for AHB Master 2"]
+pub type RCB2_R = crate::BitReader<bool>;
+#[doc = "Field `RCB2` writer - Remap Command Bit for AHB Master 2"]
+pub type RCB2_W<'a, const O: u8> = crate::BitWriter<'a, u32, MATRIX_MRCR_SPEC, bool, O>;
+#[doc = "Field `RCB3` reader - Remap Command Bit for AHB Master 3"]
+pub type RCB3_R = crate::BitReader<bool>;
+#[doc = "Field `RCB3` writer - Remap Command Bit for AHB Master 3"]
+pub type RCB3_W<'a, const O: u8> = crate::BitWriter<'a, u32, MATRIX_MRCR_SPEC, bool, O>;
+#[doc = "Field `RCB4` reader - Remap Command Bit for AHB Master 4"]
+pub type RCB4_R = crate::FieldReader<u8, u8>;
+#[doc = "Field `RCB4` writer - Remap Command Bit for AHB Master 4"]
+pub type RCB4_W<'a, const O: u8> = crate::FieldWriter<'a, u32, MATRIX_MRCR_SPEC, u8, u8, 2, O>;
+#[doc = "Field `RCB5` reader - Remap Command Bit for AHB Master 5"]
+pub type RCB5_R = crate::BitReader<bool>;
+#[doc = "Field `RCB5` writer - Remap Command Bit for AHB Master 5"]
+pub type RCB5_W<'a, const O: u8> = crate::BitWriter<'a, u32, MATRIX_MRCR_SPEC, bool, O>;
+impl R {
+    #[doc = "Bit 0 - Remap Command Bit for AHB Master 0"]
+    #[inline(always)]
+    pub fn rcb0(&self) -> RCB0_R {
+        RCB0_R::new((self.bits & 1) != 0)
+    }
+    #[doc = "Bit 1 - Remap Command Bit for AHB Master 1"]
+    #[inline(always)]
+    pub fn rcb1(&self) -> RCB1_R {
+        RCB1_R::new(((self.bits >> 1) & 1) != 0)
+    }
+    #[doc = "Bit 2 - Remap Command Bit for AHB Master 2"]
+    #[inline(always)]
+    pub fn rcb2(&self) -> RCB2_R {
+        RCB2_R::new(((self.bits >> 2) & 1) != 0)
+    }
+    #[doc = "Bit 3 - Remap Command Bit for AHB Master 3"]
+    #[inline(always)]
+    pub fn rcb3(&self) -> RCB3_R {
+        RCB3_R::new(((self.bits >> 3) & 1) != 0)
+    }
+    #[doc = "Bits 4:5 - Remap Command Bit for AHB Master 4"]
+    #[inline(always)]
+    pub fn rcb4(&self) -> RCB4_R {
+        RCB4_R::new(((self.bits >> 4) & 3) as u8)
+    }
+    #[doc = "Bit 6 - Remap Command Bit for AHB Master 5"]
+    #[inline(always)]
+    pub fn rcb5(&self) -> RCB5_R {
+        RCB5_R::new(((self.bits >> 6) & 1) != 0)
+    }
+}
+impl W {
+    #[doc = "Bit 0 - Remap Command Bit for AHB Master 0"]
+    #[inline(always)]
+    pub fn rcb0(&mut self) -> RCB0_W<0> {
+        RCB0_W::new(self)
+    }
+    #[doc = "Bit 1 - Remap Command Bit for AHB Master 1"]
+    #[inline(always)]
+    pub fn rcb1(&mut self) -> RCB1_W<1> {
+        RCB1_W::new(self)
+    }
+    #[doc = "Bit 2 - Remap Command Bit for AHB Master 2"]
+    #[inline(always)]
+    pub fn rcb2(&mut self) -> RCB2_W<2> {
+        RCB2_W::new(self)
+    }
+    #[doc = "Bit 3 - Remap Command Bit for AHB Master 3"]
+    #[inline(always)]
+    pub fn rcb3(&mut self) -> RCB3_W<3> {
+        RCB3_W::new(self)
+    }
+    #[doc = "Bits 4:5 - Remap Command Bit for AHB Master 4"]
+    #[inline(always)]
+    pub fn rcb4(&mut self) -> RCB4_W<4> {
+        RCB4_W::new(self)
+    }
+    #[doc = "Bit 6 - Remap Command Bit for AHB Master 5"]
+    #[inline(always)]
+    pub fn rcb5(&mut self) -> RCB5_W<6> {
+        RCB5_W::new(self)
+    }
+    #[doc = "Writes raw bits to the register."]
+    #[inline(always)]
+    pub unsafe fn bits(&mut self, bits: u32) -> &mut Self {
+        self.0.bits(bits);
+        self
+    }
+}
+#[doc = "Master Remap Control Register\n\nThis register you can [`read`](crate::generic::Reg::read), [`write_with_zero`](crate::generic::Reg::write_with_zero), [`reset`](crate::generic::Reg::reset), [`write`](crate::generic::Reg::write), [`modify`](crate::generic::Reg::modify). See [API](https://docs.rs/svd2rust/#read--modify--write-api).\n\nFor information about available fields see [matrix_mrcr](index.html) module"]
+pub struct MATRIX_MRCR_SPEC;
+impl crate::RegisterSpec for MATRIX_MRCR_SPEC {
+    type Ux = u32;
+}
+#[doc = "`read()` method returns [matrix_mrcr::R](R) reader structure"]
+impl crate::Readable for MATRIX_MRCR_SPEC {
+    type Reader = R;
+}
+#[doc = "`write(|w| ..)` method takes [matrix_mrcr::W](W) writer structure"]
+impl crate::Writable for MATRIX_MRCR_SPEC {
+    type Writer = W;
+}
+#[doc = "`reset()` method sets MATRIX_MRCR to value 0"]
+impl crate::Resettable for MATRIX_MRCR_SPEC {
+    #[inline(always)]
+    fn reset_value() -> Self::Ux {
+        0
+    }
+}
