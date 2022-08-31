@@ -80,4 +80,20 @@ macro_rules! sam_pin {
     (is_down, $peripherals:expr, $pio:ident, $pin:ident) => {
         $peripherals.$pio.pdsr.read().$pin().bit_is_clear()
     };
+    (disable_interrupt, $peripherals:expr, $pio:ident, $($pin:ident),+) => {
+        // disable interrupt on pins
+        unsafe {
+            $peripherals.$pio.idr.write_with_zero(|w| w
+                $(.$pin().set_bit())*
+            )
+        }
+    };
+    (enable_interrupt, $peripherals:expr, $pio:ident, $($pin:ident),+) => {
+        // disable interrupt on pins
+        unsafe {
+            $peripherals.$pio.ier.write_with_zero(|w| w
+                $(.$pin().set_bit())*
+            )
+        }
+    };
 }
