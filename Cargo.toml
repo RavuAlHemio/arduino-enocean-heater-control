@@ -3,3 +3,8 @@ members = [
     "arduino_enocean_heater_control",
     "atsam3x8e",
 ]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
