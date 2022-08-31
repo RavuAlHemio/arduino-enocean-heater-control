@@ -122,43 +122,22 @@ pub trait Usart {
         };
     }
 
-    /// Enables the USART transmitter.
-    fn enable_transmitter(peripherals: &mut Peripherals) {
+    /// Sets the state of the USART transmitter or receiver.
+    fn set_rxtx_state(peripherals: &mut Peripherals, tx_enable: bool, rx_enable: bool) {
         unsafe {
             Self::register_block(peripherals)
-                .cr().write_with_zero(|w| w
-                    .txen().set_bit()
-                )
+                .cr().write_with_zero(|w| {
+                    let w_tx = if tx_enable {
+                        w.txen().set_bit()
+                    } else {
+                        w.txdis().set_bit()
         };
+                    if rx_enable {
+                        w.rxen().set_bit()
+                    } else {
+                        w.rxdis().set_bit()
     }
-
-    /// Disables the USART transmitter.
-    fn disable_transmitter(peripherals: &mut Peripherals) {
-        unsafe {
-            Self::register_block(peripherals)
-                .cr().write_with_zero(|w| w
-                    .txdis().set_bit()
-                )
-        };
-    }
-
-    /// Enables the USART receiver.
-    fn enable_receiver(peripherals: &mut Peripherals) {
-        unsafe {
-            Self::register_block(peripherals)
-                .cr().write_with_zero(|w| w
-                    .rxen().set_bit()
-                )
-        };
-    }
-
-    /// Disables the USART receiver.
-    fn disable_receiver(peripherals: &mut Peripherals) {
-        unsafe {
-            Self::register_block(peripherals)
-                .cr().write_with_zero(|w| w
-                    .rxdis().set_bit()
-                )
+            })
         };
     }
 
