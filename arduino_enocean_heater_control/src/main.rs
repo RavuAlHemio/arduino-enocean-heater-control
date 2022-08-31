@@ -127,10 +127,8 @@ fn main() -> ! {
     uart::send(&mut peripherals, b"BAUD RATE SET\r\n");
     Usart3::disable_interrupts(&mut peripherals);
     uart::send(&mut peripherals, b"INTERRUPTS DISABLED\r\n");
-    Usart3::enable_transmitter(&mut peripherals);
-    uart::send(&mut peripherals, b"TRANSMITTER ENABLED\r\n");
-    Usart3::enable_receiver(&mut peripherals);
-    uart::send(&mut peripherals, b"RECEIVER ENABLED\r\n");
+    Usart3::set_rxtx_state(&mut peripherals, true, true);
+    uart::send(&mut peripherals, b"TRANSMITTER AND RECEIVER ENABLED\r\n");
 
     // wait five seconds
     delay(Duration::from_secs(5));
