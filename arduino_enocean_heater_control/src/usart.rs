@@ -33,50 +33,58 @@ pub trait Usart {
 
     /// Enables the clock for this USART.
     fn enable_clock(peripherals: &mut Peripherals) {
-        let peripheral_id = Self::peripheral_id();
+        let mut peripheral_id = Self::peripheral_id();
 
-        // get current divider
-        peripherals.PMC.pmc_pcr.write(|w| w
-            .pid().variant(peripheral_id) // this USART clock
-            .cmd().clear_bit() // read
-        );
-        let current_divider = peripherals.PMC.pmc_pcr.read().div().variant().unwrap();
+        if peripheral_id >= 64 {
+            return;
+        }
 
-        // disable clock
-        peripherals.PMC.pmc_pcr.write(|w| w
-            .pid().variant(peripheral_id) // this USART clock
-            .cmd().set_bit() // write
-            .en().clear_bit() // disable
-            .div().variant(current_divider) // unchanged divider
-        );
-
-        // set clock to MCK
-        peripherals.PMC.pmc_pcr.write(|w| w
-            .pid().variant(peripheral_id) // this USART clock
-            .cmd().set_bit() // write
-            .en().clear_bit() // remain disabled
-            .div().periph_div_mck() // set divider to MCK (only CAN0 and CAN1 can be subdivided)
-        );
-
-        // enable clock
-        peripherals.PMC.pmc_pcr.write(|w| w
-            .pid().variant(peripheral_id) // this USART clock
-            .cmd().set_bit() // write
-            .en().set_bit() // enable
-            .div().periph_div_mck() // unchanged divider
-        );
+        if peripheral_id >= 32 {
+            peripheral_id -= 32;
+            if peripherals.PMC.pmc_pcsr1.read().bits() & (1 << peripheral_id) == 0 {
+                unsafe {
+                    peripherals.PMC.pmc_pcer1.write_with_zero(|w|
+                        w.bits(1 << peripheral_id)
+                    )
+                };
+            }
+        } else {
+            if peripherals.PMC.pmc_pcsr0.read().bits() & (1 << peripheral_id) == 0 {
+                unsafe {
+                    peripherals.PMC.pmc_pcer0.write_with_zero(|w|
+                        w.bits(1 << peripheral_id)
+                    )
+                };
+            }
+        }
     }
 
     /// Disables the clock for this USART.
     fn disable_clock(peripherals: &mut Peripherals) {
-        let peripheral_id = Self::peripheral_id();
+        let mut peripheral_id = Self::peripheral_id();
 
-        // disable clock
-        peripherals.PMC.pmc_pcr.write(|w| w
-            .pid().variant(peripheral_id) // this USART clock
-            .cmd().set_bit() // write
-            .en().clear_bit() // disable
-        );
+        if peripheral_id >= 64 {
+            return;
+        }
+
+        if peripheral_id >= 32 {
+            peripheral_id -= 32;
+            if peripherals.PMC.pmc_pcsr1.read().bits() & (1 << peripheral_id) != 0 {
+                unsafe {
+                    peripherals.PMC.pmc_pcdr1.write_with_zero(|w|
+                        w.bits(1 << peripheral_id)
+                    )
+                };
+            }
+        } else {
+            if peripherals.PMC.pmc_pcsr0.read().bits() & (1 << peripheral_id) != 0 {
+                unsafe {
+                    peripherals.PMC.pmc_pcdr0.write_with_zero(|w|
+                        w.bits(1 << peripheral_id)
+                    )
+                };
+            }
+        }
     }
 
     /// Disables the Peripheral DMA Channels.
@@ -162,10 +170,7 @@ pub trait Usart {
                 .mr().write_with_zero(|w| w
                     .usart_mode().normal()
                     .usclks().mck() // master clock at full speed
-                    .sync().clear_bit()
                     .chmode().normal()
-                    .mode9().clear_bit()
-                    .over().clear_bit()
                     .chrl()._8_bit()
                     .par().no()
                     .nbstop()._1_bit()
@@ -195,14 +200,24 @@ pub trait Usart {
         };
     }
 
+    /// Disable all USART-related interrupts.
+    fn disable_interrupts(peripherals: &mut Peripherals) {
+        unsafe {
+            Self::register_block(peripherals)
+                .idr().write_with_zero(|w| w
+                    .bits(0xFFFFFFFF)
+                )
+        };
+    }
+
     /// Sends the given data.
     fn transmit(peripherals: &mut Peripherals, data: &[u8]) {
         crate::uart::send(peripherals, b"PREPARING FOR TRANSMISSION\r\n");
-        while Self::register_block(peripherals).csr().read().txrdy().bit_is_clear() {
-            // transmitter is not ready; wait...
-        }
-        crate::uart::send(peripherals, b"SENDING\r\n");
         for b in data {
+            while Self::register_block(peripherals).csr().read().txrdy().bit_is_clear() {
+                // transmitter is not ready; wait...
+            }
+            crate::uart::send(peripherals, b"b");
             unsafe {
                 Self::register_block(peripherals)
                     .thr.write_with_zero(|w| w
@@ -210,24 +225,32 @@ pub trait Usart {
                         .txsynh().clear_bit()
                     )
             };
-            while Self::register_block(peripherals).csr().read().txrdy().bit_is_clear() {
-                // transmitter is not ready; wait...
-            }
+        }
+        crate::uart::send(peripherals, b"\r\nFLUSHING\r\n");
+        while Self::register_block(peripherals).csr().read().txempty().bit_is_clear() {
+            // transmitter is not empty; wait...
         }
         crate::uart::send(peripherals, b"SENT\r\n");
     }
 
     /// Receives enough data to fill the buffer.
     fn receive_exact(peripherals: &mut Peripherals, buffer: &mut [u8]) {
-        let csr = Self::register_block(peripherals).csr().read();
         let mut i = 0;
         crate::uart::send(peripherals, b"RECEIVING\r\n");
         while i < buffer.len() {
-            while csr.rxrdy().bit_is_clear() {
+            while Self::register_block(peripherals).csr().read().rxrdy().bit_is_clear() {
                 // receiver is not ready; wait...
             }
             buffer[i] = (Self::register_block(peripherals).rhr.read().rxchr().bits() & 0x00FF) as u8;
             i += 1;
+
+            // TODO: handle errors
+            unsafe {
+                Self::register_block(peripherals)
+                    .cr().write_with_zero(|w| w
+                        .rststa().set_bit()
+                    )
+            };
         }
         crate::uart::send(peripherals, b"RECEIVED\r\n");
     }
