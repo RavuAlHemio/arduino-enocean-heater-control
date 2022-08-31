@@ -115,6 +115,8 @@ fn main() -> ! {
     sam_pin!(set_high, peripherals, PIOC, p16);
 
     // set up the connection to the TCM515
+    Usart3::set_pins(&mut peripherals);
+    uart::send(&mut peripherals, b"PINS SET\r\n");
     Usart3::enable_clock(&mut peripherals);
     uart::send(&mut peripherals, b"CLOCK ENABLED\r\n");
     Usart3::disable_pdc(&mut peripherals);
