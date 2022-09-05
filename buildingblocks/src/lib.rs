@@ -5,4 +5,5 @@
 #![cfg_attr(not(test), no_std)]
 
 
+pub mod bit_field;
 pub mod crc8;
