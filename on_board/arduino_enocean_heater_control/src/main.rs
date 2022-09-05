@@ -5,7 +5,6 @@
 mod atsam3x8e_ext;
 mod bit_field;
 mod click_spi;
-mod crc8;
 mod display;
 mod uart;
 mod usart;
@@ -15,6 +14,7 @@ use core::panic::PanicInfo;
 use core::time::Duration;
 
 use atsam3x8e::Peripherals;
+use buildingblocks::crc8;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
 

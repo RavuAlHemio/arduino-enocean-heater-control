@@ -1,0 +1,8 @@
+//! Semi-standard building blocks for embedded applications.
+
+
+// Leave std activated when testing (on the host).
+#![cfg_attr(not(test), no_std)]
+
+
+pub mod crc8;
