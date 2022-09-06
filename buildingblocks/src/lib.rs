@@ -7,3 +7,4 @@
 
 pub mod bit_field;
 pub mod crc8;
+pub mod ring_buffer;
