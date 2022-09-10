@@ -96,6 +96,14 @@ impl<const SIZE_BYTES: usize> BitField<SIZE_BYTES> {
     pub fn as_bytes(&self) -> &[u8] {
         &self.field
     }
+
+    /// Return an iterator iterating over each bit of the bit field.
+    pub fn bit_iter(&self) -> BitFieldIterator<SIZE_BYTES> {
+        BitFieldIterator {
+            field: &self,
+            next_bit: 0,
+        }
+    }
 }
 impl<const SIZE_BYTES: usize> Default for BitField<SIZE_BYTES> {
     fn default() -> Self {
@@ -128,7 +136,7 @@ impl<'a, const SIZE_BYTES: usize> Iterator for BitFieldIterator<'a, SIZE_BYTES> 
 
 #[cfg(test)]
 mod tests {
-    use super::{BitField, BitFieldIterator};
+    use super::BitField;
 
     #[test]
     fn test_empty_bit_field() {
@@ -168,6 +176,11 @@ mod tests {
         assert_eq!(one_byte.is_bit_set(5), false);
         assert_eq!(one_byte.is_bit_set(6), false);
         assert_eq!(one_byte.is_bit_set(7), false);
+        let one_byte_vec: Vec<bool> = one_byte.bit_iter().collect();
+        assert_eq!(
+            &one_byte_vec,
+            &[true, true, true, false, false, false, false, false],
+        );
 
         one_byte.fill_with_bytes(&[0xFF, 0xFF, 0xFF]);
         assert_eq!(one_byte.len_bits(), 8);
@@ -181,6 +194,11 @@ mod tests {
         assert_eq!(one_byte.is_bit_set(5), true);
         assert_eq!(one_byte.is_bit_set(6), true);
         assert_eq!(one_byte.is_bit_set(7), true);
+        let one_byte_vec: Vec<bool> = one_byte.bit_iter().collect();
+        assert_eq!(
+            &one_byte_vec,
+            &[true, true, true, true, true, true, true, true],
+        );
 
         one_byte.clear_bit(0);
         assert_eq!(one_byte.len_bits(), 8);
@@ -194,6 +212,11 @@ mod tests {
         assert_eq!(one_byte.is_bit_set(5), true);
         assert_eq!(one_byte.is_bit_set(6), true);
         assert_eq!(one_byte.is_bit_set(7), true);
+        let one_byte_vec: Vec<bool> = one_byte.bit_iter().collect();
+        assert_eq!(
+            &one_byte_vec,
+            &[false, true, true, true, true, true, true, true],
+        );
 
         one_byte.clear_bit(5);
         assert_eq!(one_byte.len_bits(), 8);
@@ -207,6 +230,11 @@ mod tests {
         assert_eq!(one_byte.is_bit_set(5), false);
         assert_eq!(one_byte.is_bit_set(6), true);
         assert_eq!(one_byte.is_bit_set(7), true);
+        let one_byte_vec: Vec<bool> = one_byte.bit_iter().collect();
+        assert_eq!(
+            &one_byte_vec,
+            &[false, true, true, true, true, false, true, true],
+        );
     }
 
     #[test]
@@ -215,6 +243,30 @@ mod tests {
         assert_eq!(two_bytes.len_bits(), 16);
         assert_eq!(two_bytes.size_bytes(), 2);
         assert_eq!(two_bytes.as_bytes(), &[0x00, 0x00]);
+        assert_eq!(two_bytes.is_bit_set(0), false);
+        assert_eq!(two_bytes.is_bit_set(1), false);
+        assert_eq!(two_bytes.is_bit_set(2), false);
+        assert_eq!(two_bytes.is_bit_set(3), false);
+        assert_eq!(two_bytes.is_bit_set(4), false);
+        assert_eq!(two_bytes.is_bit_set(5), false);
+        assert_eq!(two_bytes.is_bit_set(6), false);
+        assert_eq!(two_bytes.is_bit_set(7), false);
+        assert_eq!(two_bytes.is_bit_set(8), false);
+        assert_eq!(two_bytes.is_bit_set(9), false);
+        assert_eq!(two_bytes.is_bit_set(10), false);
+        assert_eq!(two_bytes.is_bit_set(11), false);
+        assert_eq!(two_bytes.is_bit_set(12), false);
+        assert_eq!(two_bytes.is_bit_set(13), false);
+        assert_eq!(two_bytes.is_bit_set(14), false);
+        assert_eq!(two_bytes.is_bit_set(15), false);
+        let two_byte_vec: Vec<bool> = two_bytes.bit_iter().collect();
+        assert_eq!(
+            &two_byte_vec,
+            &[
+                false, false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false, false,
+            ],
+        );
 
         two_bytes.fill_with_bits(&[true, true, true]);
         assert_eq!(two_bytes.len_bits(), 16);
@@ -236,6 +288,14 @@ mod tests {
         assert_eq!(two_bytes.is_bit_set(13), false);
         assert_eq!(two_bytes.is_bit_set(14), false);
         assert_eq!(two_bytes.is_bit_set(15), false);
+        let two_byte_vec: Vec<bool> = two_bytes.bit_iter().collect();
+        assert_eq!(
+            &two_byte_vec,
+            &[
+                true, true, true, false, false, false, false, false,
+                false, false, false, false, false, false, false, false,
+            ],
+        );
 
         two_bytes.fill_with_bytes(&[0xFF, 0xFF, 0xFF]);
         assert_eq!(two_bytes.len_bits(), 16);
@@ -257,6 +317,14 @@ mod tests {
         assert_eq!(two_bytes.is_bit_set(13), true);
         assert_eq!(two_bytes.is_bit_set(14), true);
         assert_eq!(two_bytes.is_bit_set(15), true);
+        let two_byte_vec: Vec<bool> = two_bytes.bit_iter().collect();
+        assert_eq!(
+            &two_byte_vec,
+            &[
+                true, true, true, true, true, true, true, true,
+                true, true, true, true, true, true, true, true,
+            ],
+        );
 
         two_bytes.clear_bit(0);
         assert_eq!(two_bytes.len_bits(), 16);
@@ -278,6 +346,14 @@ mod tests {
         assert_eq!(two_bytes.is_bit_set(13), true);
         assert_eq!(two_bytes.is_bit_set(14), true);
         assert_eq!(two_bytes.is_bit_set(15), true);
+        let two_byte_vec: Vec<bool> = two_bytes.bit_iter().collect();
+        assert_eq!(
+            &two_byte_vec,
+            &[
+                false, true, true, true, true, true, true, true,
+                true, true, true, true, true, true, true, true,
+            ],
+        );
 
         two_bytes.clear_bit(5);
         assert_eq!(two_bytes.len_bits(), 16);
@@ -299,6 +375,14 @@ mod tests {
         assert_eq!(two_bytes.is_bit_set(13), true);
         assert_eq!(two_bytes.is_bit_set(14), true);
         assert_eq!(two_bytes.is_bit_set(15), true);
+        let two_byte_vec: Vec<bool> = two_bytes.bit_iter().collect();
+        assert_eq!(
+            &two_byte_vec,
+            &[
+                false, true, true, true, true, false, true, true,
+                true, true, true, true, true, true, true, true,
+            ],
+        );
 
         two_bytes.clear_bit(14);
         assert_eq!(two_bytes.len_bits(), 16);
@@ -320,7 +404,13 @@ mod tests {
         assert_eq!(two_bytes.is_bit_set(13), true);
         assert_eq!(two_bytes.is_bit_set(14), false);
         assert_eq!(two_bytes.is_bit_set(15), true);
+        let two_byte_vec: Vec<bool> = two_bytes.bit_iter().collect();
+        assert_eq!(
+            &two_byte_vec,
+            &[
+                false, true, true, true, true, false, true, true,
+                true, true, true, true, true, true, false, true,
+            ],
+        );
     }
-
-    // TODO: iterator tests
 }
