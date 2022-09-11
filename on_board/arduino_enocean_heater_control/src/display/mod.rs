@@ -44,7 +44,10 @@ const LETTER_WIDTH: usize = 8;
 const LETTER_HEIGHT: usize = 12;
 
 /// The maximum amount of letters per line, as allowed by display memory.
-const MAX_LETTERS_PER_ROW: usize = 96 / LETTER_WIDTH;
+const MAX_LETTERS_PER_ROW: usize = DISPLAY_WIDTH / LETTER_WIDTH;
+
+/// Number of bytes per pixel.
+const COLOR_DEPTH: usize = 2;
 
 
 #[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -388,7 +391,7 @@ pub fn init_display(peripherals: &mut Peripherals) {
     set_default_dimensions(peripherals);
 
     // set display to black
-    send_low_level_command(peripherals, 0x5C, (0..96*96*2).map(|_| 0x00));
+    send_low_level_command(peripherals, 0x5C, (0..DISPLAY_WIDTH*DISPLAY_HEIGHT*COLOR_DEPTH).map(|_| 0x00));
 
     // turn on display
     send_command(peripherals, DisplayCommand::SetSleepMode(false));
@@ -442,10 +445,9 @@ fn set_default_dimensions(peripherals: &mut Peripherals) {
 pub fn write_line(
     peripherals: &mut Peripherals,
     x: u32, y: u32,
-    fg_color: [u8; 2], bg_color: [u8; 2],
+    fg_color: [u8; COLOR_DEPTH], bg_color: [u8; COLOR_DEPTH],
     text: &str,
 ) {
-    const COLOR_DEPTH: usize = 2;
     let (char_indexes, char_count) = str_to_char_indexes(text);
 
     if usize::try_from(y).unwrap() > DISPLAY_HEIGHT {
