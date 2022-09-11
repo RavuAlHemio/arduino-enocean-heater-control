@@ -8,11 +8,23 @@
 //! | 3     | PD5 (B)  | PD4 (B)  | PE15 (B) | PF4 (A)  | PF5 (A)  |
 
 
-use atsam3x8e::Peripherals;
+use atsam3x8e::{Interrupt, interrupt, Peripherals};
 use atsam3x8e::usart0::RegisterBlock as UsartRegisterBlock;
+use buildingblocks::ring_buffer::RingBuffer;
+use cortex_m::interrupt as cortex_interrupt;
+use cortex_m::peripheral::NVIC;
 
 use crate::sam_pin;
 use crate::atsam3x8e_ext::setup::SystemCoreClock;
+
+
+const RING_BUFFER_SIZE: usize = 512;
+
+
+static mut USART0_BUFFER: Option<RingBuffer<u8, RING_BUFFER_SIZE>> = None;
+static mut USART1_BUFFER: Option<RingBuffer<u8, RING_BUFFER_SIZE>> = None;
+static mut USART2_BUFFER: Option<RingBuffer<u8, RING_BUFFER_SIZE>> = None;
+static mut USART3_BUFFER: Option<RingBuffer<u8, RING_BUFFER_SIZE>> = None;
 
 
 pub trait Usart {
@@ -24,6 +36,12 @@ pub trait Usart {
 
     /// Returns the address of the USART register block in memory.
     fn register_address() -> usize;
+
+    /// Returns a mutable reference to the ring buffer for this USART.
+    unsafe fn get_buffer_reference() -> &'static mut Option<RingBuffer<u8, RING_BUFFER_SIZE>>;
+
+    /// Returns the interrupt number for this USART.
+    fn interrupt_number() -> Interrupt;
 
     /// Returns a reference to the USART register block.
     #[inline]
@@ -127,16 +145,16 @@ pub trait Usart {
         unsafe {
             Self::register_block(peripherals)
                 .cr().write_with_zero(|w| {
-                    let w_tx = if tx_enable {
+                    if tx_enable {
                         w.txen().set_bit()
                     } else {
                         w.txdis().set_bit()
-        };
+                    };
                     if rx_enable {
                         w.rxen().set_bit()
                     } else {
                         w.rxdis().set_bit()
-    }
+                    }
             })
         };
     }
@@ -189,6 +207,32 @@ pub trait Usart {
         };
     }
 
+    /// Enable or disable all interrupts for this USART in the system core.
+    fn set_core_interrupt(enabled: bool) {
+        if enabled {
+            unsafe { NVIC::unmask(Self::interrupt_number()) };
+        } else {
+            NVIC::mask(Self::interrupt_number());
+        }
+    }
+
+    /// Enable or disable the interrupt for this USART that a byte is ready to be received.
+    fn set_receive_ready_interrupt(peripherals: &mut Peripherals, enabled: bool) {
+        if enabled {
+            unsafe {
+                Self::register_block(peripherals).ier().write_with_zero(|w| w
+                    .rxrdy().set_bit()
+                )
+            };
+        } else {
+            unsafe {
+                Self::register_block(peripherals).idr().write_with_zero(|w| w
+                    .rxrdy().set_bit()
+                )
+            };
+        }
+    }
+
     /// Sends the given data.
     fn transmit(peripherals: &mut Peripherals, data: &[u8]) {
         crate::uart::send(peripherals, b"PREPARING FOR TRANSMISSION\r\n");
@@ -233,6 +277,64 @@ pub trait Usart {
         }
         crate::uart::send(peripherals, b"RECEIVED\r\n");
     }
+
+    /// Sets whether the receive buffer for this USART is enabled. Also clears the buffer.
+    fn set_receive_buffer_enabled(enabled: bool) {
+        let ring_buffer_opt = unsafe { Self::get_buffer_reference() };
+        if enabled {
+            *ring_buffer_opt = Some(RingBuffer::new());
+        } else {
+            *ring_buffer_opt = None;
+        }
+    }
+
+    /// Clears out the receive buffer for this USART and returns its contents.
+    ///
+    /// The return value is a buffer of constant size and the number of bytes actually stored in
+    /// that buffer.
+    fn take_receive_buffer() -> Option<([u8; RING_BUFFER_SIZE], usize)> {
+        let ring_buffer_opt = unsafe { Self::get_buffer_reference() };
+        if let Some(ring_buffer) = ring_buffer_opt {
+            let mut buf = [0u8; RING_BUFFER_SIZE];
+            let mut i = 0;
+            loop {
+                if i == buf.len() {
+                    break;
+                }
+                let byte_opt = cortex_interrupt::free(|_| ring_buffer.pop());
+                let byte = match byte_opt {
+                    Some(b) => b,
+                    None => break,
+                };
+
+                buf[i] = byte;
+                i += 1;
+            }
+            Some((buf, i))
+        } else {
+            None
+        }
+    }
+
+    fn handle_interrupt() {
+        let mut peripherals = unsafe { Peripherals::steal() };
+        let reg_block = Self::register_block(&mut peripherals);
+
+        // do we even have a buffer?
+        let ring_buffer = match unsafe { Self::get_buffer_reference() } {
+            Some(b) => b,
+            None => return,
+        };
+
+        // do we even have a byte waiting?
+        while reg_block.csr().read().rxrdy().bit_is_set() {
+            // read the byte
+            let byte = (reg_block.rhr.read().rxchr().bits() & 0xFF) as u8;
+
+            // toss it in
+            cortex_interrupt::free(|_| ring_buffer.push(byte));
+        }
+    }
 }
 
 
@@ -259,6 +361,8 @@ impl Usart for Usart0 {
 
     #[inline] fn peripheral_id() -> u8 { 17 }
     #[inline] fn register_address() -> usize { 0x4009_8000 }
+    #[inline] fn interrupt_number() -> Interrupt { Interrupt::USART0 }
+    #[inline] unsafe fn get_buffer_reference() -> &'static mut Option<RingBuffer<u8, RING_BUFFER_SIZE>> { &mut USART0_BUFFER }
 }
 
 
@@ -279,6 +383,8 @@ impl Usart for Usart1 {
 
     #[inline] fn peripheral_id() -> u8 { 18 }
     #[inline] fn register_address() -> usize { 0x4009_C000 }
+    #[inline] fn interrupt_number() -> Interrupt { Interrupt::USART1 }
+    #[inline] unsafe fn get_buffer_reference() -> &'static mut Option<RingBuffer<u8, RING_BUFFER_SIZE>> { &mut USART1_BUFFER }
 }
 
 
@@ -299,6 +405,8 @@ impl Usart for Usart2 {
 
     #[inline] fn peripheral_id() -> u8 { 19 }
     #[inline] fn register_address() -> usize { 0x400A_0000 }
+    #[inline] fn interrupt_number() -> Interrupt { Interrupt::USART2 }
+    #[inline] unsafe fn get_buffer_reference() -> &'static mut Option<RingBuffer<u8, RING_BUFFER_SIZE>> { &mut USART2_BUFFER }
 }
 
 
@@ -318,5 +426,14 @@ impl Usart for Usart3 {
     }
 
     #[inline] fn peripheral_id() -> u8 { 20 }
-    #[inline] fn register_address() -> usize  { 0x400A_4000 }
+    #[inline] fn register_address() -> usize { 0x400A_4000 }
+    #[inline] fn interrupt_number() -> Interrupt { Interrupt::USART3 }
+    #[inline] unsafe fn get_buffer_reference() -> &'static mut Option<RingBuffer<u8, RING_BUFFER_SIZE>> { &mut USART3_BUFFER }
 }
+
+
+// and now, the interrupt handlers
+#[interrupt] fn USART0() { Usart0::handle_interrupt() }
+#[interrupt] fn USART1() { Usart1::handle_interrupt() }
+#[interrupt] fn USART2() { Usart2::handle_interrupt() }
+#[interrupt] fn USART3() { Usart3::handle_interrupt() }

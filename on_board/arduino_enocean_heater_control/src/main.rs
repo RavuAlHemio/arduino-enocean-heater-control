@@ -129,6 +129,10 @@ fn main() -> ! {
     uart::send(&mut peripherals, b"BAUD RATE SET\r\n");
     Usart3::disable_interrupts(&mut peripherals);
     uart::send(&mut peripherals, b"INTERRUPTS DISABLED\r\n");
+    Usart3::set_receive_buffer_enabled(true);
+    uart::send(&mut peripherals, b"RECEIVE BUFFER ENABLED\r\n");
+    Usart3::set_receive_ready_interrupt(&mut peripherals, true);
+    uart::send(&mut peripherals, b"RECEIVE-READY INTERRUPT ENABLED\r\n");
     Usart3::set_rxtx_state(&mut peripherals, true, true);
     uart::send(&mut peripherals, b"TRANSMITTER AND RECEIVER ENABLED\r\n");
 
