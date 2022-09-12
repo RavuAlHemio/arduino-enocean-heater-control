@@ -1,0 +1,9 @@
+[package]
+name = "svd2ghidrac"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "3.2", features = ["derive"] }
+sxd-document = { version = "0.3" }
+sxd-xpath = { version = "0.4" }
