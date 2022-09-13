@@ -1,6 +1,7 @@
 [CmdletBinding()]
 Param (
-    [Parameter(Mandatory=$true, Position=0)]
+    [Parameter(Position=0)]
+    [string]
     $ComPort
 )
 
@@ -17,4 +18,10 @@ If ($LASTEXITCODE -ne 0)
     Return 1
 }
 
-& 'C:\Program Files (x86)\BOSSA\bossac.exe' --arduino-erase --erase --write --boot=1 --port=$ComPort .\aehc
+$kilobytes = (Get-Item -LiteralPath .\aehc).Length / 1024
+Write-Output ("{0:#,##0.###}" -f $kilobytes)
+
+If ($ComPort -ne "")
+{
+    & 'C:\Program Files (x86)\BOSSA\bossac.exe' --arduino-erase --erase --write --boot=1 --port=$ComPort .\aehc
+}

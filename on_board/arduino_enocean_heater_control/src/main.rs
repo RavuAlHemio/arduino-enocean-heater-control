@@ -5,6 +5,8 @@
 mod atsam3x8e_ext;
 mod click_spi;
 mod display;
+mod esp3;
+mod ring_buffer;
 mod uart;
 mod usart;
 

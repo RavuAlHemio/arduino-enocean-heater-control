@@ -84,6 +84,35 @@ impl<T: Copy + Default, const SIZE: usize> RingBuffer<T, SIZE> {
         }
     }
 
+    /// Attempts to fill the given slice with the next bytes without removing them from the buffer.
+    /// Returns whether this was successful.
+    #[inline]
+    pub fn peek_fill(&self, slice: &mut [T]) -> bool {
+        if slice.len() > self.len() {
+            return false;
+        }
+        for i in 0..self.len() {
+            slice[i] = self.peek_at(i).unwrap();
+        }
+        true
+    }
+
+    /// Attempts to fill the given slice with the next bytes, removing them from the buffer and then
+    /// returning `true`.
+    ///
+    /// If not enough bytes are immediately available, leaves the slice and the buffer untouched and
+    /// returns `false`.
+    #[inline]
+    pub fn pop_fill(&self, slice: &mut [T]) -> bool {
+        if slice.len() > self.len() {
+            return false;
+        }
+        for i in 0..self.len() {
+            slice[i] = self.pop().unwrap();
+        }
+        true
+    }
+
     /// Obtains an iterator that runs through the buffer and returns copies of each element.
     #[inline]
     pub fn iter(&self) -> Iter<T, SIZE> {
