@@ -1,4 +1,4 @@
-use core::mem::MaybeUninit;
+use core::mem::{MaybeUninit, replace};
 
 
 /// A circular buffer of a preset capacity. If a value is appended to a full ring buffer, depending
@@ -63,7 +63,7 @@ impl<T: Copy + Default, const SIZE: usize> RingBuffer<T, SIZE> {
         if self.count_set == 0 {
             None
         } else {
-            let val = core::mem::replace(
+            let val = replace(
                 &mut self.buffer[self.first_set],
                 MaybeUninit::uninit(),
             );
@@ -103,7 +103,7 @@ impl<T: Copy + Default, const SIZE: usize> RingBuffer<T, SIZE> {
     /// If not enough bytes are immediately available, leaves the slice and the buffer untouched and
     /// returns `false`.
     #[inline]
-    pub fn pop_fill(&self, slice: &mut [T]) -> bool {
+    pub fn pop_fill(&mut self, slice: &mut [T]) -> bool {
         if slice.len() > self.len() {
             return false;
         }
@@ -119,6 +119,20 @@ impl<T: Copy + Default, const SIZE: usize> RingBuffer<T, SIZE> {
         Iter {
             ring_buffer: &self,
             index: 0,
+        }
+    }
+}
+impl<T: Copy + Default, const SIZE: usize> Drop for RingBuffer<T, SIZE> {
+    fn drop(&mut self) {
+        // take out the values from the occupied indexes and call assume_init on them
+        // this ensures that they are dropped
+        for i in 0..self.count_set {
+            let buffer_index = (self.first_set + i) % SIZE;
+            let uninit_val = replace(
+                &mut self.buffer[buffer_index],
+                MaybeUninit::uninit(),
+            );
+            unsafe { uninit_val.assume_init() };
         }
     }
 }

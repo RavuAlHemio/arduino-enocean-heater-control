@@ -7,4 +7,5 @@
 
 pub mod bit_field;
 pub mod crc8;
+pub mod max_array;
 pub mod ring_buffer;
