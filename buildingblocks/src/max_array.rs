@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+use core::hash::Hash;
 use core::mem::{MaybeUninit, replace};
 
 
@@ -112,6 +114,59 @@ impl<T, const SIZE: usize> Drop for MaxArray<T, SIZE> {
                 MaybeUninit::uninit(),
             );
             unsafe { uninit_val.assume_init() };
+        }
+    }
+}
+impl<T: Copy, const MAX_SIZE: usize> Clone for MaxArray<T, MAX_SIZE> {
+    fn clone(&self) -> Self {
+        Self { array: self.array.clone(), length: self.length.clone() }
+    }
+}
+impl<T: PartialEq, const MAX_SIZE: usize> PartialEq for MaxArray<T, MAX_SIZE> {
+    fn eq(&self, other: &Self) -> bool {
+        if self.length != other.length {
+            return false;
+        }
+
+        for (s, o) in self.array.iter().zip(other.array.iter()).take(self.length) {
+            let s_init = unsafe { s.assume_init_ref() };
+            let o_init = unsafe { o.assume_init_ref() };
+            if s_init != o_init {
+                return false;
+            }
+        }
+
+        true
+    }
+}
+impl<T: Eq, const MAX_SIZE: usize> Eq for MaxArray<T, MAX_SIZE> {
+}
+impl<T: PartialOrd, const MAX_SIZE: usize> PartialOrd for MaxArray<T, MAX_SIZE> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        let min_length = self.length.min(other.length);
+        for (s, o) in self.array.iter().zip(other.array.iter()).take(min_length) {
+            let s_init = unsafe { s.assume_init_ref() };
+            let o_init = unsafe { o.assume_init_ref() };
+            match s_init.partial_cmp(o_init) {
+                Some(Ordering::Equal) => {}, // try the next pair
+                other => return other,
+            }
+        }
+
+        // all values up to the common length are equal; compare lengths
+        Some(self.length.cmp(&other.length))
+    }
+}
+impl<T: Ord, const MAX_SIZE: usize> Ord for MaxArray<T, MAX_SIZE> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+impl<T: Hash, const MAX_SIZE: usize> Hash for MaxArray<T, MAX_SIZE> {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+        for item in self.array.iter().take(self.length) {
+            let item_init = unsafe { item.assume_init_ref() };
+            item_init.hash(state);
         }
     }
 }
