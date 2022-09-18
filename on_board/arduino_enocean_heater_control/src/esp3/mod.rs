@@ -1,11 +1,12 @@
 //! An implementation of the EnOcean Serial Protocol 3 (ESP3).
 
 
-use bitflags::bitflags;
-use buildingblocks::crc8::crc8_ccitt;
-use buildingblocks::max_array::MaxArray;
+pub(crate) mod response_data;
+pub(crate) mod serial;
 
-use crate::ring_buffer::CriticalRingBuffer;
+
+use bitflags::bitflags;
+use buildingblocks::max_array::MaxArray;
 
 
 /// The (constant) length of an ESP3 packet header.
@@ -51,82 +52,6 @@ const FOOTER_LENGTH: usize = 1;
 const MAX_ESP3_PACKET_LENGTH: usize =
     HEADER_LENGTH + MAX_DATA_LENGTH + MAX_OPTIONAL_LENGTH + FOOTER_LENGTH
 ;
-
-
-/// The byte used for synchronization.
-const SYNC_BYTE: u8 = 0x55;
-
-
-/// The ring buffer used for decoding incoming ESP3 packets.
-static ESP3_BUFFER: CriticalRingBuffer<u8, MAX_ESP3_PACKET_LENGTH> = CriticalRingBuffer::new();
-
-
-/// Takes bytes from the ESP3 ring buffer until a valid ESP3 packet is decoded, then returns its
-/// bytes.
-pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
-    // loop to get an actual packet
-    let (data_length, opt_length, total_length) = loop {
-        // loop to fast-forward to sync byte communication
-        loop {
-            // toss out bytes until we get a potential sync byte
-            match ESP3_BUFFER.peek_at(0) {
-                None => return None,
-                Some(SYNC_BYTE) => break,
-                Some(_) => {
-                    ESP3_BUFFER.pop();
-                    continue;
-                },
-            }
-        }
-
-        // we need at least the size of a zero-data packet
-        if ESP3_BUFFER.len() < 7 {
-            return None;
-        }
-
-        // peek at the header
-        let mut possible_header = [0u8; HEADER_LENGTH];
-        ESP3_BUFFER.peek_fill(&mut possible_header);
-
-        // does the CRC8 match?
-        let calculated_crc = crc8_ccitt(&possible_header[0..HEADER_LENGTH-1]);
-        if calculated_crc == possible_header[HEADER_LENGTH-1] {
-            // yes -- it's a packet!
-
-            // have we already collected all of it?
-            let data_length = u16::from_be_bytes(possible_header[1..3].try_into().unwrap());
-            let opt_length = possible_header[3];
-            // header, data, opt data, data CRC8
-            let total_length = HEADER_LENGTH + usize::from(data_length) + usize::from(opt_length) + FOOTER_LENGTH;
-            if ESP3_BUFFER.len() < total_length {
-                // nope, we still need a few more bytes
-                return None;
-            }
-
-            // alright, keep processing it!
-            break (data_length, opt_length, total_length);
-        }
-
-        // no, it isn't a valid packet... pop the sync byte and search for the next one
-        ESP3_BUFFER.pop();
-    };
-
-    // take out the packet
-    let mut packet = MaxArray::new();
-    while packet.len() < total_length {
-        packet.push(ESP3_BUFFER.pop().expect("failed to pop from ESP3 buffer"))
-            .expect("failed to push to ESP3 packet");
-    }
-
-    // check data CRC8
-    let data_crc8 = packet.as_slice()[total_length-1];
-    let data_crc8_calc = crc8_ccitt(&packet.as_slice()[HEADER_LENGTH..total_length-1]);
-    if data_crc8 == data_crc8_calc {
-        Some(packet)
-    } else {
-        None
-    }
-}
 
 
 /// The contents of an ESP3 data packet.
@@ -408,49 +333,128 @@ pub enum CommandData {
         memory_type: MemoryType,
         address: u32,
         // max data minus (one byte command plus five fixed bytes)
-        data: MaxArray<u8; 0xFFFF - (1 + 5)>,
+        data: MaxArray<u8, {0xFFFF - (1 + 5)}>,
     },
     CoRdMem {
         memory_type: MemoryType,
         address: u32,
         length: u16,
     },
-    CoRdMemAddress,
-    CoRdSecurity,
-    CoWrSecurity,
-    CoWrLearnMode,
+    CoRdMemAddress {
+        area: AddressArea,
+    },
+    #[deprecated] CoRdSecurity,
+    #[deprecated] CoWrSecurity {
+        security_level: u8,
+        key: u32,
+        rolling_code: u32,
+    },
+    CoWrLearnMode {
+        enable: OneByteBoolean,
+        timeout: u32,
+        opt_channel: Option<ChannelNumber>,
+    },
     CoRdLearnMode,
-    CoWrSecureDeviceAdd,
-    CoWrSecureDeviceDel,
-    CoRdSecureDeviceByIndex,
-    CoWrMode,
-    CoRdNumSecureDevices,
-    CoRdSecureDeviceById,
-    CoWrSecureDeviceAddPsk,
-    CoWrSecureDeviceSendTeachIn,
-    CoWrTemporaryRlcWindow,
-    CoRdSecureDevicePsk,
+    #[deprecated] CoWrSecureDeviceAdd {
+        slf: u8,
+        device_id: u32,
+        private_key: [u32; 4],
+        rolling_code: u16,
+        opt_direction: Option<DirectionTable>,
+        opt_is_ptm_sender: Option<OneByteBoolean>,
+        opt_teach_info: Option<u8>,
+    },
+    CoWrSecureDeviceDel {
+        device_id: u32,
+        opt_direction: Option<DirectionTableBoth>,
+    },
+    #[deprecated] CoRdSecureDeviceByIndex {
+        index: u8,
+        opt_direction: Option<DirectionTable>,
+    },
+    CoWrMode {
+        mode: TransceiverMode,
+    },
+    CoRdNumSecureDevices {
+        opt_direction: Option<DirectionTableBoth>,
+    },
+    CoRdSecureDeviceById {
+        device_id: u32,
+        direction: Option<DirectionTableMaintenance>,
+    },
+    CoWrSecureDeviceAddPsk {
+        device_id: u32,
+        psk: [u32; 4],
+    },
+    CoWrSecureDeviceSendTeachIn {
+        device_id: u32,
+        opt_teach_info: Option<u8>,
+    },
+    CoWrTemporaryRlcWindow {
+        enable: OneByteBoolean,
+        rlc_window: u32,
+    },
+    CoRdSecureDevicePsk {
+        device_id: u32,
+    },
     CoRdDutyCycleLimit,
-    CoSetBaudRate,
+    CoSetBaudRate {
+        baud_rate: BaudRate,
+    },
     CoGetFrequencyInfo,
     CoGetStepCode,
-    CoWrReManCode,
-    CoWrStartupDelay,
-    CoWrReManRepeating,
+    CoWrReManCode {
+        code: u32,
+    },
+    CoWrStartupDelay {
+        delay: u8,
+    },
+    CoWrReManRepeating {
+        repeat_re_man_telegrams: OneByteBoolean,
+    },
     CoRdReManRepeating,
-    CoSetNoiseThreshold,
+    CoSetNoiseThreshold {
+        rssi_level: u8,
+    },
     CoGetNoiseThreshold,
-    CoWrRlcSavePeriod,
-    CoWrRlcLegacyMode,
-    CoWrSecureDeviceV2Add,
-    CoRdSecureDeviceV2ByIndex,
-    CoWrRssiTestMode,
+    CoWrRlcSavePeriod {
+        save_period: u8,
+    },
+    CoWrRlcLegacyMode {
+        enable: OneByteBoolean,
+    },
+    CoWrSecureDeviceV2Add {
+        slf: u8,
+        device_id: u32,
+        private_key: [u32; 4],
+        rolling_code: u32,
+        teach_info: u8,
+        opt_direction: Option<DirectionTable>,
+    },
+    CoRdSecureDeviceV2ByIndex {
+        index: u8,
+        opt_direction: Option<DirectionTable>,
+    },
+    CoWrRssiTestMode {
+        enable: OneByteBoolean,
+        timeout: u16,
+    },
     CoRdRssiTestMode,
-    CoWrSecureDeviceMaintenanceKey,
-    CoRdSecureDeviceMaintenanceKey,
-    CoWrTransparentMode,
+    CoWrSecureDeviceMaintenanceKey {
+        device_id: u32,
+        maintenance_key: [u32; 4],
+        key_number: u8,
+    },
+    CoRdSecureDeviceMaintenanceKey {
+        index: u8,
+    },
+    CoWrTransparentMode {
+        enable: OneByteBoolean,
+    },
     CoRdTransparentMode,
-    CoWrTxOnlyMode,
+    CoWrTxOnlyMode {
+        mode: TxOnlyMode,
+    },
     CoRdTxOnlyMode,
     Unknown {
         code: u8,
@@ -467,114 +471,62 @@ impl CommandData {
             Self::CoRdSysLog => 4,
             Self::CoWrSysLog => 5,
             Self::CoWrBiSt => 6,
-            Self::CoWrIdBase => 7,
+            Self::CoWrIdBase { .. } => 7,
             Self::CoRdIdBase => 8,
-            Self::CoWrRepeater => 9,
+            Self::CoWrRepeater { .. } => 9,
             Self::CoRdRepeater => 10,
-            Self::CoWrFilterAdd => 11,
-            Self::CoWrFilterDel => 12,
+            Self::CoWrFilterAdd { .. } => 11,
+            Self::CoWrFilterDel { .. } => 12,
             Self::CoWrFilterDelAll => 13,
-            Self::CoWrFilterEnable => 14,
+            Self::CoWrFilterEnable { .. } => 14,
             Self::CoRdFilter => 15,
-            Self::CoWrWaitMaturity => 16,
-            Self::CoWrSubTelegram => 17,
-            Self::CoWrMem => 18,
-            Self::CoRdMem => 19,
-            Self::CoRdMemAddress => 20,
-            Self::CoRdSecurity => 21,
-            Self::CoWrSecurity => 22,
-            Self::CoWrLearnMode => 23,
+            Self::CoWrWaitMaturity { .. } => 16,
+            Self::CoWrSubTelegram { .. } => 17,
+            Self::CoWrMem { .. } => 18,
+            Self::CoRdMem { .. } => 19,
+            Self::CoRdMemAddress { .. } => 20,
+            #[allow(deprecated)] Self::CoRdSecurity => 21,
+            #[allow(deprecated)] Self::CoWrSecurity { .. } => 22,
+            Self::CoWrLearnMode { .. } => 23,
             Self::CoRdLearnMode => 24,
-            Self::CoWrSecureDeviceAdd => 25,
-            Self::CoWrSecureDeviceDel => 26,
-            Self::CoRdSecureDeviceByIndex => 27,
-            Self::CoWrMode => 28,
-            Self::CoRdNumSecureDevices => 29,
-            Self::CoRdSecureDeviceById => 30,
-            Self::CoWrSecureDeviceAddPsk => 31,
-            Self::CoWrSecureDeviceSendTeachIn => 32,
-            Self::CoWrTemporaryRlcWindow => 33,
-            Self::CoRdSecureDevicePsk => 34,
+            #[allow(deprecated)] Self::CoWrSecureDeviceAdd { .. } => 25,
+            Self::CoWrSecureDeviceDel { .. }    => 26,
+            #[allow(deprecated)] Self::CoRdSecureDeviceByIndex { .. } => 27,
+            Self::CoWrMode { .. } => 28,
+            Self::CoRdNumSecureDevices { .. } => 29,
+            Self::CoRdSecureDeviceById { .. } => 30,
+            Self::CoWrSecureDeviceAddPsk { .. } => 31,
+            Self::CoWrSecureDeviceSendTeachIn { .. } => 32,
+            Self::CoWrTemporaryRlcWindow { .. } => 33,
+            Self::CoRdSecureDevicePsk { .. } => 34,
             Self::CoRdDutyCycleLimit => 35,
-            Self::CoSetBaudRate => 36,
+            Self::CoSetBaudRate { .. } => 36,
             Self::CoGetFrequencyInfo => 37,
             // 38 = reserved
             Self::CoGetStepCode => 39,
             // 40-45 = reserved
-            Self::CoWrReManCode => 46,
-            Self::CoWrStartupDelay => 47,
-            Self::CoWrReManRepeating => 48,
+            Self::CoWrReManCode { .. } => 46,
+            Self::CoWrStartupDelay { .. } => 47,
+            Self::CoWrReManRepeating { .. } => 48,
             Self::CoRdReManRepeating => 49,
-            Self::CoSetNoiseThreshold => 50,
+            Self::CoSetNoiseThreshold { .. } => 50,
             Self::CoGetNoiseThreshold => 51,
             // 52-53 = reserved
-            Self::CoWrRlcSavePeriod => 54,
-            Self::CoWrRlcLegacyMode => 55,
-            Self::CoWrSecureDeviceV2Add => 56,
-            Self::CoRdSecureDeviceV2ByIndex => 57,
-            Self::CoWrRssiTestMode => 58,
+            Self::CoWrRlcSavePeriod { .. } => 54,
+            Self::CoWrRlcLegacyMode { .. } => 55,
+            Self::CoWrSecureDeviceV2Add { .. }  => 56,
+            Self::CoRdSecureDeviceV2ByIndex { .. } => 57,
+            Self::CoWrRssiTestMode { .. } => 58,
             Self::CoRdRssiTestMode => 59,
-            Self::CoWrSecureDeviceMaintenanceKey => 60,
-            Self::CoRdSecureDeviceMaintenanceKey => 61,
-            Self::CoWrTransparentMode => 62,
+            Self::CoWrSecureDeviceMaintenanceKey { .. } => 60,
+            Self::CoRdSecureDeviceMaintenanceKey { .. } => 61,
+            Self::CoWrTransparentMode { .. } => 62,
             Self::CoRdTransparentMode => 63,
-            Self::CoWrTxOnlyMode => 64,
+            Self::CoWrTxOnlyMode { .. } => 64,
             Self::CoRdTxOnlyMode => 65,
             Self::Unknown { code, .. } => *code,
         }
     }
-}
-
-/// Response data to CommandData::CoRdVersion.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct ResponseDataCoRdVersion {
-    pub app_version: u32,
-    pub api_version: u32,
-    pub chip_id: u32,
-    pub chip_version: u32,
-    pub app_description: [char; 16],
-}
-
-/// Response data to CommandData::CoRdSysLog.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct ResponseDataCoRdSysLog {
-    pub api_log_entries: MaxArray<u8; MAX_DATA_LENGTH>,
-    pub app_log_entries: MaxArray<u8; MAX_OPTIONAL_LENGTH>,
-}
-
-/// Response data to CommandData::CoWrBiSt.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct ResponseDataCoWrBiSt {
-    pub bist_result: u8,
-}
-
-/// Response data to CommandData::CoRdIdBase.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct ResponseDataCoRdIdBase {
-    pub base_id: u32,
-    pub opt_remaining_write_cycles: Option<u8>,
-}
-
-/// Response data to CommandData::CoRdRepeater.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct ResponseDataCoRdRepeater {
-    pub enable: RepeaterEnable,
-    pub level: RepeaterLevel,
-}
-
-/// Response data to CommandData::CoRdFilter.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct ResponseDataCoRdFilter {
-    // max data length minus 1 byte of return code
-    // 5 bytes per filter
-    pub filters: MaxArray<FilterEntry, (MAX_DATA_LENGTH - 1)/5>,
-}
-
-/// Response data to CommandData::CoRdMem.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct ResponseDataCoRdMem {
-    // max data length minus 1 byte of return code
-    pub data: MaxArray<u8, MAX_DATA_LENGTH - 1>,
 }
 
 /// The mode in which to enable the internal repeater.
@@ -602,4 +554,157 @@ pub enum RepeaterLevel {
 pub struct FilterEntry {
     pub criterion: FilterCriterion,
     pub value: u32,
+}
+
+/// The channel which to target.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum ChannelNumber {
+    Absolute(u8),
+    RelativePrevious = 0xFE,
+    RelativeNext = 0xFF,
+}
+
+/// The mode in which to operate the transceiver.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum TransceiverMode {
+    Compatible = 0x00,
+    Advanced = 0x01,
+    Other(u8),
+}
+
+/// The direction table on which to operate.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum DirectionTable {
+    Inbound = 0x00,
+    Outbound = 0x01,
+    OutboundBroadcast = 0x02,
+    Other(u8),
+}
+
+/// The direction table on which to operate, for commands that allow specifying "both".
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum DirectionTableBoth {
+    Inbound = 0x00,
+    Outbound = 0x01,
+    OutboundBroadcast = 0x02,
+    Both = 0x03,
+    Other(u8),
+}
+
+/// The direction table on which to operate, for commands that allow specifying the maintenance
+/// link.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum DirectionTableMaintenance {
+    Inbound = 0x00,
+    Outbound = 0x01,
+    OutboundBroadcast = 0x02,
+    MaintenanceLink = 0x03,
+    Other(u8),
+}
+
+/// The baud rate with which the controller should communicate via UART.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum BaudRate {
+    Baud57600 = 0x00,
+    Baud115200 = 0x01,
+    Baud230400 = 0x02,
+    Baud460800 = 0x03,
+    Other(u8),
+}
+
+/// The radio frequency on which the controller communicates.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum Frequency {
+    Mhz315 = 0x00,
+    Mhz868Point3 = 0x01,
+    Mhz902Point875 = 0x02,
+    Mhz925 = 0x03,
+    Mhz928 = 0x04,
+    Ghz2Point4 = 0x20,
+    Other(u8),
+}
+
+/// The radio protocol with which the controller communicates.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum Protocol {
+    Erp1 = 0x00,
+    Erp2 = 0x01,
+    Ieee802Dot15Dot4 = 0x10,
+    LongRange = 0x30,
+    Other(u8),
+}
+
+/// A type of transmit-only mode.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum TxOnlyMode {
+    Off = 0x00,
+    On = 0x01,
+    OnWithAutoSleep = 0x02,
+    Other(u8),
+}
+
+/// The criterion on which to filter messages.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum FilterCriterion {
+    SourceAddress = 0x00,
+    TelegramType = 0x01,
+    MinimumSignalStrength = 0x02,
+    DestinationAddress = 0x03,
+    Other(u8),
+}
+
+
+/// The action to perform on messages that match the filter criterion.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum FilterAction {
+    Drop = 0x00,
+    Forward = 0x80,
+    DoNotRepeat = 0x40,
+    Repeat = 0xC0,
+    Other(u8),
+}
+
+/// The operator used to unify multiple filters.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum FilterOperator {
+    Or = 0x00,
+    And = 0x01,
+    ReceiveOrRepeatAnd = 0x08,
+    ReceiveAndRepeatOr = 0x09,
+    Other(u8),
+}
+
+/// The type of memory being accessed.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum MemoryType {
+    Flash = 0x00,
+    Ram0 = 0x01,
+    DataRam = 0x02,
+    IDataRam = 0x03,
+    XDataRam = 0x04,
+    Eeprom = 0x05,
+    Other(u8),
+}
+
+/// The address area being queried.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum AddressArea {
+    Config = 0,
+    SmartAckTable = 1,
+    SystemErrorLog = 2,
+    Other(u8),
 }
