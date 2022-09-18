@@ -20,7 +20,6 @@ use buildingblocks::crc8;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
 
-use crate::atsam3x8e_ext::nop;
 use crate::atsam3x8e_ext::setup::system_init;
 use crate::atsam3x8e_ext::tick::{delay, enable_tick_clock};
 use crate::display::DisplayCommand;

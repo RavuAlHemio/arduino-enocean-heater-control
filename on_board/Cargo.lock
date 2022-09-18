@@ -7,6 +7,7 @@ name = "arduino_enocean_heater_control"
 version = "0.1.0"
 dependencies = [
  "atsam3x8e",
+ "bitflags",
  "buildingblocks",
  "cortex-m",
  "cortex-m-rt",
@@ -36,6 +37,12 @@ name = "bitfield"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46afbd2983a5d5a7bd740ccb198caf5b82f45c40c09c0eed36052d91cb92e719"
+
+[[package]]
+name = "bitflags"
+version = "1.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "buildingblocks"
@@ -85,9 +92,9 @@ dependencies = [
 
 [[package]]
 name = "from-to-repr"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dd5c7d3bed8bde25e3113b097772935f126cc1021c3545c7bc5821a5c3f4f7d"
+checksum = "a18eef1ae16a68130dfa1e2d0d1cdf23ae657e27e4b7ab273fb17484fa580106"
 dependencies = [
  "proc-macro2",
  "quote",

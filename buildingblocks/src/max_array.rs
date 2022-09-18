@@ -4,6 +4,7 @@ use core::mem::{MaybeUninit, replace};
 
 
 /// A variable-length array of constant (upper-bound) size.
+#[derive(Debug)]
 pub struct MaxArray<T, const MAX_SIZE: usize> {
     array: [MaybeUninit<T>; MAX_SIZE],
     length: usize,
