@@ -4,8 +4,9 @@
 use buildingblocks::max_array::MaxArray;
 
 use crate::esp3::{
-    ChannelNumber, FilterEntry, Frequency, MAX_DATA_LENGTH, MAX_OPTIONAL_LENGTH, MemoryType,
-    OneByteBoolean, Protocol, RepeaterEnable, RepeaterLevel, TxOnlyMode,
+    ChannelNumber, ExtendedLearnMode, FilterEntry, Frequency, LearnedClient, MailboxStatus,
+    MAX_DATA_LENGTH, MAX_OPTIONAL_LENGTH, MemoryType, OneByteBoolean, Protocol, RepeaterEnable,
+    RepeaterLevel, TxOnlyMode,
 };
 
 
@@ -180,6 +181,34 @@ pub struct ResponseDataCoRdSecureDeviceMaintenanceKey {
 }
 
 /// Response data to CommandData::CoRdTxOnlyMode.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct ResponseDataCoRdTxOnlyMode {
     pub mode: TxOnlyMode,
+}
+
+/// Response data to SmartAckData::SaRdLearnMode.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct ResponseDataSaRdLearnMode {
+    pub enabled: OneByteBoolean,
+    pub extended: ExtendedLearnMode,
+}
+
+/// Response data to SmartAckData::SaRdLearnedClients.
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct ResponseDataSaRdLearnedClients {
+    // max data minus one byte of return code
+    // 9 bytes per learned client
+    pub learned_clients: MaxArray<LearnedClient, {(MAX_DATA_LENGTH - 1)/9}>,
+}
+
+/// Response data to SmartAckData::SaRdMailboxStatus.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct ResponseDataSaRdMailboxStatus {
+    pub status: MailboxStatus,
+}
+
+/// Response data to Command24Data::ReadChannel.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct ResponseDataR802RdChannel {
+    pub channel: u8,
 }

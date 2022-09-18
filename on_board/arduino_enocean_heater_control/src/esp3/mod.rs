@@ -80,15 +80,58 @@ pub enum Esp3Packet {
     },
     Event(EventData),
     CommonCommand(CommandData),
+    SmartAckCommand(SmartAckData),
+    RemoteManCommand {
+        function: u16,
+        manufacturer: u16,
+        message: MaxArray<u8, {MAX_DATA_LENGTH - 4}>,
+        opt_destination_id: Option<u32>,
+        opt_source_id: Option<u32>,
+        opt_dbm: Option<u8>,
+        opt_send_with_delay: Option<OneByteBoolean>,
+    },
+    RadioMessage {
+        rorg: u8,
+        data: MaxArray<u8, {MAX_DATA_LENGTH - 1}>,
+        opt_destination_id: Option<u32>,
+        opt_source_id: Option<u32>,
+        opt_dbm: Option<u8>,
+        opt_security_level: Option<SecurityLevel>,
+    },
+    RadioErp2 {
+        data: MaxArray<u8, MAX_DATA_LENGTH>,
+        opt_sub_telegram_number: Option<u8>,
+        opt_dbm: Option<u8>,
+        opt_security_level: Option<SecurityLevel>,
+    },
+    CommandAccepted {
+        is_blocking: OneByteBoolean,
+        estimated_time_ms: u16,
+    },
+    Radio802Dot15Dot4 {
+        raw_data: MaxArray<u8, MAX_DATA_LENGTH>,
+        opt_rssi: Option<u8>,
+    },
+    Command24(Command24Data),
 }
 impl Esp3Packet {
     pub fn packet_type(&self) -> u8 {
         match self {
-            Self::RadioErp1 { .. } => 0x01,
-            Self::Response { .. } => 0x02,
-            Self::RadioSubTelegram { .. } => 0x03,
-            Self::Event(_) => 0x04,
-            Self::CommonCommand(_) => 0x05,
+            Self::RadioErp1 { .. } => 1,
+            Self::Response { .. } => 2,
+            Self::RadioSubTelegram { .. } => 3,
+            Self::Event(_) => 4,
+            Self::CommonCommand(_) => 5,
+            Self::SmartAckCommand(_) => 6,
+            Self::RemoteManCommand { .. } => 7,
+            // 8 is undefined
+            Self::RadioMessage { .. } => 9,
+            Self::RadioErp2 { .. } => 10,
+            // 11 is undefined
+            Self::CommandAccepted { .. } => 12,
+            // 13-15 are undefined
+            Self::Radio802Dot15Dot4 { .. } => 16,
+            Self::Command24 { .. } => 17,
         }
     }
 }
@@ -98,11 +141,11 @@ impl Esp3Packet {
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[from_to_repr::from_to_other(base_type = u8)]
 pub enum SecurityLevel {
-    NotProcessed = 0x0,
+    NoSecurity = 0x0,
     Obsolete = 0x1,
-    Decrypted = 0x2,
+    Crypted = 0x2,
     Authenticated = 0x3,
-    DecryptedAuthenticated = 0x4,
+    CryptedAuthenticated = 0x4,
     Other(u8),
 }
 
@@ -195,96 +238,6 @@ impl EventData {
             _ => false,
         }
     }
-}
-
-bitflags! {
-    pub struct PostmasterPriority : u8 {
-        const LOCAL = 0b0000_0001;
-        const GOOD_RSSI = 0b0000_0010;
-        const MAILBOX_PLACE = 0b0000_0100;
-        const ALREADY_POSTMASTER = 0b0000_1000;
-    }
-}
-
-/// A Smart Acknowledgement confirmation code.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
-pub enum SmartAckConfirmCode {
-    LearnIn = 0x00,
-    DiscardEep = 0x11,
-    DiscardNoPlaceMb = 0x12,
-    DiscardNoPlaceSensor = 0x13,
-    DiscardRssi = 0x14,
-    LearnOut = 0x20,
-    Other(u8),
-}
-
-/// The reason for the EnOcean controller being activated.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
-pub enum WakeupCause {
-    VoltageSupplyDrop = 0x00,
-    ResetPin = 0x01,
-    Watchdog = 0x02,
-    Flywheel = 0x03,
-    ParityError = 0x04,
-    HardwareParityError = 0x05,
-    PageFault = 0x06,
-    WakeUpPin0 = 0x07,
-    WakeUpPin1 = 0x08,
-    UnknownSource = 0x09,
-    Uart = 0x10,
-    Other(u8),
-}
-
-/// The security mode in which the controller is operating.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
-pub enum SecurityMode {
-    Standard = 0x00,
-    Extended = 0x01,
-    Other(u8),
-}
-
-/// The cause for the secure device event.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
-pub enum SecureDeviceEventCause {
-    SecureLinkTableFull = 0x00,
-    // 0x01 is reserved
-    WrongPrivKeyResync = 0x02,
-    WrongCmacCountHit = 0x03,
-    TelegramCorrupted = 0x04,
-    PskUnset = 0x05,
-    TeachInWithoutPsk = 0x06,
-    CmacOrRlc = 0x07,
-    InsecureTelegramSecureDevice = 0x08,
-    TeachInSuccess = 0x09,
-    ValidRlcSync = 0x0A,
-    Other(u8),
-}
-
-/// A boolean value stored in one byte.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
-pub enum OneByteBoolean {
-    Yes = 0x00,
-    No = 0x01,
-    Other(u8),
-}
-impl From<bool> for OneByteBoolean {
-    fn from(v: bool) -> Self {
-        if v { Self::Yes } else { Self::No }
-    }
-}
-
-/// The reason for a transmission failure.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
-pub enum TransmissionFailureReason {
-    CsmaFailed = 0x00,
-    NotAcknowledged = 0x01,
-    Other(u8),
 }
 
 /// An EnOcean common command.
@@ -529,6 +482,169 @@ impl CommandData {
     }
 }
 
+/// Data carried by a Smart Acknowledgement command.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum SmartAckData {
+    SaWrLearnMode {
+        enable: OneByteBoolean,
+        extended: ExtendedLearnMode,
+        timeout: u32,
+    },
+    SaRdLearnMode,
+    SaWrLearnConfirm {
+        response_time: u16,
+        confirm_code: LearnInOut,
+        postmaster_candidate_id: u32,
+        smart_ack_client_id: u32,
+    },
+    SaWrClientLearnRequest {
+        manufacturer_id: u16,
+        eep: u32,
+    },
+    SaWrReset {
+        client_id: u32,
+    },
+    SaRdLearnedClients,
+    SaWrReclaims {
+        reclaim_count: u8,
+    },
+    SaWrPostmaster {
+        mailbox_count: u8,
+    },
+    SaRdMailboxStatus {
+        smart_ack_client_id: u32,
+        controller_id: u32,
+    },
+    SaDelMailbox {
+        device_id: u32,
+        controller_id: u32,
+    },
+}
+impl SmartAckData {
+    pub fn command_type(&self) -> u8 {
+        match self {
+            Self::SaWrLearnMode { .. } => 1,
+            Self::SaRdLearnMode => 2,
+            Self::SaWrLearnConfirm { .. } => 3,
+            Self::SaWrClientLearnRequest { .. } => 4,
+            Self::SaWrReset { .. } => 5,
+            Self::SaRdLearnedClients => 6,
+            Self::SaWrReclaims { .. } => 7,
+            Self::SaWrPostmaster { .. } => 8,
+            Self::SaRdMailboxStatus { .. } => 9,
+            Self::SaDelMailbox { .. } => 10,
+        }
+    }
+}
+
+/// Data carried by a 2.4 GHz command.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum Command24Data {
+    SetChannel {
+        channel: u8,
+    },
+    ReadChannel,
+}
+impl Command24Data {
+    pub fn command_type(&self) -> u8 {
+        match self {
+            Self::SetChannel { .. } => 1,
+            Self::ReadChannel => 2,
+        }
+    }
+}
+
+
+bitflags! {
+    pub struct PostmasterPriority : u8 {
+        const LOCAL = 0b0000_0001;
+        const GOOD_RSSI = 0b0000_0010;
+        const MAILBOX_PLACE = 0b0000_0100;
+        const ALREADY_POSTMASTER = 0b0000_1000;
+    }
+}
+
+/// A Smart Acknowledgement confirmation code.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum SmartAckConfirmCode {
+    LearnIn = 0x00,
+    DiscardEep = 0x11,
+    DiscardNoPlaceMb = 0x12,
+    DiscardNoPlaceSensor = 0x13,
+    DiscardRssi = 0x14,
+    LearnOut = 0x20,
+    Other(u8),
+}
+
+/// The reason for the EnOcean controller being activated.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum WakeupCause {
+    VoltageSupplyDrop = 0x00,
+    ResetPin = 0x01,
+    Watchdog = 0x02,
+    Flywheel = 0x03,
+    ParityError = 0x04,
+    HardwareParityError = 0x05,
+    PageFault = 0x06,
+    WakeUpPin0 = 0x07,
+    WakeUpPin1 = 0x08,
+    UnknownSource = 0x09,
+    Uart = 0x10,
+    Other(u8),
+}
+
+/// The security mode in which the controller is operating.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum SecurityMode {
+    Standard = 0x00,
+    Extended = 0x01,
+    Other(u8),
+}
+
+/// The cause for the secure device event.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum SecureDeviceEventCause {
+    SecureLinkTableFull = 0x00,
+    // 0x01 is reserved
+    WrongPrivKeyResync = 0x02,
+    WrongCmacCountHit = 0x03,
+    TelegramCorrupted = 0x04,
+    PskUnset = 0x05,
+    TeachInWithoutPsk = 0x06,
+    CmacOrRlc = 0x07,
+    InsecureTelegramSecureDevice = 0x08,
+    TeachInSuccess = 0x09,
+    ValidRlcSync = 0x0A,
+    Other(u8),
+}
+
+/// A boolean value stored in one byte.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum OneByteBoolean {
+    Yes = 0x00,
+    No = 0x01,
+    Other(u8),
+}
+impl From<bool> for OneByteBoolean {
+    fn from(v: bool) -> Self {
+        if v { Self::Yes } else { Self::No }
+    }
+}
+
+/// The reason for a transmission failure.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum TransmissionFailureReason {
+    CsmaFailed = 0x00,
+    NotAcknowledged = 0x01,
+    Other(u8),
+}
+
 /// The mode in which to enable the internal repeater.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[from_to_repr::from_to_other(base_type = u8)]
@@ -706,5 +822,43 @@ pub enum AddressArea {
     Config = 0,
     SmartAckTable = 1,
     SystemErrorLog = 2,
+    Other(u8),
+}
+
+
+/// An extended learn mode.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum ExtendedLearnMode {
+    Simple = 0,
+    Advanced = 1,
+    AdvancedSelectRepeater = 2,
+    Other(u8),
+}
+
+/// Learn In/Out mode.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum LearnInOut {
+    LearnIn = 0x00,
+    LearnOut = 0x20,
+    Other(u8),
+}
+
+/// Information about a learned client.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct LearnedClient {
+    pub smart_ack_client_id: u32,
+    pub controller_id: u32,
+    pub mailbox_index: u8,
+}
+
+/// The status of a mailbox.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[from_to_repr::from_to_other(base_type = u8)]
+pub enum MailboxStatus {
+    Empty = 0,
+    Full = 1,
+    DoesNotExist = 2,
     Other(u8),
 }
