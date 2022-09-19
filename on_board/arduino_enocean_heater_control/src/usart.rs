@@ -46,6 +46,8 @@ pub trait Usart {
     /// Returns a reference to the USART register block.
     #[inline]
     fn register_block(peripherals: &mut Peripherals) -> &mut UsartRegisterBlock {
+        // unused but necessary for safety reasons
+        let _ = peripherals;
         unsafe { &mut *(Self::register_address() as *mut UsartRegisterBlock) }
     }
 

@@ -4,12 +4,8 @@
 use buildingblocks::crc8::crc8_ccitt;
 use buildingblocks::max_array::MaxArray;
 
-use crate::esp3::{FOOTER_LENGTH, HEADER_LENGTH, MAX_ESP3_PACKET_LENGTH};
+use crate::esp3::{FOOTER_LENGTH, HEADER_LENGTH, MAX_ESP3_PACKET_LENGTH, SYNC_BYTE};
 use crate::ring_buffer::CriticalRingBuffer;
-
-
-/// The byte used for synchronization.
-const SYNC_BYTE: u8 = 0x55;
 
 
 /// The ring buffer used for decoding incoming ESP3 packets.
@@ -20,7 +16,7 @@ static ESP3_BUFFER: CriticalRingBuffer<u8, MAX_ESP3_PACKET_LENGTH> = CriticalRin
 /// bytes.
 pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
     // loop to get an actual packet
-    let (data_length, opt_length, total_length) = loop {
+    let total_length = loop {
         // loop to fast-forward to sync byte communication
         loop {
             // toss out bytes until we get a potential sync byte
@@ -59,7 +55,7 @@ pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
             }
 
             // alright, keep processing it!
-            break (data_length, opt_length, total_length);
+            break total_length;
         }
 
         // no, it isn't a valid packet... pop the sync byte and search for the next one

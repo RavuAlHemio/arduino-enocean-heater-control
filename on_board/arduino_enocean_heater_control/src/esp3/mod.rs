@@ -6,6 +6,7 @@ pub(crate) mod serial;
 
 
 use bitflags::bitflags;
+use buildingblocks::crc8::crc8_ccitt;
 use buildingblocks::max_array::MaxArray;
 
 
@@ -54,6 +55,10 @@ const MAX_ESP3_PACKET_LENGTH: usize =
 ;
 
 
+/// The byte used for synchronization.
+const SYNC_BYTE: u8 = 0x55;
+
+
 /// The contents of an ESP3 data packet.
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Esp3Packet {
@@ -66,7 +71,7 @@ pub enum Esp3Packet {
     },
     Response {
         return_code: ReturnCode,
-        response_data: MaxArray<u8, MAX_DATA_LENGTH>,
+        response_data: MaxArray<u8, {MAX_DATA_LENGTH - 1}>,
     },
     RadioSubTelegram {
         radio_telegram: MaxArray<u8, MAX_DATA_LENGTH>,
@@ -74,9 +79,9 @@ pub enum Esp3Packet {
         opt_destination_id: Option<u32>,
         opt_dbm: Option<u8>,
         opt_security_level: Option<SecurityLevel>,
-        opt_timestamp: u16,
-        // 3 bytes for each subtelegram; opt length up to now is 9 => up to 82 subtelegrams
-        opt_sub_telegram_info: MaxArray<SubTelegramInfo, 82>,
+        opt_timestamp: Option<u16>,
+        // 3 bytes for each subtelegram; opt length up to now is 9
+        opt_sub_telegram_info: MaxArray<SubTelegramInfo, {(MAX_OPTIONAL_LENGTH - 9)/3}>,
     },
     Event(EventData),
     CommonCommand(CommandData),
@@ -132,6 +137,330 @@ impl Esp3Packet {
             // 13-15 are undefined
             Self::Radio802Dot15Dot4 { .. } => 16,
             Self::Command24 { .. } => 17,
+        }
+    }
+
+    pub fn to_packet(&self) -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
+        let mut packet_data = self.to_packet_data();
+        assert!(packet_data.len() <= MAX_DATA_LENGTH);
+        let mut packet_optional = self.to_packet_optional()?;
+        assert!(packet_optional.len() <= MAX_OPTIONAL_LENGTH);
+
+        let data_len: u16 = packet_data.len().try_into().unwrap();
+        let data_len_bytes: [u8; 2] = data_len.to_be_bytes();
+
+        let mut buf = MaxArray::new();
+        buf.push(SYNC_BYTE);
+        buf.push(data_len_bytes[0]);
+        buf.push(data_len_bytes[1]);
+        buf.push(packet_optional.len().try_into().unwrap());
+        buf.push(self.packet_type());
+
+        let crc_header = crc8_ccitt(&buf.as_slice()[1..5]);
+        buf.push(crc_header);
+
+        while let Some(b) = packet_data.pop() {
+            buf.push(b);
+        }
+        while let Some(b) = packet_optional.pop() {
+            buf.push(b);
+        }
+
+        let crc_data = crc8_ccitt(&buf.as_slice()[5..]);
+        buf.push(crc_data);
+
+        Some(buf)
+    }
+
+    pub fn to_packet_data(&self) -> MaxArray<u8, MAX_DATA_LENGTH> {
+        match self {
+            Self::RadioErp1 {
+                radio_telegram,
+                ..
+            } => {
+                radio_telegram.clone()
+            },
+            Self::Response {
+                return_code,
+                response_data,
+            } => {
+                let mut ret = MaxArray::new();
+                ret.push((*return_code).into());
+                for b in response_data.iter() {
+                    ret.push(*b);
+                }
+                ret
+            },
+            Self::RadioSubTelegram {
+                radio_telegram,
+                ..
+            } => {
+                radio_telegram.clone()
+            },
+            Self::Event(event_data) => event_data.to_packet_data(),
+            Self::CommonCommand(command_data) => command_data.to_packet_data(),
+            Self::SmartAckCommand(smart_ack_data) => smart_ack_data.to_packet_data(),
+            Self::RemoteManCommand {
+                function,
+                manufacturer,
+                message,
+                ..
+            } => {
+                let mut ret = MaxArray::new();
+                let function_bytes = function.to_be_bytes();
+                let manufacturer_bytes = manufacturer.to_be_bytes();
+
+                ret.push(function_bytes[0]);
+                ret.push(function_bytes[1]);
+                ret.push(manufacturer_bytes[0]);
+                ret.push(manufacturer_bytes[1]);
+                for b in message.iter() {
+                    ret.push(*b);
+                }
+                ret
+            },
+            Self::RadioMessage {
+                rorg,
+                data,
+                ..
+            } => {
+                let mut ret = MaxArray::new();
+                ret.push(*rorg);
+                for b in data.iter() {
+                    ret.push(*b);
+                }
+                ret
+            },
+            Self::RadioErp2 {
+                data,
+                ..
+            } => {
+                data.clone()
+            },
+            Self::CommandAccepted {
+                is_blocking,
+                estimated_time_ms,
+            } => {
+                let mut ret = MaxArray::new();
+                let estimated_time_ms_bytes = estimated_time_ms.to_be_bytes();
+
+                ret.push((*is_blocking).into());
+                ret.push(estimated_time_ms_bytes[0]);
+                ret.push(estimated_time_ms_bytes[1]);
+                ret
+            },
+            Self::Radio802Dot15Dot4 {
+                raw_data,
+                ..
+            } => {
+                raw_data.clone()
+            },
+            Self::Command24(command_24_data) => command_24_data.to_packet_data(),
+        }
+    }
+
+    pub fn to_packet_optional(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
+        match self {
+            Self::RadioErp1 {
+                opt_sub_telegram_number,
+                opt_destination_id,
+                opt_dbm,
+                opt_security_level,
+                ..
+            } => {
+                let mut ret = MaxArray::new();
+                if let Some(sub_telegram_number) = opt_sub_telegram_number {
+                    ret.push(*sub_telegram_number);
+                } else if opt_destination_id.is_some() || opt_dbm.is_some() || opt_security_level.is_some() {
+                    // later fields are set but this one isn't
+                    return None;
+                }
+                if let Some(destination_id) = opt_destination_id {
+                    let destination_id_bytes: [u8; 4] = destination_id.to_be_bytes();
+                    ret.push(destination_id_bytes[0]);
+                    ret.push(destination_id_bytes[1]);
+                    ret.push(destination_id_bytes[2]);
+                    ret.push(destination_id_bytes[3]);
+                } else if opt_dbm.is_some() || opt_security_level.is_some() {
+                    return None;
+                }
+                if let Some(dbm) = opt_dbm {
+                    ret.push(*dbm);
+                } else if opt_security_level.is_some() {
+                    return None;
+                }
+                if let Some(security_level) = opt_security_level {
+                    ret.push((*security_level).into());
+                }
+                Some(ret)
+            },
+            Self::Response {
+                ..
+            } => {
+                Some(MaxArray::new())
+            },
+            Self::RadioSubTelegram {
+                opt_sub_telegram_number,
+                opt_destination_id,
+                opt_dbm,
+                opt_security_level,
+                opt_timestamp,
+                opt_sub_telegram_info,
+                ..
+            } => {
+                let mut ret = MaxArray::new();
+                if let Some(sub_telegram_number) = opt_sub_telegram_number {
+                    ret.push(*sub_telegram_number);
+                } else if opt_destination_id.is_some() || opt_dbm.is_some() || opt_security_level.is_some() || opt_timestamp.is_some() || opt_sub_telegram_info.len() > 0 {
+                    // later fields are set but this one isn't
+                    return None;
+                }
+                if let Some(destination_id) = opt_destination_id {
+                    let destination_id_bytes: [u8; 4] = destination_id.to_be_bytes();
+                    ret.push(destination_id_bytes[0]);
+                    ret.push(destination_id_bytes[1]);
+                    ret.push(destination_id_bytes[2]);
+                    ret.push(destination_id_bytes[3]);
+                } else if opt_dbm.is_some() || opt_security_level.is_some() || opt_timestamp.is_some() || opt_sub_telegram_info.len() > 0 {
+                    return None;
+                }
+                if let Some(dbm) = opt_dbm {
+                    ret.push(*dbm);
+                } else if opt_security_level.is_some() || opt_timestamp.is_some() || opt_sub_telegram_info.len() > 0 {
+                    return None;
+                }
+                if let Some(security_level) = opt_security_level {
+                    ret.push((*security_level).into());
+                } else if opt_timestamp.is_some() || opt_sub_telegram_info.len() > 0 {
+                    return None;
+                }
+                if let Some(timestamp) = opt_timestamp {
+                    let timestamp_bytes: [u8; 2] = timestamp.to_be_bytes();
+                    ret.push(timestamp_bytes[0]);
+                    ret.push(timestamp_bytes[1]);
+                } else if opt_sub_telegram_info.len() > 0 {
+                    return None;
+                }
+                for sub_telegram_info in opt_sub_telegram_info.iter() {
+                    ret.push(sub_telegram_info.tick);
+                    ret.push(sub_telegram_info.dbm);
+                    ret.push(sub_telegram_info.status);
+                }
+                Some(ret)
+            },
+            Self::Event(event_data) => event_data.to_packet_optional(),
+            Self::CommonCommand(command_data) => command_data.to_packet_optional(),
+            Self::SmartAckCommand(smart_ack_data) => smart_ack_data.to_packet_optional(),
+            Self::RemoteManCommand {
+                opt_destination_id,
+                opt_source_id,
+                opt_dbm,
+                opt_send_with_delay,
+                ..
+            } => {
+                let mut ret = MaxArray::new();
+                if let Some(destination_id) = opt_destination_id {
+                    let destination_id_bytes: [u8; 4] = destination_id.to_be_bytes();
+                    ret.push(destination_id_bytes[0]);
+                    ret.push(destination_id_bytes[1]);
+                    ret.push(destination_id_bytes[2]);
+                    ret.push(destination_id_bytes[3]);
+                } else if opt_source_id.is_some() || opt_dbm.is_some() || opt_send_with_delay.is_some() {
+                    return None;
+                }
+                if let Some(source_id) = opt_source_id {
+                    let source_id_bytes: [u8; 4] = source_id.to_be_bytes();
+                    ret.push(source_id_bytes[0]);
+                    ret.push(source_id_bytes[1]);
+                    ret.push(source_id_bytes[2]);
+                    ret.push(source_id_bytes[3]);
+                } else if opt_dbm.is_some() || opt_send_with_delay.is_some() {
+                    return None;
+                }
+                if let Some(dbm) = opt_dbm {
+                    ret.push(*dbm);
+                } else if opt_send_with_delay.is_some() {
+                    return None;
+                }
+                if let Some(send_with_delay) = opt_send_with_delay {
+                    ret.push((*send_with_delay).into());
+                }
+                Some(ret)
+            },
+            Self::RadioMessage {
+                opt_destination_id,
+                opt_source_id,
+                opt_dbm,
+                opt_security_level,
+                ..
+            } => {
+                let mut ret = MaxArray::new();
+                if let Some(destination_id) = opt_destination_id {
+                    let destination_id_bytes: [u8; 4] = destination_id.to_be_bytes();
+                    ret.push(destination_id_bytes[0]);
+                    ret.push(destination_id_bytes[1]);
+                    ret.push(destination_id_bytes[2]);
+                    ret.push(destination_id_bytes[3]);
+                } else if opt_source_id.is_some() || opt_dbm.is_some() || opt_security_level.is_some() {
+                    return None;
+                }
+                if let Some(source_id) = opt_source_id {
+                    let source_id_bytes: [u8; 4] = source_id.to_be_bytes();
+                    ret.push(source_id_bytes[0]);
+                    ret.push(source_id_bytes[1]);
+                    ret.push(source_id_bytes[2]);
+                    ret.push(source_id_bytes[3]);
+                } else if opt_dbm.is_some() || opt_security_level.is_some() {
+                    return None;
+                }
+                if let Some(dbm) = opt_dbm {
+                    ret.push(*dbm);
+                } else if opt_security_level.is_some() {
+                    return None;
+                }
+                if let Some(security_level) = opt_security_level {
+                    ret.push((*security_level).into());
+                }
+                Some(ret)
+            },
+            Self::RadioErp2 {
+                opt_sub_telegram_number,
+                opt_dbm,
+                opt_security_level,
+                ..
+            } => {
+                let mut ret = MaxArray::new();
+                if let Some(sub_telegram_number) = opt_sub_telegram_number {
+                    ret.push(*sub_telegram_number);
+                } else if opt_dbm.is_some() || opt_security_level.is_some() {
+                    return None;
+                }
+                if let Some(dbm) = opt_dbm {
+                    ret.push(*dbm);
+                } else if opt_security_level.is_some() {
+                    return None;
+                }
+                if let Some(security_level) = opt_security_level {
+                    ret.push((*security_level).into());
+                }
+                Some(ret)
+            },
+            Self::CommandAccepted {
+                ..
+            } => {
+                Some(MaxArray::new())
+            },
+            Self::Radio802Dot15Dot4 {
+                opt_rssi,
+                ..
+            } => {
+                let mut ret = MaxArray::new();
+                if let Some(rssi) = opt_rssi {
+                    ret.push((*rssi).into());
+                }
+                Some(ret)
+            },
+            Self::Command24(command_24_data) => command_24_data.to_packet_optional(),
         }
     }
 }
@@ -238,6 +567,14 @@ impl EventData {
             _ => false,
         }
     }
+
+    pub fn to_packet_data(&self) -> MaxArray<u8, MAX_DATA_LENGTH> {
+        todo!();
+    }
+
+    pub fn to_packet_optional(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
+        todo!();
+    }
 }
 
 /// An EnOcean common command.
@@ -286,7 +623,7 @@ pub enum CommandData {
         memory_type: MemoryType,
         address: u32,
         // max data minus (one byte command plus five fixed bytes)
-        data: MaxArray<u8, {0xFFFF - (1 + 5)}>,
+        data: MaxArray<u8, {MAX_DATA_LENGTH - (1 + 5)}>,
     },
     CoRdMem {
         memory_type: MemoryType,
@@ -480,6 +817,14 @@ impl CommandData {
             Self::Unknown { code, .. } => *code,
         }
     }
+
+    pub fn to_packet_data(&self) -> MaxArray<u8, MAX_DATA_LENGTH> {
+        todo!();
+    }
+
+    pub fn to_packet_optional(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
+        todo!();
+    }
 }
 
 /// Data carried by a Smart Acknowledgement command.
@@ -535,6 +880,14 @@ impl SmartAckData {
             Self::SaDelMailbox { .. } => 10,
         }
     }
+
+    pub fn to_packet_data(&self) -> MaxArray<u8, MAX_DATA_LENGTH> {
+        todo!();
+    }
+
+    pub fn to_packet_optional(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
+        todo!();
+    }
 }
 
 /// Data carried by a 2.4 GHz command.
@@ -551,6 +904,14 @@ impl Command24Data {
             Self::SetChannel { .. } => 1,
             Self::ReadChannel => 2,
         }
+    }
+
+    pub fn to_packet_data(&self) -> MaxArray<u8, MAX_DATA_LENGTH> {
+        todo!();
+    }
+
+    pub fn to_packet_optional(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
+        todo!();
     }
 }
 
