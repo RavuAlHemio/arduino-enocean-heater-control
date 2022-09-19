@@ -150,24 +150,24 @@ impl Esp3Packet {
         let data_len_bytes: [u8; 2] = data_len.to_be_bytes();
 
         let mut buf = MaxArray::new();
-        buf.push(SYNC_BYTE);
-        buf.push(data_len_bytes[0]);
-        buf.push(data_len_bytes[1]);
-        buf.push(packet_optional.len().try_into().unwrap());
-        buf.push(self.packet_type());
+        buf.push(SYNC_BYTE).unwrap();
+        buf.push(data_len_bytes[0]).unwrap();
+        buf.push(data_len_bytes[1]).unwrap();
+        buf.push(packet_optional.len().try_into().unwrap()).unwrap();
+        buf.push(self.packet_type()).unwrap();
 
         let crc_header = crc8_ccitt(&buf.as_slice()[1..5]);
-        buf.push(crc_header);
+        buf.push(crc_header).unwrap();
 
         while let Some(b) = packet_data.pop() {
-            buf.push(b);
+            buf.push(b).unwrap();
         }
         while let Some(b) = packet_optional.pop() {
-            buf.push(b);
+            buf.push(b).unwrap();
         }
 
         let crc_data = crc8_ccitt(&buf.as_slice()[5..]);
-        buf.push(crc_data);
+        buf.push(crc_data).unwrap();
 
         Some(buf)
     }
@@ -185,9 +185,9 @@ impl Esp3Packet {
                 response_data,
             } => {
                 let mut ret = MaxArray::new();
-                ret.push((*return_code).into());
+                ret.push((*return_code).into()).unwrap();
                 for b in response_data.iter() {
-                    ret.push(*b);
+                    ret.push(*b).unwrap();
                 }
                 ret
             },
@@ -210,12 +210,12 @@ impl Esp3Packet {
                 let function_bytes = function.to_be_bytes();
                 let manufacturer_bytes = manufacturer.to_be_bytes();
 
-                ret.push(function_bytes[0]);
-                ret.push(function_bytes[1]);
-                ret.push(manufacturer_bytes[0]);
-                ret.push(manufacturer_bytes[1]);
+                ret.push(function_bytes[0]).unwrap();
+                ret.push(function_bytes[1]).unwrap();
+                ret.push(manufacturer_bytes[0]).unwrap();
+                ret.push(manufacturer_bytes[1]).unwrap();
                 for b in message.iter() {
-                    ret.push(*b);
+                    ret.push(*b).unwrap();
                 }
                 ret
             },
@@ -225,9 +225,9 @@ impl Esp3Packet {
                 ..
             } => {
                 let mut ret = MaxArray::new();
-                ret.push(*rorg);
+                ret.push(*rorg).unwrap();
                 for b in data.iter() {
-                    ret.push(*b);
+                    ret.push(*b).unwrap();
                 }
                 ret
             },
@@ -244,9 +244,9 @@ impl Esp3Packet {
                 let mut ret = MaxArray::new();
                 let estimated_time_ms_bytes = estimated_time_ms.to_be_bytes();
 
-                ret.push((*is_blocking).into());
-                ret.push(estimated_time_ms_bytes[0]);
-                ret.push(estimated_time_ms_bytes[1]);
+                ret.push((*is_blocking).into()).unwrap();
+                ret.push(estimated_time_ms_bytes[0]).unwrap();
+                ret.push(estimated_time_ms_bytes[1]).unwrap();
                 ret
             },
             Self::Radio802Dot15Dot4 {
@@ -270,27 +270,27 @@ impl Esp3Packet {
             } => {
                 let mut ret = MaxArray::new();
                 if let Some(sub_telegram_number) = opt_sub_telegram_number {
-                    ret.push(*sub_telegram_number);
+                    ret.push(*sub_telegram_number).unwrap();
                 } else if opt_destination_id.is_some() || opt_dbm.is_some() || opt_security_level.is_some() {
                     // later fields are set but this one isn't
                     return None;
                 }
                 if let Some(destination_id) = opt_destination_id {
                     let destination_id_bytes: [u8; 4] = destination_id.to_be_bytes();
-                    ret.push(destination_id_bytes[0]);
-                    ret.push(destination_id_bytes[1]);
-                    ret.push(destination_id_bytes[2]);
-                    ret.push(destination_id_bytes[3]);
+                    ret.push(destination_id_bytes[0]).unwrap();
+                    ret.push(destination_id_bytes[1]).unwrap();
+                    ret.push(destination_id_bytes[2]).unwrap();
+                    ret.push(destination_id_bytes[3]).unwrap();
                 } else if opt_dbm.is_some() || opt_security_level.is_some() {
                     return None;
                 }
                 if let Some(dbm) = opt_dbm {
-                    ret.push(*dbm);
+                    ret.push(*dbm).unwrap();
                 } else if opt_security_level.is_some() {
                     return None;
                 }
                 if let Some(security_level) = opt_security_level {
-                    ret.push((*security_level).into());
+                    ret.push((*security_level).into()).unwrap();
                 }
                 Some(ret)
             },
@@ -310,41 +310,41 @@ impl Esp3Packet {
             } => {
                 let mut ret = MaxArray::new();
                 if let Some(sub_telegram_number) = opt_sub_telegram_number {
-                    ret.push(*sub_telegram_number);
+                    ret.push(*sub_telegram_number).unwrap();
                 } else if opt_destination_id.is_some() || opt_dbm.is_some() || opt_security_level.is_some() || opt_timestamp.is_some() || opt_sub_telegram_info.len() > 0 {
                     // later fields are set but this one isn't
                     return None;
                 }
                 if let Some(destination_id) = opt_destination_id {
                     let destination_id_bytes: [u8; 4] = destination_id.to_be_bytes();
-                    ret.push(destination_id_bytes[0]);
-                    ret.push(destination_id_bytes[1]);
-                    ret.push(destination_id_bytes[2]);
-                    ret.push(destination_id_bytes[3]);
+                    ret.push(destination_id_bytes[0]).unwrap();
+                    ret.push(destination_id_bytes[1]).unwrap();
+                    ret.push(destination_id_bytes[2]).unwrap();
+                    ret.push(destination_id_bytes[3]).unwrap();
                 } else if opt_dbm.is_some() || opt_security_level.is_some() || opt_timestamp.is_some() || opt_sub_telegram_info.len() > 0 {
                     return None;
                 }
                 if let Some(dbm) = opt_dbm {
-                    ret.push(*dbm);
+                    ret.push(*dbm).unwrap();
                 } else if opt_security_level.is_some() || opt_timestamp.is_some() || opt_sub_telegram_info.len() > 0 {
                     return None;
                 }
                 if let Some(security_level) = opt_security_level {
-                    ret.push((*security_level).into());
+                    ret.push((*security_level).into()).unwrap();
                 } else if opt_timestamp.is_some() || opt_sub_telegram_info.len() > 0 {
                     return None;
                 }
                 if let Some(timestamp) = opt_timestamp {
                     let timestamp_bytes: [u8; 2] = timestamp.to_be_bytes();
-                    ret.push(timestamp_bytes[0]);
-                    ret.push(timestamp_bytes[1]);
+                    ret.push(timestamp_bytes[0]).unwrap();
+                    ret.push(timestamp_bytes[1]).unwrap();
                 } else if opt_sub_telegram_info.len() > 0 {
                     return None;
                 }
                 for sub_telegram_info in opt_sub_telegram_info.iter() {
-                    ret.push(sub_telegram_info.tick);
-                    ret.push(sub_telegram_info.dbm);
-                    ret.push(sub_telegram_info.status);
+                    ret.push(sub_telegram_info.tick).unwrap();
+                    ret.push(sub_telegram_info.dbm).unwrap();
+                    ret.push(sub_telegram_info.status).unwrap();
                 }
                 Some(ret)
             },
@@ -361,29 +361,29 @@ impl Esp3Packet {
                 let mut ret = MaxArray::new();
                 if let Some(destination_id) = opt_destination_id {
                     let destination_id_bytes: [u8; 4] = destination_id.to_be_bytes();
-                    ret.push(destination_id_bytes[0]);
-                    ret.push(destination_id_bytes[1]);
-                    ret.push(destination_id_bytes[2]);
-                    ret.push(destination_id_bytes[3]);
+                    ret.push(destination_id_bytes[0]).unwrap();
+                    ret.push(destination_id_bytes[1]).unwrap();
+                    ret.push(destination_id_bytes[2]).unwrap();
+                    ret.push(destination_id_bytes[3]).unwrap();
                 } else if opt_source_id.is_some() || opt_dbm.is_some() || opt_send_with_delay.is_some() {
                     return None;
                 }
                 if let Some(source_id) = opt_source_id {
                     let source_id_bytes: [u8; 4] = source_id.to_be_bytes();
-                    ret.push(source_id_bytes[0]);
-                    ret.push(source_id_bytes[1]);
-                    ret.push(source_id_bytes[2]);
-                    ret.push(source_id_bytes[3]);
+                    ret.push(source_id_bytes[0]).unwrap();
+                    ret.push(source_id_bytes[1]).unwrap();
+                    ret.push(source_id_bytes[2]).unwrap();
+                    ret.push(source_id_bytes[3]).unwrap();
                 } else if opt_dbm.is_some() || opt_send_with_delay.is_some() {
                     return None;
                 }
                 if let Some(dbm) = opt_dbm {
-                    ret.push(*dbm);
+                    ret.push(*dbm).unwrap();
                 } else if opt_send_with_delay.is_some() {
                     return None;
                 }
                 if let Some(send_with_delay) = opt_send_with_delay {
-                    ret.push((*send_with_delay).into());
+                    ret.push((*send_with_delay).into()).unwrap();
                 }
                 Some(ret)
             },
@@ -397,29 +397,29 @@ impl Esp3Packet {
                 let mut ret = MaxArray::new();
                 if let Some(destination_id) = opt_destination_id {
                     let destination_id_bytes: [u8; 4] = destination_id.to_be_bytes();
-                    ret.push(destination_id_bytes[0]);
-                    ret.push(destination_id_bytes[1]);
-                    ret.push(destination_id_bytes[2]);
-                    ret.push(destination_id_bytes[3]);
+                    ret.push(destination_id_bytes[0]).unwrap();
+                    ret.push(destination_id_bytes[1]).unwrap();
+                    ret.push(destination_id_bytes[2]).unwrap();
+                    ret.push(destination_id_bytes[3]).unwrap();
                 } else if opt_source_id.is_some() || opt_dbm.is_some() || opt_security_level.is_some() {
                     return None;
                 }
                 if let Some(source_id) = opt_source_id {
                     let source_id_bytes: [u8; 4] = source_id.to_be_bytes();
-                    ret.push(source_id_bytes[0]);
-                    ret.push(source_id_bytes[1]);
-                    ret.push(source_id_bytes[2]);
-                    ret.push(source_id_bytes[3]);
+                    ret.push(source_id_bytes[0]).unwrap();
+                    ret.push(source_id_bytes[1]).unwrap();
+                    ret.push(source_id_bytes[2]).unwrap();
+                    ret.push(source_id_bytes[3]).unwrap();
                 } else if opt_dbm.is_some() || opt_security_level.is_some() {
                     return None;
                 }
                 if let Some(dbm) = opt_dbm {
-                    ret.push(*dbm);
+                    ret.push(*dbm).unwrap();
                 } else if opt_security_level.is_some() {
                     return None;
                 }
                 if let Some(security_level) = opt_security_level {
-                    ret.push((*security_level).into());
+                    ret.push((*security_level).into()).unwrap();
                 }
                 Some(ret)
             },
@@ -431,17 +431,17 @@ impl Esp3Packet {
             } => {
                 let mut ret = MaxArray::new();
                 if let Some(sub_telegram_number) = opt_sub_telegram_number {
-                    ret.push(*sub_telegram_number);
+                    ret.push(*sub_telegram_number).unwrap();
                 } else if opt_dbm.is_some() || opt_security_level.is_some() {
                     return None;
                 }
                 if let Some(dbm) = opt_dbm {
-                    ret.push(*dbm);
+                    ret.push(*dbm).unwrap();
                 } else if opt_security_level.is_some() {
                     return None;
                 }
                 if let Some(security_level) = opt_security_level {
-                    ret.push((*security_level).into());
+                    ret.push((*security_level).into()).unwrap();
                 }
                 Some(ret)
             },
@@ -456,7 +456,7 @@ impl Esp3Packet {
             } => {
                 let mut ret = MaxArray::new();
                 if let Some(rssi) = opt_rssi {
-                    ret.push((*rssi).into());
+                    ret.push((*rssi).into()).unwrap();
                 }
                 Some(ret)
             },
@@ -540,7 +540,7 @@ pub enum EventData {
     CoLearnModeDisabled,
     Unknown {
         code: u8,
-        data: MaxArray<u8, MAX_DATA_LENGTH>,
+        data: MaxArray<u8, {MAX_DATA_LENGTH - 1}>,
         opt_data: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
     },
 }
@@ -569,11 +569,137 @@ impl EventData {
     }
 
     pub fn to_packet_data(&self) -> MaxArray<u8, MAX_DATA_LENGTH> {
-        todo!();
+        let mut ret = MaxArray::new();
+
+        let event_code = self.event_type();
+        ret.push(event_code).unwrap();
+
+        match self {
+            Self::SmartAckReclaimNotSuccessful => {},
+            Self::SmartAckConfirmLearn {
+                postmaster_priority,
+                manufacturer_id,
+                eep,
+                rssi,
+                postmaster_candidate_id,
+                smart_ack_client_id,
+                hop_count,
+            } => {
+                ret.push(postmaster_priority.bits()).unwrap();
+
+                let manufacturer_id_bytes: [u8; 2] = manufacturer_id.to_be_bytes();
+                ret.push(manufacturer_id_bytes[0]).unwrap();
+                ret.push(manufacturer_id_bytes[1]).unwrap();
+
+                let eep_bytes: [u8; 4] = eep.to_be_bytes();
+                // actually a 3-byte value; skip the MSB
+                ret.push(eep_bytes[1]).unwrap();
+                ret.push(eep_bytes[2]).unwrap();
+                ret.push(eep_bytes[3]).unwrap();
+
+                ret.push(*rssi).unwrap();
+
+                let postmaster_candidate_id_bytes: [u8; 4] = postmaster_candidate_id.to_be_bytes();
+                ret.push(postmaster_candidate_id_bytes[0]).unwrap();
+                ret.push(postmaster_candidate_id_bytes[1]).unwrap();
+                ret.push(postmaster_candidate_id_bytes[2]).unwrap();
+                ret.push(postmaster_candidate_id_bytes[3]).unwrap();
+
+                let smart_ack_client_id_bytes: [u8; 4] = smart_ack_client_id.to_be_bytes();
+                ret.push(smart_ack_client_id_bytes[0]).unwrap();
+                ret.push(smart_ack_client_id_bytes[1]).unwrap();
+                ret.push(smart_ack_client_id_bytes[2]).unwrap();
+                ret.push(smart_ack_client_id_bytes[3]).unwrap();
+
+                ret.push(*hop_count).unwrap();
+            },
+            Self::SmartAckLearnAck {
+                response_time,
+                confirm_code,
+            } => {
+                let response_time_bytes: [u8; 2] = response_time.to_be_bytes();
+                ret.push(response_time_bytes[0]).unwrap();
+                ret.push(response_time_bytes[1]).unwrap();
+
+                ret.push((*confirm_code).into()).unwrap();
+            },
+            Self::CoReady {
+                wakeup_cause,
+                ..
+            } => {
+                ret.push((*wakeup_cause).into()).unwrap();
+            },
+            Self::CoEventSecureDevices {
+                cause,
+                device_id,
+            } => {
+                ret.push((*cause).into()).unwrap();
+
+                let device_id_bytes: [u8; 4] = device_id.to_be_bytes();
+                ret.push(device_id_bytes[0]).unwrap();
+                ret.push(device_id_bytes[1]).unwrap();
+                ret.push(device_id_bytes[2]).unwrap();
+                ret.push(device_id_bytes[3]).unwrap();
+            },
+            Self::CoDutyCycleLimit {
+                sending_possible,
+            } => {
+                ret.push((*sending_possible).into()).unwrap();
+            },
+            Self::CoTransmitFailed {
+                reason,
+            } => {
+                ret.push((*reason).into()).unwrap();
+            },
+            Self::CoTxDone => {},
+            Self::CoLearnModeDisabled => {},
+            Self::Unknown {
+                data,
+                ..
+            } => {
+                for b in data.iter() {
+                    ret.push(*b).unwrap();
+                }
+            },
+        }
+
+        ret
     }
 
     pub fn to_packet_optional(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
-        todo!();
+        let mut ret = MaxArray::new();
+
+        let event_code = self.event_type();
+        ret.push(event_code).unwrap();
+
+        match self {
+            Self::SmartAckReclaimNotSuccessful => {},
+            Self::SmartAckConfirmLearn { .. } => {},
+            Self::SmartAckLearnAck { .. } => {},
+            Self::CoReady {
+                opt_security_mode,
+                ..
+            } => {
+                if let Some(security_mode) = opt_security_mode {
+                    ret.push((*security_mode).into()).unwrap();
+                }
+            },
+            Self::CoEventSecureDevices { .. } => {},
+            Self::CoDutyCycleLimit { .. } => {},
+            Self::CoTransmitFailed { .. } => {},
+            Self::CoTxDone => {},
+            Self::CoLearnModeDisabled => {},
+            Self::Unknown {
+                opt_data,
+                ..
+            } => {
+                for b in opt_data.iter() {
+                    ret.push(*b).unwrap();
+                }
+            },
+        }
+
+        Some(ret)
     }
 }
 
@@ -649,7 +775,7 @@ pub enum CommandData {
         slf: u8,
         device_id: u32,
         private_key: [u32; 4],
-        rolling_code: u16,
+        rolling_code: u32,
         opt_direction: Option<DirectionTable>,
         opt_is_ptm_sender: Option<OneByteBoolean>,
         opt_teach_info: Option<u8>,
@@ -670,7 +796,7 @@ pub enum CommandData {
     },
     CoRdSecureDeviceById {
         device_id: u32,
-        direction: Option<DirectionTableMaintenance>,
+        opt_direction: Option<DirectionTableMaintenance>,
     },
     CoWrSecureDeviceAddPsk {
         device_id: u32,
@@ -748,7 +874,7 @@ pub enum CommandData {
     CoRdTxOnlyMode,
     Unknown {
         code: u8,
-        data: MaxArray<u8, MAX_DATA_LENGTH>,
+        data: MaxArray<u8, {MAX_DATA_LENGTH - 1}>,
         opt_data: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
     },
 }
@@ -819,7 +945,418 @@ impl CommandData {
     }
 
     pub fn to_packet_data(&self) -> MaxArray<u8, MAX_DATA_LENGTH> {
-        todo!();
+        let mut ret = MaxArray::new();
+
+        let command_code = self.command_type();
+        ret.push(command_code).unwrap();
+
+        match self {
+            Self::CoWrSleep {
+                deep_sleep_period,
+            } => {
+                let deep_sleep_period_bytes: [u8; 4] = deep_sleep_period.to_be_bytes();
+                ret.push(deep_sleep_period_bytes[0]).unwrap();
+                ret.push(deep_sleep_period_bytes[1]).unwrap();
+                ret.push(deep_sleep_period_bytes[2]).unwrap();
+                ret.push(deep_sleep_period_bytes[3]).unwrap();
+            },
+            Self::CoWrReset => {},
+            Self::CoRdVersion => {},
+            Self::CoRdSysLog => {},
+            Self::CoWrSysLog => {},
+            Self::CoWrBiSt => {},
+            Self::CoWrIdBase {
+                base_id,
+            } => {
+                let base_id_bytes: [u8; 4] = base_id.to_be_bytes();
+                ret.push(base_id_bytes[0]).unwrap();
+                ret.push(base_id_bytes[1]).unwrap();
+                ret.push(base_id_bytes[2]).unwrap();
+                ret.push(base_id_bytes[3]).unwrap();
+            },
+            Self::CoRdIdBase => {},
+            Self::CoWrRepeater {
+                enable,
+                level,
+            } => {
+                ret.push((*enable).into()).unwrap();
+                ret.push((*level).into()).unwrap();
+            },
+            Self::CoRdRepeater => {},
+            Self::CoWrFilterAdd {
+                criterion,
+                value,
+                action,
+            } => {
+                ret.push((*criterion).into()).unwrap();
+
+                let value_bytes: [u8; 4] = value.to_be_bytes();
+                ret.push(value_bytes[0]).unwrap();
+                ret.push(value_bytes[1]).unwrap();
+                ret.push(value_bytes[2]).unwrap();
+                ret.push(value_bytes[3]).unwrap();
+
+                ret.push((*action).into()).unwrap();
+            },
+            Self::CoWrFilterDel {
+                criterion,
+                value,
+                action,
+            } => {
+                ret.push((*criterion).into()).unwrap();
+
+                let value_bytes: [u8; 4] = value.to_be_bytes();
+                ret.push(value_bytes[0]).unwrap();
+                ret.push(value_bytes[1]).unwrap();
+                ret.push(value_bytes[2]).unwrap();
+                ret.push(value_bytes[3]).unwrap();
+
+                ret.push((*action).into()).unwrap();
+            },
+            Self::CoWrFilterDelAll => {},
+            Self::CoWrFilterEnable {
+                enable,
+                operator,
+            } => {
+                ret.push((*enable).into()).unwrap();
+                ret.push((*operator).into()).unwrap();
+            },
+            Self::CoRdFilter => {},
+            Self::CoWrWaitMaturity {
+                wait_for_maturity,
+            } => {
+                ret.push((*wait_for_maturity).into()).unwrap();
+            },
+            Self::CoWrSubTelegram {
+                enable_subtelegram_info,
+            } => {
+                ret.push((*enable_subtelegram_info).into()).unwrap();
+            },
+            Self::CoWrMem {
+                memory_type,
+                address,
+                data,
+            } => {
+                ret.push((*memory_type).into()).unwrap();
+
+                let address_bytes: [u8; 4] = address.to_be_bytes();
+                ret.push(address_bytes[0]).unwrap();
+                ret.push(address_bytes[1]).unwrap();
+                ret.push(address_bytes[2]).unwrap();
+                ret.push(address_bytes[3]).unwrap();
+
+                for b in data.iter() {
+                    ret.push(*b).unwrap();
+                }
+            },
+            Self::CoRdMem {
+                memory_type,
+                address,
+                length,
+            } => {
+                ret.push((*memory_type).into()).unwrap();
+
+                let address_bytes: [u8; 4] = address.to_be_bytes();
+                ret.push(address_bytes[0]).unwrap();
+                ret.push(address_bytes[1]).unwrap();
+                ret.push(address_bytes[2]).unwrap();
+                ret.push(address_bytes[3]).unwrap();
+
+                let length_bytes: [u8; 2] = length.to_be_bytes();
+                ret.push(length_bytes[0]).unwrap();
+                ret.push(length_bytes[1]).unwrap();
+            },
+            Self::CoRdMemAddress {
+                area,
+            } => {
+                ret.push((*area).into()).unwrap();
+            },
+            #[allow(deprecated)] Self::CoRdSecurity => {},
+            #[allow(deprecated)] Self::CoWrSecurity {
+                security_level,
+                key,
+                rolling_code,
+            } => {
+                ret.push((*security_level).into()).unwrap();
+
+                let key_bytes: [u8; 4] = key.to_be_bytes();
+                ret.push(key_bytes[0]).unwrap();
+                ret.push(key_bytes[1]).unwrap();
+                ret.push(key_bytes[2]).unwrap();
+                ret.push(key_bytes[3]).unwrap();
+
+                let rolling_code_bytes: [u8; 4] = rolling_code.to_be_bytes();
+                ret.push(rolling_code_bytes[0]).unwrap();
+                ret.push(rolling_code_bytes[1]).unwrap();
+                ret.push(rolling_code_bytes[2]).unwrap();
+                ret.push(rolling_code_bytes[3]).unwrap();
+            },
+            Self::CoWrLearnMode {
+                enable,
+                timeout,
+                ..
+            } => {
+                ret.push((*enable).into()).unwrap();
+
+                let timeout_bytes: [u8; 4] = timeout.to_be_bytes();
+                ret.push(timeout_bytes[0]).unwrap();
+                ret.push(timeout_bytes[1]).unwrap();
+                ret.push(timeout_bytes[2]).unwrap();
+                ret.push(timeout_bytes[3]).unwrap();
+            },
+            Self::CoRdLearnMode => {},
+            #[allow(deprecated)] Self::CoWrSecureDeviceAdd {
+                slf,
+                device_id,
+                private_key,
+                rolling_code,
+                ..
+            } => {
+                ret.push(*slf).unwrap();
+
+                let device_id_bytes: [u8; 4] = device_id.to_be_bytes();
+                ret.push(device_id_bytes[0]).unwrap();
+                ret.push(device_id_bytes[1]).unwrap();
+                ret.push(device_id_bytes[2]).unwrap();
+                ret.push(device_id_bytes[3]).unwrap();
+
+                for private_key_chunk in private_key {
+                    let private_key_chunk_bytes: [u8; 4] = private_key_chunk.to_be_bytes();
+                    ret.push(private_key_chunk_bytes[0]).unwrap();
+                    ret.push(private_key_chunk_bytes[1]).unwrap();
+                    ret.push(private_key_chunk_bytes[2]).unwrap();
+                    ret.push(private_key_chunk_bytes[3]).unwrap();
+                }
+
+                let rolling_code_bytes: [u8; 4] = rolling_code.to_be_bytes();
+                // actually a 3-byte value; skip the MSB
+                ret.push(rolling_code_bytes[1]).unwrap();
+                ret.push(rolling_code_bytes[2]).unwrap();
+                ret.push(rolling_code_bytes[3]).unwrap();
+            },
+            Self::CoWrSecureDeviceDel {
+                device_id,
+                ..
+            } => {
+                let device_id_bytes: [u8; 4] = device_id.to_be_bytes();
+                ret.push(device_id_bytes[0]).unwrap();
+                ret.push(device_id_bytes[1]).unwrap();
+                ret.push(device_id_bytes[2]).unwrap();
+                ret.push(device_id_bytes[3]).unwrap();
+            },
+            #[allow(deprecated)] Self::CoRdSecureDeviceByIndex {
+                index,
+                ..
+            } => {
+                ret.push(*index).unwrap();
+            },
+            Self::CoWrMode {
+                mode,
+            } => {
+                ret.push((*mode).into()).unwrap();
+            },
+            Self::CoRdNumSecureDevices { .. } => {},
+            Self::CoRdSecureDeviceById {
+                device_id,
+                ..
+            } => {
+                let device_id_bytes: [u8; 4] = device_id.to_be_bytes();
+                ret.push(device_id_bytes[0]).unwrap();
+                ret.push(device_id_bytes[1]).unwrap();
+                ret.push(device_id_bytes[2]).unwrap();
+                ret.push(device_id_bytes[3]).unwrap();
+            },
+            Self::CoWrSecureDeviceAddPsk {
+                device_id,
+                psk,
+            } => {
+                let device_id_bytes: [u8; 4] = device_id.to_be_bytes();
+                ret.push(device_id_bytes[0]).unwrap();
+                ret.push(device_id_bytes[1]).unwrap();
+                ret.push(device_id_bytes[2]).unwrap();
+                ret.push(device_id_bytes[3]).unwrap();
+
+                for psk_chunk in psk {
+                    let psk_chunk_bytes: [u8; 4] = psk_chunk.to_be_bytes();
+                    ret.push(psk_chunk_bytes[0]).unwrap();
+                    ret.push(psk_chunk_bytes[1]).unwrap();
+                    ret.push(psk_chunk_bytes[2]).unwrap();
+                    ret.push(psk_chunk_bytes[3]).unwrap();
+                }
+            },
+            Self::CoWrSecureDeviceSendTeachIn {
+                device_id,
+                ..
+            } => {
+                let device_id_bytes: [u8; 4] = device_id.to_be_bytes();
+                ret.push(device_id_bytes[0]).unwrap();
+                ret.push(device_id_bytes[1]).unwrap();
+                ret.push(device_id_bytes[2]).unwrap();
+                ret.push(device_id_bytes[3]).unwrap();
+            },
+            Self::CoWrTemporaryRlcWindow {
+                enable,
+                rlc_window,
+            } => {
+                ret.push((*enable).into()).unwrap();
+
+                let rlc_window_bytes: [u8; 4] = rlc_window.to_be_bytes();
+                ret.push(rlc_window_bytes[0]).unwrap();
+                ret.push(rlc_window_bytes[1]).unwrap();
+                ret.push(rlc_window_bytes[2]).unwrap();
+                ret.push(rlc_window_bytes[3]).unwrap();
+            },
+            Self::CoRdSecureDevicePsk {
+                device_id,
+            } => {
+                let device_id_bytes: [u8; 4] = device_id.to_be_bytes();
+                ret.push(device_id_bytes[0]).unwrap();
+                ret.push(device_id_bytes[1]).unwrap();
+                ret.push(device_id_bytes[2]).unwrap();
+                ret.push(device_id_bytes[3]).unwrap();
+            },
+            Self::CoRdDutyCycleLimit => {},
+            Self::CoSetBaudRate {
+                baud_rate,
+            } => {
+                ret.push((*baud_rate).into()).unwrap();
+            },
+            Self::CoGetFrequencyInfo => {},
+            Self::CoGetStepCode => {},
+            Self::CoWrReManCode {
+                code,
+            } => {
+                let code_bytes: [u8; 4] = code.to_be_bytes();
+                ret.push(code_bytes[0]).unwrap();
+                ret.push(code_bytes[1]).unwrap();
+                ret.push(code_bytes[2]).unwrap();
+                ret.push(code_bytes[3]).unwrap();
+            },
+            Self::CoWrStartupDelay {
+                delay,
+            } => {
+                ret.push(*delay).unwrap();
+            },
+            Self::CoWrReManRepeating {
+                repeat_re_man_telegrams,
+            } => {
+                ret.push((*repeat_re_man_telegrams).into()).unwrap();
+            },
+            Self::CoRdReManRepeating => {},
+            Self::CoSetNoiseThreshold {
+                rssi_level,
+            } => {
+                ret.push(*rssi_level).unwrap();
+            },
+            Self::CoGetNoiseThreshold => {},
+            Self::CoWrRlcSavePeriod {
+                save_period,
+            } => {
+                ret.push(*save_period).unwrap();
+            },
+            Self::CoWrRlcLegacyMode {
+                enable,
+            } => {
+                ret.push((*enable).into()).unwrap();
+            },
+            Self::CoWrSecureDeviceV2Add {
+                slf,
+                device_id,
+                private_key,
+                rolling_code,
+                teach_info,
+                ..
+            } => {
+                ret.push(*slf).unwrap();
+
+                let device_id_bytes: [u8; 4] = device_id.to_be_bytes();
+                ret.push(device_id_bytes[0]).unwrap();
+                ret.push(device_id_bytes[1]).unwrap();
+                ret.push(device_id_bytes[2]).unwrap();
+                ret.push(device_id_bytes[3]).unwrap();
+
+                for private_key_chunk in private_key {
+                    let private_key_chunk_bytes: [u8; 4] = private_key_chunk.to_be_bytes();
+                    ret.push(private_key_chunk_bytes[0]).unwrap();
+                    ret.push(private_key_chunk_bytes[1]).unwrap();
+                    ret.push(private_key_chunk_bytes[2]).unwrap();
+                    ret.push(private_key_chunk_bytes[3]).unwrap();
+                }
+
+                let rolling_code_bytes: [u8; 4] = rolling_code.to_be_bytes();
+                ret.push(rolling_code_bytes[0]).unwrap();
+                ret.push(rolling_code_bytes[1]).unwrap();
+                ret.push(rolling_code_bytes[2]).unwrap();
+                ret.push(rolling_code_bytes[3]).unwrap();
+
+                ret.push(*teach_info).unwrap();
+            },
+            Self::CoRdSecureDeviceV2ByIndex {
+                index,
+                ..
+            } => {
+                ret.push(*index).unwrap();
+            },
+            Self::CoWrRssiTestMode {
+                enable,
+                timeout,
+            } => {
+                ret.push((*enable).into()).unwrap();
+
+                let timeout_bytes: [u8; 2] = timeout.to_be_bytes();
+                ret.push(timeout_bytes[0]).unwrap();
+                ret.push(timeout_bytes[1]).unwrap();
+            },
+            Self::CoRdRssiTestMode => {},
+            Self::CoWrSecureDeviceMaintenanceKey {
+                device_id,
+                maintenance_key,
+                key_number,
+            } => {
+                let device_id_bytes: [u8; 4] = device_id.to_be_bytes();
+                ret.push(device_id_bytes[0]).unwrap();
+                ret.push(device_id_bytes[1]).unwrap();
+                ret.push(device_id_bytes[2]).unwrap();
+                ret.push(device_id_bytes[3]).unwrap();
+
+                for maintenance_key_chunk in maintenance_key {
+                    let maintenance_key_chunk_bytes: [u8; 4] = maintenance_key_chunk.to_be_bytes();
+                    ret.push(maintenance_key_chunk_bytes[0]).unwrap();
+                    ret.push(maintenance_key_chunk_bytes[1]).unwrap();
+                    ret.push(maintenance_key_chunk_bytes[2]).unwrap();
+                    ret.push(maintenance_key_chunk_bytes[3]).unwrap();
+                }
+
+                ret.push(*key_number).unwrap();
+            },
+            Self::CoRdSecureDeviceMaintenanceKey {
+                index,
+            } => {
+                ret.push(*index).unwrap();
+            },
+            Self::CoWrTransparentMode {
+                enable,
+            } => {
+                ret.push((*enable).into()).unwrap();
+            },
+            Self::CoRdTransparentMode => {},
+            Self::CoWrTxOnlyMode {
+                mode,
+            } => {
+                ret.push((*mode).into()).unwrap();
+            },
+            Self::CoRdTxOnlyMode => {},
+            Self::Unknown {
+                data,
+                ..
+            } => {
+                for b in data.iter() {
+                    ret.push(*b).unwrap();
+                }
+            },
+        }
+
+        ret
     }
 
     pub fn to_packet_optional(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
