@@ -66,6 +66,11 @@ impl<T, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
         }
     }
 
+    #[inline]
+    pub fn can_fit(&self, element_count: usize) -> bool {
+        element_count <= self.max_size() - self.len()
+    }
+
     pub fn fill_from<I: Iterator<Item = T>>(&mut self, mut iterator: I) {
         let old_length = self.len();
 
