@@ -1,3 +1,8 @@
 {
-    "rust-analyzer.checkOnSave.enable": false
+    "rust-analyzer.checkOnSave.enable": false,
+    "rust-analyzer.linkedProjects": [
+        "Cargo.toml",
+        "on_board/Cargo.toml",
+        "on_host/Cargo.toml"
+    ]
 }
