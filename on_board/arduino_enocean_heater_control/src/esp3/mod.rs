@@ -40,6 +40,22 @@ const MAX_OPTIONAL_LENGTH: usize = 0xFF;
 const FOOTER_LENGTH: usize = 1;
 
 
+/// The minimum theoretical length of an ESP3 packet.
+///
+/// The longest theoretical ESP3 packet consists of the following:
+/// 1. The sync byte (always 0x55, 1 byte long)
+/// 2. The data length (minimum 0x0000, 2 bytes long)
+/// 3. The optional data length (minimum 0x00, 1 byte long)
+/// 4. The packet type (1 byte long)
+/// 5. The CRC8 checksum of the header (1 byte long)
+/// 6. No data (0 bytes)
+/// 7. No optional data (0 bytes)
+/// 8. The CRC8 checksum of the data (1 byte long)
+const MIN_ESP3_PACKET_LENGTH: usize =
+    HEADER_LENGTH + FOOTER_LENGTH
+;
+
+
 /// The maximum theoretical length of an ESP3 packet.
 ///
 /// The longest theoretical ESP3 packet consists of the following:
@@ -119,6 +135,11 @@ pub enum Esp3Packet {
         opt_rssi: Option<u8>,
     },
     Command24(Command24Data),
+    Unknown {
+        packet_type: u8,
+        data: MaxArray<u8, MAX_DATA_LENGTH>,
+        optional_data: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
+    },
 }
 impl Esp3Packet {
     pub fn packet_type(&self) -> u8 {
@@ -138,6 +159,7 @@ impl Esp3Packet {
             // 13-15 are undefined
             Self::Radio802Dot15Dot4 { .. } => 16,
             Self::Command24 { .. } => 17,
+            Self::Unknown { packet_type, .. } => *packet_type,
         }
     }
 
@@ -245,6 +267,7 @@ impl Esp3Packet {
                 raw_data.clone()
             },
             Self::Command24(command_24_data) => command_24_data.to_packet_data(),
+            Self::Unknown { data, .. } => data.clone(),
         }
     }
 
@@ -420,6 +443,344 @@ impl Esp3Packet {
                 Some(ret)
             },
             Self::Command24(command_24_data) => command_24_data.to_packet_optional(),
+            Self::Unknown { optional_data, .. } => Some(optional_data.clone()),
+        }
+    }
+
+    pub fn from_slice(bytes: &[u8]) -> Option<Self> {
+        // check minimum length
+        if bytes.len() < MIN_ESP3_PACKET_LENGTH {
+            return None;
+        }
+
+        // check sync byte
+        if bytes[0] != SYNC_BYTE {
+            return None;
+        }
+
+        // extract lengths
+        let data_length_u16 = (u16::from(bytes[1]) << 8) | u16::from(bytes[2]);
+        let data_length: usize = data_length_u16.into();
+        let opt_length_u8 = bytes[3];
+        let opt_length: usize = opt_length_u8.into();
+
+        // check total length
+        let total_length = HEADER_LENGTH + data_length + opt_length + FOOTER_LENGTH;
+        if bytes.len() != total_length {
+            // FIXME: change from "not exactly total_length" to "at least total_length"?
+            return None;
+        }
+
+        // check header CRC
+        let crc_header = crc8_ccitt(&bytes[1..5]);
+        if crc_header != bytes[5] {
+            return None;
+        }
+
+        // check data CRC
+        let crc_data = crc8_ccitt(&bytes[HEADER_LENGTH..HEADER_LENGTH+data_length+opt_length]);
+        if crc_data != bytes[HEADER_LENGTH+data_length+opt_length] {
+            return None;
+        }
+
+        let data_slice = &bytes[HEADER_LENGTH..HEADER_LENGTH+data_length];
+        let optional_slice = &bytes[HEADER_LENGTH+data_length..HEADER_LENGTH+data_length+opt_length];
+
+        let packet_type = bytes[4];
+        match packet_type {
+            1 => { // RadioErp1
+                let mut radio_telegram = MaxArray::new();
+                radio_telegram.fill_from(data_slice.iter().map(|b| *b));
+
+                let opt_sub_telegram_number = if optional_slice.len() >= 1 {
+                    Some(optional_slice[0])
+                } else {
+                    None
+                };
+                let opt_destination_id = if optional_slice.len() >= 1 + 4 {
+                    Some(u32::from_be_bytes(optional_slice[1..1+4].try_into().unwrap()))
+                } else {
+                    None
+                };
+                let opt_dbm = if optional_slice.len() >= 1 + 4 + 1 {
+                    Some(optional_slice[1+4])
+                } else {
+                    None
+                };
+                let opt_security_level = if optional_slice.len() >= 1 + 4 + 1 + 1 {
+                    Some(optional_slice[1+4+1].into())
+                } else {
+                    None
+                };
+
+                Some(Self::RadioErp1 {
+                    radio_telegram,
+                    opt_sub_telegram_number,
+                    opt_destination_id,
+                    opt_dbm,
+                    opt_security_level,
+                })
+            },
+            2 => { // Response
+                if data_slice.len() < 1 {
+                    return None;
+                }
+
+                let return_code = data_slice[0].into();
+                let mut response_data = MaxArray::new();
+                response_data.fill_from(data_slice[1..].iter().map(|b| *b));
+
+                Some(Self::Response {
+                    return_code,
+                    response_data,
+                })
+            },
+            3 => { // RadioSubTelegram
+                let mut radio_telegram = MaxArray::new();
+                radio_telegram.fill_from(data_slice.iter().map(|b| *b));
+
+                let opt_sub_telegram_number = if optional_slice.len() >= 1 {
+                    Some(optional_slice[0])
+                } else {
+                    None
+                };
+                let opt_destination_id = if optional_slice.len() >= 1 + 4 {
+                    Some(u32::from_be_bytes(optional_slice[1..1+4].try_into().unwrap()))
+                } else {
+                    None
+                };
+                let opt_dbm = if optional_slice.len() >= 1 + 4 + 1 {
+                    Some(optional_slice[1+4])
+                } else {
+                    None
+                };
+                let opt_security_level = if optional_slice.len() >= 1 + 4 + 1 + 1 {
+                    Some(optional_slice[1+4+1].into())
+                } else {
+                    None
+                };
+                let opt_timestamp = if optional_slice.len() >= 1 + 4 + 1 + 1 + 2 {
+                    Some(u16::from_be_bytes(optional_slice[1+4+1+1..1+4+1+1+2].try_into().unwrap()))
+                } else {
+                    None
+                };
+
+                let mut i = 1 + 4 + 1 + 1 + 2;
+                let mut opt_sub_telegram_info = MaxArray::new();
+                while i + 3 <= optional_slice.len() {
+                    let tick = optional_slice[i+0];
+                    let dbm = optional_slice[i+1];
+                    let status = optional_slice[i+2];
+                    opt_sub_telegram_info.push(SubTelegramInfo { tick, dbm, status });
+
+                    i += 3;
+                }
+
+                Some(Self::RadioSubTelegram {
+                    radio_telegram,
+                    opt_sub_telegram_number,
+                    opt_destination_id,
+                    opt_dbm,
+                    opt_security_level,
+                    opt_timestamp,
+                    opt_sub_telegram_info,
+                })
+            },
+            4 => { // Event
+                if data_slice.len() < 1 {
+                    return None;
+                }
+
+                let event_code = data_slice[0];
+                if let Some(event_data) = EventData::from_data(event_code, &data_slice[1..], optional_slice) {
+                    Some(Self::Event(event_data))
+                } else {
+                    None
+                }
+            },
+            5 => { // CommonCommand
+                if data_slice.len() < 1 {
+                    return None;
+                }
+
+                let command_code = data_slice[0];
+                if let Some(command_data) = CommandData::from_data(command_code, &data_slice[1..], optional_slice) {
+                    Some(Self::CommonCommand(command_data))
+                } else {
+                    None
+                }
+            },
+            6 => { // SmartAckCommand
+                if data_slice.len() < 1 {
+                    return None;
+                }
+
+                let command_code = data_slice[0];
+                if let Some(command_data) = SmartAckData::from_data(command_code, &data_slice[1..], optional_slice) {
+                    Some(Self::SmartAckCommand(command_data))
+                } else {
+                    None
+                }
+            },
+            7 => { // RemoteManCommand
+                if data_slice.len() < 4 {
+                    return None;
+                }
+                let function = u16::from_be_bytes(data_slice[0..2].try_into().unwrap());
+                let manufacturer = u16::from_be_bytes(data_slice[2..4].try_into().unwrap());
+                let mut message = MaxArray::new();
+                message.fill_from(data_slice[4..].iter().map(|b| *b));
+
+                let opt_destination_id = if optional_slice.len() >= 4 {
+                    Some(u32::from_be_bytes(optional_slice[0..4].try_into().unwrap()))
+                } else {
+                    None
+                };
+                let opt_source_id = if optional_slice.len() >= 4 + 4 {
+                    Some(u32::from_be_bytes(optional_slice[4..4+4].try_into().unwrap()))
+                } else {
+                    None
+                };
+                let opt_dbm = if optional_slice.len() >= 4 + 4 + 1 {
+                    Some(optional_slice[4+4])
+                } else {
+                    None
+                };
+                let opt_send_with_delay = if optional_slice.len() >= 4 + 4 + 1 + 1 {
+                    Some(optional_slice[4+4+1].into())
+                } else {
+                    None
+                };
+
+                Some(Self::RemoteManCommand {
+                    function,
+                    manufacturer,
+                    message,
+                    opt_destination_id,
+                    opt_source_id,
+                    opt_dbm,
+                    opt_send_with_delay,
+                })
+            },
+            9 => { // RadioMessage
+                if data_slice.len() < 1 {
+                    return None;
+                }
+
+                let rorg = data_slice[0];
+                let mut data = MaxArray::new();
+                data.fill_from(data_slice[1..].iter().map(|b| *b));
+
+                let opt_destination_id = if optional_slice.len() >= 4 {
+                    Some(u32::from_be_bytes(optional_slice[0..4].try_into().unwrap()))
+                } else {
+                    None
+                };
+                let opt_source_id = if optional_slice.len() >= 4 + 4 {
+                    Some(u32::from_be_bytes(optional_slice[4..4+4].try_into().unwrap()))
+                } else {
+                    None
+                };
+                let opt_dbm = if optional_slice.len() >= 4 + 4 + 1 {
+                    Some(optional_slice[4+4])
+                } else {
+                    None
+                };
+                let opt_security_level = if optional_slice.len() >= 4 + 4 + 1 + 1 {
+                    Some(optional_slice[4+4+1].into())
+                } else {
+                    None
+                };
+
+                Some(Self::RadioMessage {
+                    rorg,
+                    data,
+                    opt_destination_id,
+                    opt_source_id,
+                    opt_dbm,
+                    opt_security_level,
+                })
+            },
+            10 => { // RadioErp2
+                let mut data = MaxArray::new();
+                data.fill_from(data_slice.iter().map(|b| *b));
+
+                let opt_sub_telegram_number = if optional_slice.len() >= 1 {
+                    Some(optional_slice[0])
+                } else {
+                    None
+                };
+                let opt_dbm = if optional_slice.len() >= 1 + 1 {
+                    Some(optional_slice[1])
+                } else {
+                    None
+                };
+                let opt_security_level = if optional_slice.len() >= 1 + 1 + 1 {
+                    Some(optional_slice[1+1].into())
+                } else {
+                    None
+                };
+
+                Some(Self::RadioErp2 {
+                    data,
+                    opt_sub_telegram_number,
+                    opt_dbm,
+                    opt_security_level,
+                })
+            },
+            12 => { // CommandAccepted
+                if data_slice.len() != 3 {
+                    return None;
+                }
+
+                let is_blocking = data_slice[0].into();
+                let estimated_time_ms = u16::from_be_bytes(data_slice[1..3].try_into().unwrap());
+
+                Some(Self::CommandAccepted {
+                    is_blocking,
+                    estimated_time_ms,
+                })
+            },
+            16 => { // Radio802Dot15Dot4
+                let mut raw_data = MaxArray::new();
+                raw_data.fill_from(data_slice.iter().map(|b| *b));
+
+                let opt_rssi = if optional_slice.len() >= 1 {
+                    Some(optional_slice[0])
+                } else {
+                    None
+                };
+
+                Some(Self::Radio802Dot15Dot4 {
+                    raw_data,
+                    opt_rssi,
+                })
+            },
+            17 => { // Command24
+                if data_slice.len() < 1 {
+                    return None;
+                }
+
+                let command_code = data_slice[0];
+                if let Some(command_data) = Command24Data::from_data(command_code, &data_slice[1..], optional_slice) {
+                    Some(Self::Command24(command_data))
+                } else {
+                    None
+                }
+            },
+            other => {
+                let mut data = MaxArray::new();
+                data.fill_from(data_slice.iter().map(|b| *b));
+
+                let mut optional_data = MaxArray::new();
+                optional_data.fill_from(optional_slice.iter().map(|b| *b));
+
+                Some(Self::Unknown {
+                    packet_type: other,
+                    data,
+                    optional_data,
+                })
+            }
         }
     }
 }
@@ -637,6 +998,10 @@ impl EventData {
         }
 
         Some(ret)
+    }
+
+    pub fn from_data(event_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
+        todo!();
     }
 }
 
@@ -1333,6 +1698,10 @@ impl CommandData {
             },
         }
     }
+
+    pub fn from_data(event_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
+        todo!();
+    }
 }
 
 /// Data carried by a Smart Acknowledgement command.
@@ -1462,6 +1831,10 @@ impl SmartAckData {
     pub fn to_packet_optional(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
         Some(MaxArray::new())
     }
+
+    pub fn from_data(event_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
+        todo!();
+    }
 }
 
 /// Data carried by a 2.4 GHz command.
@@ -1495,11 +1868,15 @@ impl Command24Data {
             Self::ReadChannel => {},
         }
 
-        Some(ret)
+        ret
     }
 
     pub fn to_packet_optional(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
         Some(MaxArray::new())
+    }
+
+    pub fn from_data(event_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
+        todo!();
     }
 }
 
