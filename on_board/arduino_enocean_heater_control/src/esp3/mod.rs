@@ -1001,7 +1001,119 @@ impl EventData {
     }
 
     pub fn from_data(event_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
-        todo!();
+        match event_code {
+            1 => {
+                if data_slice.len() != 0 {
+                    return None;
+                }
+                Some(Self::SmartAckReclaimNotSuccessful)
+            },
+            2 => {
+                if data_slice.len() != 16 {
+                    return None;
+                }
+
+                let postmaster_priority = PostmasterPriority::from_bits_truncate(data_slice[0]);
+                let manufacturer_id = u16::from_be_bytes(data_slice[1..3].try_into().unwrap());
+                let eep = (
+                    u32::from(data_slice[3]) << 16
+                    | u32::from(data_slice[4]) << 8
+                    | u32::from(data_slice[5])
+                );
+                let rssi = data_slice[6];
+                let postmaster_candidate_id = u32::from_be_bytes(data_slice[7..11].try_into().unwrap());
+                let smart_ack_client_id = u32::from_be_bytes(data_slice[11..15].try_into().unwrap());
+                let hop_count = data_slice[15];
+
+                Some(Self::SmartAckConfirmLearn {
+                    postmaster_priority,
+                    manufacturer_id,
+                    eep,
+                    rssi,
+                    postmaster_candidate_id,
+                    smart_ack_client_id,
+                    hop_count,
+                })
+            },
+            3 => {
+                if data_slice.len() != 3 {
+                    return None;
+                }
+
+                let response_time = u16::from_be_bytes(data_slice[0..2].try_into().unwrap());
+                let confirm_code = data_slice[2].into();
+
+                Some(Self::SmartAckLearnAck {
+                    response_time,
+                    confirm_code,
+                })
+            },
+            4 => {
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let wakeup_cause = data_slice[0].into();
+
+                let opt_security_mode = if optional_slice.len() >= 1 {
+                    Some(optional_slice[0])
+                } else {
+                    None
+                };
+
+                Some(Self::CoReady {
+                    wakeup_cause,
+                    opt_security_mode,
+                })
+            },
+            5 => {
+                if data_slice.len() != 5 {
+                    return None;
+                }
+
+                let cause = data_slice[0].into();
+                let device_id = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+
+                Some(Self::CoEventSecureDevices {
+                    cause,
+                    device_id,
+                })
+            },
+            6 => {
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let sending_possible = data_slice[0].into();
+
+                Some(Self::CoDutyCycleLimit {
+                    sending_possible,
+                })
+            },
+            7 => {
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let reason = data_slice[0].into();
+
+                Some(Self::CoTransmitFailed {
+                    reason,
+                })
+            },
+            8 => {
+                if data_slice.len() != 0 {
+                    return None;
+                }
+                Some(Self::CoTxDone)
+            },
+            9 => {
+                if data_slice.len() != 0 {
+                    return None;
+                }
+                Some(Self::CoLearnModeDisabled)
+            },
+        }
     }
 }
 
