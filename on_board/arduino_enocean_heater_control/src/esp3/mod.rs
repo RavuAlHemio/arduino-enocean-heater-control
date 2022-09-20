@@ -547,7 +547,9 @@ impl Esp3Packet {
                     let tick = optional_slice[i+0];
                     let dbm = optional_slice[i+1];
                     let status = optional_slice[i+2];
-                    opt_sub_telegram_info.push(SubTelegramInfo { tick, dbm, status });
+                    opt_sub_telegram_info
+                        .push(SubTelegramInfo { tick, dbm, status })
+                        .unwrap();
 
                     i += 3;
                 }
@@ -794,7 +796,7 @@ pub enum EventData {
     Unknown {
         code: u8,
         data: MaxArray<u8, {MAX_DATA_LENGTH - 1}>,
-        opt_data: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
+        optional_data: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
     },
 }
 impl EventData {
@@ -921,10 +923,10 @@ impl EventData {
             Self::CoTxDone => {},
             Self::CoLearnModeDisabled => {},
             Self::Unknown {
-                opt_data,
+                optional_data,
                 ..
             } => {
-                for b in opt_data.iter() {
+                for b in optional_data.iter() {
                     ret.push(*b).unwrap();
                 }
             },
@@ -1042,6 +1044,13 @@ impl EventData {
                     return None;
                 }
                 Some(Self::CoLearnModeDisabled)
+            },
+            other => {
+                Some(Self::Unknown {
+                    code: other,
+                    data: MaxArray::from_iter_or_panic(data_slice.iter().map(|b| *b).peekable()),
+                    optional_data: MaxArray::from_iter_or_panic(optional_slice.iter().map(|b| *b).peekable()),
+                })
             },
         }
     }
@@ -1219,7 +1228,7 @@ pub enum CommandData {
     Unknown {
         code: u8,
         data: MaxArray<u8, {MAX_DATA_LENGTH - 1}>,
-        opt_data: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
+        optional_data: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
     },
 }
 impl CommandData {
@@ -1733,27 +1742,17 @@ impl CommandData {
             Self::CoWrTxOnlyMode { .. } => Some(MaxArray::new()),
             Self::CoRdTxOnlyMode => Some(MaxArray::new()),
             Self::Unknown {
-                opt_data,
+                optional_data,
                 ..
             } => {
-                Some(opt_data.clone())
+                Some(optional_data.clone())
             },
         }
     }
 
     pub fn from_data(command_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
         match command_code {
-            1 => { // CoWrSleep
-                if data_slice.len() != 4 {
-                    return None;
-                }
-
-                let deep_sleep_period = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
-                Some(Self::CoWrSleep {
-                    deep_sleep_period,
-                })
-            },
-            2..=6|8|10|13|15|21|24 => {
+            2..=6|8|10|13|15|21|24|35|37|39|49|51|59|63|65 => {
                 if data_slice.len() != 0 {
                     return None;
                 }
@@ -1770,6 +1769,25 @@ impl CommandData {
                     15 => Self::CoRdFilter,
                     21 => Self::CoRdSecurity,
                     24 => Self::CoRdLearnMode,
+                    35 => Self::CoRdDutyCycleLimit,
+                    37 => Self::CoGetFrequencyInfo,
+                    39 => Self::CoGetStepCode,
+                    49 => Self::CoRdReManRepeating,
+                    51 => Self::CoGetNoiseThreshold,
+                    59 => Self::CoRdRssiTestMode,
+                    63 => Self::CoRdTransparentMode,
+                    65 => Self::CoRdTxOnlyMode,
+                    _ => unreachable!(),
+                })
+            },
+            1 => { // CoWrSleep
+                if data_slice.len() != 4 {
+                    return None;
+                }
+
+                let deep_sleep_period = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                Some(Self::CoWrSleep {
+                    deep_sleep_period,
                 })
             },
             7 => { // CoWrIdBase
@@ -1988,6 +2006,7 @@ impl CommandData {
                 let opt_direction = (optional_slice.len() >= 1)
                     .then(|| optional_slice[0].into());
 
+                #[allow(deprecated)]
                 Some(Self::CoRdSecureDeviceByIndex {
                     index,
                     opt_direction,
@@ -2037,7 +2056,7 @@ impl CommandData {
                 let device_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
                 let psk = [
                     u32::from_be_bytes(data_slice[4..8].try_into().unwrap()),
-                    u32::from_be_bytes(data_slice[8..13].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[8..12].try_into().unwrap()),
                     u32::from_be_bytes(data_slice[12..16].try_into().unwrap()),
                     u32::from_be_bytes(data_slice[16..20].try_into().unwrap()),
                 ];
@@ -2074,12 +2093,204 @@ impl CommandData {
                     rlc_window,
                 })
             },
+            34 => { // CoRdSecureDevicePsk
+                if data_slice.len() != 4 {
+                    return None;
+                }
+
+                let device_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                Some(Self::CoRdSecureDevicePsk {
+                    device_id,
+                })
+            },
+            36 => { // CoSetBaudRate
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let baud_rate = data_slice[0].into();
+                Some(Self::CoSetBaudRate {
+                    baud_rate,
+                })
+            },
+            46 => { // CoWrReManCode
+                if data_slice.len() != 4 {
+                    return None;
+                }
+
+                let code = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                Some(Self::CoWrReManCode {
+                    code,
+                })
+            },
+            47 => { // CoWrStartupDelay
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let delay = data_slice[0];
+                Some(Self::CoWrStartupDelay {
+                    delay,
+                })
+            },
+            48 => { // CoWrReManRepeating
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let repeat_re_man_telegrams = data_slice[0].into();
+                Some(Self::CoWrReManRepeating {
+                    repeat_re_man_telegrams,
+                })
+            },
+            50 => { // CoSetNoiseThreshold
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let rssi_level = data_slice[0].into();
+                Some(Self::CoSetNoiseThreshold {
+                    rssi_level,
+                })
+            },
+            54 => { // CoWrRlcSavePeriod
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let save_period = data_slice[0].into();
+                Some(Self::CoWrRlcSavePeriod {
+                    save_period,
+                })
+            },
+            55 => { // CoWrRlcLegacyMode
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let enable = data_slice[0].into();
+                Some(Self::CoWrRlcLegacyMode {
+                    enable,
+                })
+            },
+            56 => { // CoWrSecureDeviceV2Add
+                if data_slice.len() != 26 {
+                    return None;
+                }
+
+                let slf = data_slice[0].into();
+                let device_id = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+                let private_key = [
+                    u32::from_be_bytes(data_slice[5..9].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[9..13].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[13..17].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[17..21].try_into().unwrap()),
+                ];
+                let rolling_code = u32::from_be_bytes(data_slice[21..25].try_into().unwrap());
+                let teach_info = data_slice[25];
+
+                let opt_direction = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
+
+                Some(Self::CoWrSecureDeviceV2Add {
+                    slf,
+                    device_id,
+                    private_key,
+                    rolling_code,
+                    teach_info,
+                    opt_direction,
+                })
+            },
+            57 => { // CoRdSecureDeviceV2ByIndex
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let index = data_slice[0].into();
+                let opt_direction = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
+
+                Some(Self::CoRdSecureDeviceV2ByIndex {
+                    index,
+                    opt_direction,
+                })
+            },
+            58 => { // CoWrRssiTestMode
+                if data_slice.len() != 3 {
+                    return None;
+                }
+
+                let enable = data_slice[0].into();
+                let timeout = u16::from_be_bytes(data_slice[1..3].try_into().unwrap());
+
+                Some(Self::CoWrRssiTestMode {
+                    enable,
+                    timeout,
+                })
+            },
+            60 => { // CoWrSecureDeviceMaintenanceKey
+                if data_slice.len() != 21 {
+                    return None;
+                }
+
+                let device_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                let maintenance_key = [
+                    u32::from_be_bytes(data_slice[4..8].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[8..12].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[12..16].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[16..20].try_into().unwrap()),
+                ];
+                let key_number = data_slice[20];
+
+                Some(Self::CoWrSecureDeviceMaintenanceKey {
+                    device_id,
+                    maintenance_key,
+                    key_number,
+                })
+            },
+            61 => { // CoRdSecureDeviceMaintenanceKey
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let index = data_slice[0];
+                Some(Self::CoRdSecureDeviceMaintenanceKey {
+                    index,
+                })
+            },
+            62 => { // CoWrTransparentMode
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let enable = data_slice[0].into();
+                Some(Self::CoWrTransparentMode {
+                    enable,
+                })
+            },
+            64 => { // CoWrTxOnlyMode
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let mode = data_slice[0].into();
+                Some(Self::CoWrTxOnlyMode {
+                    mode,
+                })
+            },
+            other => {
+                Some(Self::Unknown {
+                    code: other,
+                    data: MaxArray::from_iter_or_panic(data_slice.iter().map(|b| *b).peekable()),
+                    optional_data: MaxArray::from_iter_or_panic(optional_slice.iter().map(|b| *b).peekable()),
+                })
+            },
         }
     }
 }
 
 /// Data carried by a Smart Acknowledgement command.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum SmartAckData {
     SaWrLearnMode {
         enable: OneByteBoolean,
@@ -2115,6 +2326,11 @@ pub enum SmartAckData {
         device_id: u32,
         controller_id: u32,
     },
+    Unknown {
+        code: u8,
+        data: MaxArray<u8, {MAX_DATA_LENGTH - 1}>,
+        optional_data: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
+    },
 }
 impl SmartAckData {
     pub fn command_type(&self) -> u8 {
@@ -2129,6 +2345,7 @@ impl SmartAckData {
             Self::SaWrPostmaster { .. } => 8,
             Self::SaRdMailboxStatus { .. } => 9,
             Self::SaDelMailbox { .. } => 10,
+            Self::Unknown { code, .. } => *code,
         }
     }
 
@@ -2197,6 +2414,14 @@ impl SmartAckData {
                 ret.push_u32_be(*device_id).unwrap();
                 ret.push_u32_be(*controller_id).unwrap();
             },
+            Self::Unknown {
+                data,
+                ..
+            } => {
+                for b in data.iter() {
+                    ret.push(*b).unwrap();
+                }
+            },
         }
 
         ret
@@ -2207,23 +2432,155 @@ impl SmartAckData {
     }
 
     pub fn from_data(event_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
-        todo!();
+        match event_code {
+            2|6 => {
+                if data_slice.len() != 0 {
+                    return None;
+                }
+
+                Some(match event_code {
+                    2 => Self::SaRdLearnMode,
+                    6 => Self::SaRdLearnedClients,
+                    _ => unreachable!(),
+                })
+            },
+            1 => { // SaWrLearnMode
+                if data_slice.len() != 6 {
+                    return None;
+                }
+
+                let enable = data_slice[0].into();
+                let extended = data_slice[1].into();
+                let timeout = u32::from_be_bytes(data_slice[2..6].try_into().unwrap());
+                Some(Self::SaWrLearnMode {
+                    enable,
+                    extended,
+                    timeout,
+                })
+            },
+            3 => { // SaWrLearnConfirm
+                if data_slice.len() != 11 {
+                    return None;
+                }
+
+                let response_time = u16::from_be_bytes(data_slice[0..2].try_into().unwrap());
+                let confirm_code = data_slice[2].into();
+                let postmaster_candidate_id = u32::from_be_bytes(data_slice[3..7].try_into().unwrap());
+                let smart_ack_client_id = u32::from_be_bytes(data_slice[7..11].try_into().unwrap());
+                Some(Self::SaWrLearnConfirm {
+                    response_time,
+                    confirm_code,
+                    postmaster_candidate_id,
+                    smart_ack_client_id,
+                })
+            },
+            4 => { // SaWrClientLearnRequest
+                if data_slice.len() != 5 {
+                    return None;
+                }
+
+                let manufacturer_id = u16::from_be_bytes(data_slice[0..2].try_into().unwrap());
+                let eep =
+                    (u32::from(data_slice[2]) << 16)
+                    | (u32::from(data_slice[3]) << 8)
+                    | u32::from(data_slice[4])
+                ;
+                Some(Self::SaWrClientLearnRequest {
+                    manufacturer_id,
+                    eep,
+                })
+            },
+            5 => { // SaWrReset
+                if data_slice.len() != 4 {
+                    return None;
+                }
+
+                let client_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                Some(Self::SaWrReset {
+                    client_id,
+                })
+            },
+            7 => { // SaWrReclaims
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let reclaim_count = data_slice[0];
+                Some(Self::SaWrReclaims {
+                    reclaim_count,
+                })
+            },
+            8 => { // SaWrPostmaster
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let mailbox_count = data_slice[0];
+                Some(Self::SaWrPostmaster {
+                    mailbox_count,
+                })
+            },
+            9 => { // SaRdMailboxStatus
+                if data_slice.len() != 8 {
+                    return None;
+                }
+
+                let smart_ack_client_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                let controller_id = u32::from_be_bytes(data_slice[4..8].try_into().unwrap());
+                Some(Self::SaRdMailboxStatus {
+                    smart_ack_client_id,
+                    controller_id,
+                })
+            },
+            10 => { // SaDelMailbox
+                if data_slice.len() != 8 {
+                    return None;
+                }
+
+                let device_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                let controller_id = u32::from_be_bytes(data_slice[4..8].try_into().unwrap());
+                Some(Self::SaDelMailbox {
+                    device_id,
+                    controller_id,
+                })
+            },
+            other => {
+                let data = MaxArray::from_iter_or_panic(
+                    data_slice.iter().map(|b| *b).peekable()
+                );
+                let optional_data = MaxArray::from_iter_or_panic(
+                    optional_slice.iter().map(|b| *b).peekable()
+                );
+
+                Some(Self::Unknown {
+                    code: other,
+                    data,
+                    optional_data,
+                })
+            },
+        }
     }
 }
 
 /// Data carried by a 2.4 GHz command.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Command24Data {
     SetChannel {
         channel: u8,
     },
     ReadChannel,
+    Unknown {
+        code: u8,
+        data: MaxArray<u8, {MAX_DATA_LENGTH - 1}>,
+        optional_data: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
+    },
 }
 impl Command24Data {
     pub fn command_type(&self) -> u8 {
         match self {
             Self::SetChannel { .. } => 1,
             Self::ReadChannel => 2,
+            Self::Unknown { code, .. } => *code,
         }
     }
 
@@ -2240,6 +2597,11 @@ impl Command24Data {
                 ret.push(*channel).unwrap();
             },
             Self::ReadChannel => {},
+            Self::Unknown { data, .. } => {
+                for b in data.iter() {
+                    ret.push(*b).unwrap();
+                }
+            },
         }
 
         ret
@@ -2250,7 +2612,38 @@ impl Command24Data {
     }
 
     pub fn from_data(event_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
-        todo!();
+        match event_code {
+            1 => {
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let channel = data_slice[0];
+                Some(Self::SetChannel {
+                    channel,
+                })
+            },
+            2 => {
+                if data_slice.len() != 0 {
+                    return None;
+                }
+                Some(Self::ReadChannel)
+            },
+            other => {
+                let data = MaxArray::from_iter_or_panic(
+                    data_slice.iter().map(|b| *b).peekable()
+                );
+                let optional_data = MaxArray::from_iter_or_panic(
+                    optional_slice.iter().map(|b| *b).peekable()
+                );
+
+                Some(Self::Unknown {
+                    code: other,
+                    data,
+                    optional_data,
+                })
+            },
+        }
     }
 }
 
