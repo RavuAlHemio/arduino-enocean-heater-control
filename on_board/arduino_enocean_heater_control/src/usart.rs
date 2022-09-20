@@ -110,13 +110,11 @@ pub trait Usart {
     /// Disables the Peripheral DMA Channels.
     fn disable_pdc(peripherals: &mut Peripherals) {
         // disable PDC channels
-        unsafe {
-            Self::register_block(peripherals)
-                .ptcr.write(|w| w
-                    .rxtdis().set_bit()
-                    .txtdis().set_bit()
-                )
-        };
+        Self::register_block(peripherals)
+            .ptcr.write(|w| w
+                .rxtdis().set_bit()
+                .txtdis().set_bit()
+            )
     }
 
     /// Resets and disables the USART transmitter and receiver.

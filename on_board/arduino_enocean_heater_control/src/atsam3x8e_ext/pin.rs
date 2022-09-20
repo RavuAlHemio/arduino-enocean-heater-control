@@ -20,11 +20,9 @@ macro_rules! sam_pin {
         // when I/O is disabled, selects between peripherals A (clear) and B (set)
         //
         // warning: this is not a mailbox register; read-modify-write it
-        unsafe {
-            $peripherals.$pio.absr.modify(|_, w| w
-                $(.$pin().$pin_set_clear())*
-            )
-        };
+        $peripherals.$pio.absr.modify(|_, w| w
+            $(.$pin().$pin_set_clear())*
+        )
     };
     (make_output, $peripherals:expr, $pio:ident, $($pin:ident),+) => {
         // make pins outputs
