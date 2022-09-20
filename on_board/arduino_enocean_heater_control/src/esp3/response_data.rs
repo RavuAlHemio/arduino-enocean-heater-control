@@ -2,6 +2,7 @@
 
 
 use buildingblocks::max_array::MaxArray;
+use buildingblocks::max_array_ext::MaxArrayPushIntExt;
 
 use crate::esp3::{
     ChannelNumber, ExtendedLearnMode, FilterEntry, Frequency, LearnedClient, MailboxStatus,
@@ -12,7 +13,21 @@ use crate::esp3::{
 
 /// Trait to be implemented by response data.
 pub trait ResponseData {
+    /// Attempts to deserialize a response packet from the given data and optional data slices.
+    ///
+    /// Note that the passed data slice must not contain the response code in the first byte.
     fn from_data(data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> where Self : Sized;
+
+    /// Attempts to serialize this response packet into data bytes.
+    ///
+    /// The maximum data length is reduced by 1 to make space for the response code byte.
+    fn to_data(&self) -> MaxArray<u8, {MAX_DATA_LENGTH-1}>;
+
+    /// Attempts to serialize this response packet into optional data bytes.
+    fn to_optional_data(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
+        // no optional data by default
+        Some(MaxArray::new())
+    }
 }
 
 
@@ -23,7 +38,7 @@ pub struct CoRdVersion {
     pub api_version: u32,
     pub chip_id: u32,
     pub chip_version: u32,
-    pub app_description: [char; 16],
+    pub app_description: [u8; 16],
 }
 impl ResponseData for CoRdVersion {
     fn from_data(data_slice: &[u8], _optional_slice: &[u8]) -> Option<Self> {
@@ -36,10 +51,8 @@ impl ResponseData for CoRdVersion {
         let chip_id = u32::from_be_bytes(data_slice[8..12].try_into().unwrap());
         let chip_version = u32::from_be_bytes(data_slice[12..16].try_into().unwrap());
 
-        let mut app_description = [0 as char; 16];
-        for (ad, d) in app_description.iter_mut().zip(data_slice[16..32].iter()) {
-            *ad = *d as char;
-        }
+        let mut app_description = [0; 16];
+        app_description.copy_from_slice(&data_slice[16..32]);
 
         Some(Self {
             app_version,
@@ -49,19 +62,75 @@ impl ResponseData for CoRdVersion {
             app_description,
         })
     }
+
+    fn to_data(&self) -> MaxArray<u8, {MAX_DATA_LENGTH-1}> {
+        let mut ret = MaxArray::new();
+        ret.push_u32_be(self.app_version).unwrap();
+        ret.push_u32_be(self.api_version).unwrap();
+        ret.push_u32_be(self.chip_id).unwrap();
+        ret.push_u32_be(self.chip_version).unwrap();
+        for b in self.app_description {
+            ret.push(b).unwrap();
+        }
+        ret
+    }
 }
 
 /// Response data to CommandData::CoRdSysLog.
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct CoRdSysLog {
-    pub api_log_entries: MaxArray<u8, MAX_DATA_LENGTH>,
+    pub api_log_entries: MaxArray<u8, {MAX_DATA_LENGTH-1}>,
     pub app_log_entries: MaxArray<u8, MAX_OPTIONAL_LENGTH>,
+}
+impl ResponseData for CoRdSysLog {
+    fn from_data(data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
+        let mut api_log_entries = MaxArray::new();
+        for b in data_slice {
+            api_log_entries.push(*b).unwrap();
+        }
+
+        let mut app_log_entries = MaxArray::new();
+        for b in optional_slice {
+            app_log_entries.push(*b).unwrap();
+        }
+
+        Some(Self {
+            api_log_entries,
+            app_log_entries,
+        })
+    }
+
+    fn to_data(&self) -> MaxArray<u8, {MAX_DATA_LENGTH-1}> {
+        self.api_log_entries.clone()
+    }
+
+    fn to_optional_data(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
+        Some(self.app_log_entries.clone())
+    }
 }
 
 /// Response data to CommandData::CoWrBiSt.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct CoWrBiSt {
     pub bist_result: u8,
+}
+impl ResponseData for CoWrBiSt {
+    fn from_data(data_slice: &[u8], _optional_slice: &[u8]) -> Option<Self> {
+        if data_slice.len() != 1 {
+            return None;
+        }
+
+        let bist_result = data_slice[0];
+        Some(Self {
+            bist_result,
+        })
+    }
+
+    fn to_data(&self) -> MaxArray<u8, {MAX_DATA_LENGTH-1}> {
+        let mut ret = MaxArray::new();
+        ret.push(self.bist_result).unwrap();
+        ret
+    }
 }
 
 /// Response data to CommandData::CoRdIdBase.
@@ -70,12 +139,63 @@ pub struct CoRdIdBase {
     pub base_id: u32,
     pub opt_remaining_write_cycles: Option<u8>,
 }
+impl ResponseData for CoRdIdBase {
+    fn from_data(data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
+        if data_slice.len() != 4 {
+            return None;
+        }
+
+        let base_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+        let opt_remaining_write_cycles = (optional_slice.len() >= 1)
+            .then(|| optional_slice[0]);
+
+        Some(Self {
+            base_id,
+            opt_remaining_write_cycles,
+        })
+    }
+
+    fn to_data(&self) -> MaxArray<u8, {MAX_DATA_LENGTH-1}> {
+        let mut ret = MaxArray::new();
+        ret.push_u32_be(self.base_id).unwrap();
+        ret
+    }
+
+    fn to_optional_data(&self) -> Option<MaxArray<u8, MAX_OPTIONAL_LENGTH>> {
+        let mut ret = MaxArray::new();
+        if let Some(remaining_write_cycles) = self.opt_remaining_write_cycles {
+            ret.push(remaining_write_cycles).unwrap();
+        }
+        Some(ret)
+    }
+}
 
 /// Response data to CommandData::CoRdRepeater.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct CoRdRepeater {
     pub enabled: RepeaterEnable,
     pub level: RepeaterLevel,
+}
+impl ResponseData for CoRdRepeater {
+    fn from_data(data_slice: &[u8], _optional_slice: &[u8]) -> Option<Self> {
+        if data_slice.len() != 2 {
+            return None;
+        }
+
+        let enabled = data_slice[0].into();
+        let level = data_slice[1].into();
+        Some(Self {
+            enabled,
+            level,
+        })
+    }
+
+    fn to_data(&self) -> MaxArray<u8, {MAX_DATA_LENGTH-1}> {
+        let mut ret = MaxArray::new();
+        ret.push(self.enabled.into()).unwrap();
+        ret.push(self.level.into()).unwrap();
+        ret
+    }
 }
 
 /// Response data to CommandData::CoRdFilter.
@@ -84,6 +204,25 @@ pub struct CoRdFilter {
     // max data length minus 1 byte of return code
     // 5 bytes per filter
     pub filters: MaxArray<FilterEntry, {(MAX_DATA_LENGTH - 1)/5}>,
+}
+impl ResponseData for CoRdFilter {
+    fn from_data(data_slice: &[u8], _optional_slice: &[u8]) -> Option<Self> {
+        if data_slice.len() % 5 != 0 {
+            return None;
+        }
+
+        let filters = todo!();
+
+        Some(Self {
+            filters,
+        })
+    }
+
+    fn to_data(&self) -> MaxArray<u8, {MAX_DATA_LENGTH-1}> {
+        let mut ret = MaxArray::new();
+        todo!();
+        ret
+    }
 }
 
 /// Response data to CommandData::CoRdMem.
