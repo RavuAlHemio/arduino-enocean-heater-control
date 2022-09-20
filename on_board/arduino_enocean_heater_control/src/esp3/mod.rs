@@ -489,29 +489,18 @@ impl Esp3Packet {
         let packet_type = bytes[4];
         match packet_type {
             1 => { // RadioErp1
-                let mut radio_telegram = MaxArray::new();
-                radio_telegram.fill_from(data_slice.iter().map(|b| *b));
+                let mut radio_telegram = MaxArray::from_iter_or_panic(
+                    data_slice.iter().map(|b| *b).peekable()
+                );
 
-                let opt_sub_telegram_number = if optional_slice.len() >= 1 {
-                    Some(optional_slice[0])
-                } else {
-                    None
-                };
-                let opt_destination_id = if optional_slice.len() >= 1 + 4 {
-                    Some(u32::from_be_bytes(optional_slice[1..1+4].try_into().unwrap()))
-                } else {
-                    None
-                };
-                let opt_dbm = if optional_slice.len() >= 1 + 4 + 1 {
-                    Some(optional_slice[1+4])
-                } else {
-                    None
-                };
-                let opt_security_level = if optional_slice.len() >= 1 + 4 + 1 + 1 {
-                    Some(optional_slice[1+4+1].into())
-                } else {
-                    None
-                };
+                let opt_sub_telegram_number = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0]);
+                let opt_destination_id = (optional_slice.len() >= 1 + 4)
+                    .then(|| u32::from_be_bytes(optional_slice[1..1+4].try_into().unwrap()));
+                let opt_dbm = (optional_slice.len() >= 1 + 4 + 1)
+                    .then(|| optional_slice[1+4]);
+                let opt_security_level = (optional_slice.len() >= 1 + 4 + 1 + 1)
+                    .then(|| optional_slice[1+4+1].into());
 
                 Some(Self::RadioErp1 {
                     radio_telegram,
@@ -527,8 +516,9 @@ impl Esp3Packet {
                 }
 
                 let return_code = data_slice[0].into();
-                let mut response_data = MaxArray::new();
-                response_data.fill_from(data_slice[1..].iter().map(|b| *b));
+                let mut response_data = MaxArray::from_iter_or_panic(
+                    data_slice[1..].iter().map(|b| *b).peekable()
+                );
 
                 Some(Self::Response {
                     return_code,
@@ -536,34 +526,20 @@ impl Esp3Packet {
                 })
             },
             3 => { // RadioSubTelegram
-                let mut radio_telegram = MaxArray::new();
-                radio_telegram.fill_from(data_slice.iter().map(|b| *b));
+                let mut radio_telegram = MaxArray::from_iter_or_panic(
+                    data_slice.iter().map(|b| *b).peekable()
+                );
 
-                let opt_sub_telegram_number = if optional_slice.len() >= 1 {
-                    Some(optional_slice[0])
-                } else {
-                    None
-                };
-                let opt_destination_id = if optional_slice.len() >= 1 + 4 {
-                    Some(u32::from_be_bytes(optional_slice[1..1+4].try_into().unwrap()))
-                } else {
-                    None
-                };
-                let opt_dbm = if optional_slice.len() >= 1 + 4 + 1 {
-                    Some(optional_slice[1+4])
-                } else {
-                    None
-                };
-                let opt_security_level = if optional_slice.len() >= 1 + 4 + 1 + 1 {
-                    Some(optional_slice[1+4+1].into())
-                } else {
-                    None
-                };
-                let opt_timestamp = if optional_slice.len() >= 1 + 4 + 1 + 1 + 2 {
-                    Some(u16::from_be_bytes(optional_slice[1+4+1+1..1+4+1+1+2].try_into().unwrap()))
-                } else {
-                    None
-                };
+                let opt_sub_telegram_number = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0]);
+                let opt_destination_id = (optional_slice.len() >= 1 + 4)
+                    .then(|| u32::from_be_bytes(optional_slice[1..1+4].try_into().unwrap()));
+                let opt_dbm = (optional_slice.len() >= 1 + 4 + 1)
+                    .then(|| optional_slice[1+4]);
+                let opt_security_level = (optional_slice.len() >= 1 + 4 + 1 + 1)
+                    .then(|| optional_slice[1+4+1].into());
+                let opt_timestamp = (optional_slice.len() >= 1 + 4 + 1 + 1 + 2)
+                    .then(|| u16::from_be_bytes(optional_slice[1+4+1+1..1+4+1+1+2].try_into().unwrap()));
 
                 let mut i = 1 + 4 + 1 + 1 + 2;
                 let mut opt_sub_telegram_info = MaxArray::new();
@@ -592,11 +568,8 @@ impl Esp3Packet {
                 }
 
                 let event_code = data_slice[0];
-                if let Some(event_data) = EventData::from_data(event_code, &data_slice[1..], optional_slice) {
-                    Some(Self::Event(event_data))
-                } else {
-                    None
-                }
+                EventData::from_data(event_code, &data_slice[1..], optional_slice)
+                    .map(Self::Event)
             },
             5 => { // CommonCommand
                 if data_slice.len() < 1 {
@@ -604,11 +577,8 @@ impl Esp3Packet {
                 }
 
                 let command_code = data_slice[0];
-                if let Some(command_data) = CommandData::from_data(command_code, &data_slice[1..], optional_slice) {
-                    Some(Self::CommonCommand(command_data))
-                } else {
-                    None
-                }
+                CommandData::from_data(command_code, &data_slice[1..], optional_slice)
+                    .map(Self::CommonCommand)
             },
             6 => { // SmartAckCommand
                 if data_slice.len() < 1 {
@@ -616,11 +586,8 @@ impl Esp3Packet {
                 }
 
                 let command_code = data_slice[0];
-                if let Some(command_data) = SmartAckData::from_data(command_code, &data_slice[1..], optional_slice) {
-                    Some(Self::SmartAckCommand(command_data))
-                } else {
-                    None
-                }
+                SmartAckData::from_data(command_code, &data_slice[1..], optional_slice)
+                    .map(Self::SmartAckCommand)
             },
             7 => { // RemoteManCommand
                 if data_slice.len() < 4 {
@@ -628,29 +595,18 @@ impl Esp3Packet {
                 }
                 let function = u16::from_be_bytes(data_slice[0..2].try_into().unwrap());
                 let manufacturer = u16::from_be_bytes(data_slice[2..4].try_into().unwrap());
-                let mut message = MaxArray::new();
-                message.fill_from(data_slice[4..].iter().map(|b| *b));
+                let mut message = MaxArray::from_iter_or_panic(
+                    data_slice[4..].iter().map(|b| *b).peekable()
+                );
 
-                let opt_destination_id = if optional_slice.len() >= 4 {
-                    Some(u32::from_be_bytes(optional_slice[0..4].try_into().unwrap()))
-                } else {
-                    None
-                };
-                let opt_source_id = if optional_slice.len() >= 4 + 4 {
-                    Some(u32::from_be_bytes(optional_slice[4..4+4].try_into().unwrap()))
-                } else {
-                    None
-                };
-                let opt_dbm = if optional_slice.len() >= 4 + 4 + 1 {
-                    Some(optional_slice[4+4])
-                } else {
-                    None
-                };
-                let opt_send_with_delay = if optional_slice.len() >= 4 + 4 + 1 + 1 {
-                    Some(optional_slice[4+4+1].into())
-                } else {
-                    None
-                };
+                let opt_destination_id = (optional_slice.len() >= 4)
+                    .then(|| u32::from_be_bytes(optional_slice[0..4].try_into().unwrap()));
+                let opt_source_id = (optional_slice.len() >= 4 + 4)
+                    .then(|| u32::from_be_bytes(optional_slice[4..4+4].try_into().unwrap()));
+                let opt_dbm = (optional_slice.len() >= 4 + 4 + 1)
+                    .then(|| optional_slice[4+4]);
+                let opt_send_with_delay = (optional_slice.len() >= 4 + 4 + 1 + 1)
+                    .then(|| optional_slice[4+4+1].into());
 
                 Some(Self::RemoteManCommand {
                     function,
@@ -668,29 +624,18 @@ impl Esp3Packet {
                 }
 
                 let rorg = data_slice[0];
-                let mut data = MaxArray::new();
-                data.fill_from(data_slice[1..].iter().map(|b| *b));
+                let mut data = MaxArray::from_iter_or_panic(
+                    data_slice[1..].iter().map(|b| *b).peekable()
+                );
 
-                let opt_destination_id = if optional_slice.len() >= 4 {
-                    Some(u32::from_be_bytes(optional_slice[0..4].try_into().unwrap()))
-                } else {
-                    None
-                };
-                let opt_source_id = if optional_slice.len() >= 4 + 4 {
-                    Some(u32::from_be_bytes(optional_slice[4..4+4].try_into().unwrap()))
-                } else {
-                    None
-                };
-                let opt_dbm = if optional_slice.len() >= 4 + 4 + 1 {
-                    Some(optional_slice[4+4])
-                } else {
-                    None
-                };
-                let opt_security_level = if optional_slice.len() >= 4 + 4 + 1 + 1 {
-                    Some(optional_slice[4+4+1].into())
-                } else {
-                    None
-                };
+                let opt_destination_id = (optional_slice.len() >= 4)
+                    .then(|| u32::from_be_bytes(optional_slice[0..4].try_into().unwrap()));
+                let opt_source_id = (optional_slice.len() >= 4 + 4)
+                    .then(|| u32::from_be_bytes(optional_slice[4..4+4].try_into().unwrap()));
+                let opt_dbm = (optional_slice.len() >= 4 + 4 + 1)
+                    .then(|| optional_slice[4+4]);
+                let opt_security_level = (optional_slice.len() >= 4 + 4 + 1 + 1)
+                    .then(|| optional_slice[4+4+1].into());
 
                 Some(Self::RadioMessage {
                     rorg,
@@ -702,24 +647,16 @@ impl Esp3Packet {
                 })
             },
             10 => { // RadioErp2
-                let mut data = MaxArray::new();
-                data.fill_from(data_slice.iter().map(|b| *b));
+                let mut data = MaxArray::from_iter_or_panic(
+                    data_slice.iter().map(|b| *b).peekable()
+                );
 
-                let opt_sub_telegram_number = if optional_slice.len() >= 1 {
-                    Some(optional_slice[0])
-                } else {
-                    None
-                };
-                let opt_dbm = if optional_slice.len() >= 1 + 1 {
-                    Some(optional_slice[1])
-                } else {
-                    None
-                };
-                let opt_security_level = if optional_slice.len() >= 1 + 1 + 1 {
-                    Some(optional_slice[1+1].into())
-                } else {
-                    None
-                };
+                let opt_sub_telegram_number = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0]);
+                let opt_dbm = (optional_slice.len() >= 1 + 1)
+                    .then(|| optional_slice[1]);
+                let opt_security_level = (optional_slice.len() >= 1 + 1 + 1)
+                    .then(|| optional_slice[1+1].into());
 
                 Some(Self::RadioErp2 {
                     data,
@@ -742,14 +679,12 @@ impl Esp3Packet {
                 })
             },
             16 => { // Radio802Dot15Dot4
-                let mut raw_data = MaxArray::new();
-                raw_data.fill_from(data_slice.iter().map(|b| *b));
+                let mut raw_data = MaxArray::from_iter_or_panic(
+                    data_slice.iter().map(|b| *b).peekable()
+                );
 
-                let opt_rssi = if optional_slice.len() >= 1 {
-                    Some(optional_slice[0])
-                } else {
-                    None
-                };
+                let opt_rssi = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0]);
 
                 Some(Self::Radio802Dot15Dot4 {
                     raw_data,
@@ -762,18 +697,16 @@ impl Esp3Packet {
                 }
 
                 let command_code = data_slice[0];
-                if let Some(command_data) = Command24Data::from_data(command_code, &data_slice[1..], optional_slice) {
-                    Some(Self::Command24(command_data))
-                } else {
-                    None
-                }
+                Command24Data::from_data(command_code, &data_slice[1..], optional_slice)
+                    .map(Self::Command24)
             },
             other => {
-                let mut data = MaxArray::new();
-                data.fill_from(data_slice.iter().map(|b| *b));
-
-                let mut optional_data = MaxArray::new();
-                optional_data.fill_from(optional_slice.iter().map(|b| *b));
+                let data = MaxArray::from_iter_or_panic(
+                    data_slice.iter().map(|b| *b).peekable()
+                );
+                let optional_data = MaxArray::from_iter_or_panic(
+                    optional_slice.iter().map(|b| *b).peekable()
+                );
 
                 Some(Self::Unknown {
                     packet_type: other,
@@ -1015,11 +948,11 @@ impl EventData {
 
                 let postmaster_priority = PostmasterPriority::from_bits_truncate(data_slice[0]);
                 let manufacturer_id = u16::from_be_bytes(data_slice[1..3].try_into().unwrap());
-                let eep = (
+                let eep =
                     u32::from(data_slice[3]) << 16
                     | u32::from(data_slice[4]) << 8
                     | u32::from(data_slice[5])
-                );
+                ;
                 let rssi = data_slice[6];
                 let postmaster_candidate_id = u32::from_be_bytes(data_slice[7..11].try_into().unwrap());
                 let smart_ack_client_id = u32::from_be_bytes(data_slice[11..15].try_into().unwrap());
@@ -1055,11 +988,8 @@ impl EventData {
 
                 let wakeup_cause = data_slice[0].into();
 
-                let opt_security_mode = if optional_slice.len() >= 1 {
-                    Some(optional_slice[0])
-                } else {
-                    None
-                };
+                let opt_security_mode = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
 
                 Some(Self::CoReady {
                     wakeup_cause,
@@ -1811,8 +1741,340 @@ impl CommandData {
         }
     }
 
-    pub fn from_data(event_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
-        todo!();
+    pub fn from_data(command_code: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
+        match command_code {
+            1 => { // CoWrSleep
+                if data_slice.len() != 4 {
+                    return None;
+                }
+
+                let deep_sleep_period = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                Some(Self::CoWrSleep {
+                    deep_sleep_period,
+                })
+            },
+            2..=6|8|10|13|15|21|24 => {
+                if data_slice.len() != 0 {
+                    return None;
+                }
+                #[allow(deprecated)]
+                Some(match command_code {
+                    2 => Self::CoWrReset,
+                    3 => Self::CoRdVersion,
+                    4 => Self::CoRdSysLog,
+                    5 => Self::CoWrSysLog,
+                    6 => Self::CoWrBiSt,
+                    8 => Self::CoRdIdBase,
+                    10 => Self::CoRdRepeater,
+                    13 => Self::CoWrFilterDelAll,
+                    15 => Self::CoRdFilter,
+                    21 => Self::CoRdSecurity,
+                    24 => Self::CoRdLearnMode,
+                })
+            },
+            7 => { // CoWrIdBase
+                if data_slice.len() != 4 {
+                    return None;
+                }
+
+                let base_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                Some(Self::CoWrIdBase {
+                    base_id,
+                })
+            },
+            9 => { // CoWrRepeater
+                if data_slice.len() != 2 {
+                    return None;
+                }
+
+                let enable = data_slice[0].into();
+                let level = data_slice[1].into();
+                Some(Self::CoWrRepeater {
+                    enable,
+                    level,
+                })
+            },
+            11 => { // CoWrFilterAdd
+                if data_slice.len() != 6 {
+                    return None;
+                }
+
+                let criterion = data_slice[0].into();
+                let value = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+                let action = data_slice[5].into();
+                Some(Self::CoWrFilterAdd {
+                    criterion,
+                    value,
+                    action,
+                })
+            },
+            12 => { // CoWrFilterDel
+                if data_slice.len() != 6 {
+                    return None;
+                }
+
+                let criterion = data_slice[0].into();
+                let value = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+                let action = data_slice[5].into();
+                Some(Self::CoWrFilterDel {
+                    criterion,
+                    value,
+                    action,
+                })
+            },
+            14 => { // CoWrFilterEnable
+                if data_slice.len() != 2 {
+                    return None;
+                }
+
+                let enable = data_slice[0].into();
+                let operator = data_slice[1].into();
+                Some(Self::CoWrFilterEnable {
+                    enable,
+                    operator,
+                })
+            },
+            16 => { // CoWrWaitMaturity
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let wait_for_maturity = data_slice[0].into();
+                Some(Self::CoWrWaitMaturity {
+                    wait_for_maturity,
+                })
+            },
+            17 => { // CoWrSubTelegram
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let enable_subtelegram_info = data_slice[0].into();
+                Some(Self::CoWrSubTelegram {
+                    enable_subtelegram_info,
+                })
+            },
+            18 => { // CoWrMem
+                if data_slice.len() < 5 {
+                    return None;
+                }
+
+                let memory_type = data_slice[0].into();
+                let address = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+                let mut data = MaxArray::from_iter_or_panic(
+                    data_slice[5..].iter().map(|b| *b).peekable()
+                );
+                Some(Self::CoWrMem {
+                    memory_type,
+                    address,
+                    data,
+                })
+            },
+            19 => { // CoRdMem
+                if data_slice.len() != 7 {
+                    return None;
+                }
+
+                let memory_type = data_slice[0].into();
+                let address = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+                let length = u16::from_be_bytes(data_slice[5..7].try_into().unwrap());
+                Some(Self::CoRdMem {
+                    memory_type,
+                    address,
+                    length,
+                })
+            },
+            20 => { // CoRdMemAddress
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let area = data_slice[0].into();
+                Some(Self::CoRdMemAddress {
+                    area,
+                })
+            },
+            22 => { // CoWrSecurity
+                if data_slice.len() != 10 {
+                    return None;
+                }
+
+                let security_level = data_slice[0].into();
+                let key = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+                let rolling_code = u32::from_be_bytes(data_slice[5..9].try_into().unwrap());
+                #[allow(deprecated)]
+                Some(Self::CoWrSecurity {
+                    security_level,
+                    key,
+                    rolling_code,
+                })
+            },
+            23 => { // CoWrLearnMode
+                if data_slice.len() != 5 {
+                    return None;
+                }
+
+                let enable = data_slice[0].into();
+                let timeout = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+
+                let opt_channel = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
+                Some(Self::CoWrLearnMode {
+                    enable,
+                    timeout,
+                    opt_channel,
+                })
+            },
+            25 => { // CoWrSecureDeviceAdd
+                if data_slice.len() != 24 {
+                    return None;
+                }
+
+                let slf = data_slice[0].into();
+                let device_id = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+                let private_key = [
+                    u32::from_be_bytes(data_slice[5..9].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[9..13].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[13..17].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[17..21].try_into().unwrap()),
+                ];
+
+                // rolling code is only three bytes; decode manually
+                let rolling_code =
+                    (u32::from(data_slice[21]) << 16)
+                    | (u32::from(data_slice[22]) << 8)
+                    | u32::from(data_slice[23])
+                ;
+
+                let opt_direction = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
+                let opt_is_ptm_sender = (optional_slice.len() >= 2)
+                    .then(|| optional_slice[1].into());
+                let opt_teach_info = (optional_slice.len() >= 3)
+                    .then(|| optional_slice[2].into());
+
+                #[allow(deprecated)]
+                Some(Self::CoWrSecureDeviceAdd {
+                    slf,
+                    device_id,
+                    private_key,
+                    rolling_code,
+                    opt_direction,
+                    opt_is_ptm_sender,
+                    opt_teach_info,
+                })
+            },
+            26 => { // CoWrSecureDeviceDel
+                if data_slice.len() != 4 {
+                    return None;
+                }
+
+                let device_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                let opt_direction = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
+
+                #[allow(deprecated)]
+                Some(Self::CoWrSecureDeviceDel {
+                    device_id,
+                    opt_direction,
+                })
+            },
+            27 => { // CoRdSecureDeviceByIndex
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let index = data_slice[0];
+                let opt_direction = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
+
+                Some(Self::CoRdSecureDeviceByIndex {
+                    index,
+                    opt_direction,
+                })
+            },
+            28 => { // CoWrMode
+                if data_slice.len() != 1 {
+                    return None;
+                }
+
+                let mode = data_slice[0].into();
+                Some(Self::CoWrMode {
+                    mode,
+                })
+            },
+            29 => { // CoRdNumSecureDevices
+                if data_slice.len() != 0 {
+                    return None;
+                }
+
+                let opt_direction = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
+
+                Some(Self::CoRdNumSecureDevices {
+                    opt_direction,
+                })
+            },
+            30 => { // CoRdSecureDeviceById
+                if data_slice.len() != 4 {
+                    return None;
+                }
+
+                let device_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                let opt_direction = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
+
+                Some(Self::CoRdSecureDeviceById {
+                    device_id,
+                    opt_direction,
+                })
+            },
+            31 => { // CoWrSecureDeviceAddPsk
+                if data_slice.len() != 20 {
+                    return None;
+                }
+
+                let device_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                let psk = [
+                    u32::from_be_bytes(data_slice[4..8].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[8..13].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[12..16].try_into().unwrap()),
+                    u32::from_be_bytes(data_slice[16..20].try_into().unwrap()),
+                ];
+
+                Some(Self::CoWrSecureDeviceAddPsk {
+                    device_id,
+                    psk,
+                })
+            },
+            32 => { // CoWrSecureDeviceSendTeachIn
+                if data_slice.len() != 4 {
+                    return None;
+                }
+
+                let device_id = u32::from_be_bytes(data_slice[0..4].try_into().unwrap());
+                let opt_teach_info = (optional_slice.len() >= 1)
+                    .then(|| optional_slice[0].into());
+
+                Some(Self::CoWrSecureDeviceSendTeachIn {
+                    device_id,
+                    opt_teach_info,
+                })
+            },
+            33 => { // CoWrTemporaryRlcWindow
+                if data_slice.len() != 5 {
+                    return None;
+                }
+
+                let enable = data_slice[0].into();
+                let rlc_window = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
+
+                Some(Self::CoWrTemporaryRlcWindow {
+                    enable,
+                    rlc_window,
+                })
+            },
+        }
     }
 }
 

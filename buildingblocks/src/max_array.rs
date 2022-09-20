@@ -1,5 +1,6 @@
 use core::cmp::Ordering;
 use core::hash::Hash;
+use core::iter::Peekable;
 use core::mem::{MaybeUninit, replace};
 
 
@@ -10,6 +11,7 @@ pub struct MaxArray<T, const MAX_SIZE: usize> {
     length: usize,
 }
 impl<T, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
+    /// Creates a new, empty `MaxArray`.
     pub const fn new() -> Self {
         let buf = unsafe {
             MaybeUninit::<[MaybeUninit<T>; MAX_SIZE]>::uninit().assume_init()
@@ -20,9 +22,24 @@ impl<T, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
         }
     }
 
+    /// Creates a new `MaxArray` from all the elements in the peekable iterator. Panics if not all
+    /// elements from the iterator fit into the `MaxArray`.
+    pub fn from_iter_or_panic<I: Iterator<Item = T>>(iterator: Peekable<I>) -> Self {
+        let mut ret = Self::new();
+        if !ret.fill_from(iterator) {
+            panic!("iterator not emptied when filling MaxArray");
+        }
+        ret
+    }
+
+    /// The number of elements currently contained in the array.
     #[inline] pub const fn len(&self) -> usize { self.length }
+
+    /// The maximum number of elements that can be stored in this array.
     #[inline] pub const fn max_size(&self) -> usize { MAX_SIZE }
 
+    /// Appends a single element to the end of the array. Returns `Ok(())` if there was enough space
+    /// for the element and `Err(val)` (where `val` is the element to be appended) if not.
     pub fn push(&mut self, val: T) -> Result<(), T> {
         if self.length < self.array.len() {
             self.array[self.length] = MaybeUninit::new(val);
@@ -33,6 +50,8 @@ impl<T, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
         }
     }
 
+    /// Removes a single item from the end of the array. Returns `Some(element)` if the array
+    /// contained at least one element and `None` if it was empty.
     pub fn pop(&mut self) -> Option<T> {
         if self.length > 0 {
             self.length -= 1;
@@ -43,6 +62,8 @@ impl<T, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
         }
     }
 
+    /// Returns an iterator that iterates over references to the elements currently contained in the
+    /// MaxArray.
     pub fn iter(&self) -> Iter<T, MAX_SIZE> {
         Iter {
             max_slice: self,
@@ -50,6 +71,7 @@ impl<T, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
         }
     }
 
+    /// Returns an immutable slice of the part of the array that is currently occupied.
     #[inline]
     pub fn as_slice(&self) -> &[T] {
         unsafe {
@@ -58,6 +80,9 @@ impl<T, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
         }
     }
 
+    /// Returns a mutable slice of the part of the array that is currently occupied.
+    ///
+    /// Note that it is not possible to change the length of the MaxArray through this slice.
     #[inline]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         unsafe {
@@ -66,12 +91,15 @@ impl<T, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
         }
     }
 
+    /// Returns whether the array can fit the given number of elements.
     #[inline]
     pub fn can_fit(&self, element_count: usize) -> bool {
         element_count <= self.max_size() - self.len()
     }
 
-    pub fn fill_from<I: Iterator<Item = T>>(&mut self, mut iterator: I) {
+    /// Replaces the elements in the MaxArray by those returned by the provided peekable iterator.
+    /// Returns whether the iterator was fully emptied by this operation.
+    pub fn fill_from<I: Iterator<Item = T>>(&mut self, mut iterator: Peekable<I>) -> bool {
         let old_length = self.len();
 
         self.length = 0;
@@ -100,14 +128,23 @@ impl<T, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
             );
             unsafe { old_value.assume_init() };
         }
+
+        // return whether we managed to fill the buffer
+        // (the iterator is empty if we did)
+        iterator.peek().is_none()
     }
 }
 impl<T: Clone, const MAX_SIZE: usize> MaxArray<T, MAX_SIZE> {
-    pub fn copy_into(&self, slice: &mut [T]) {
+    /// Stores clones of the elements from this MaxArray into the given slice.
+    ///
+    /// Returns the number of elements stored in the slice (the length of the MaxArray or the
+    /// length of the slice, whichever is smaller).
+    pub fn copy_into(&self, slice: &mut [T]) -> usize {
         let out_length = slice.len().min(self.len());
         for i in 0..out_length {
             slice[i] = unsafe { self.array[i].assume_init_ref() }.clone();
         }
+        out_length
     }
 }
 impl<T, const SIZE: usize> Drop for MaxArray<T, SIZE> {
