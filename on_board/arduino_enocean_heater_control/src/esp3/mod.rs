@@ -489,7 +489,7 @@ impl Esp3Packet {
         let packet_type = bytes[4];
         match packet_type {
             1 => { // RadioErp1
-                let mut radio_telegram = MaxArray::from_iter_or_panic(
+                let radio_telegram = MaxArray::from_iter_or_panic(
                     data_slice.iter().map(|b| *b).peekable()
                 );
 
@@ -516,7 +516,7 @@ impl Esp3Packet {
                 }
 
                 let return_code = data_slice[0].into();
-                let mut response_data = MaxArray::from_iter_or_panic(
+                let response_data = MaxArray::from_iter_or_panic(
                     data_slice[1..].iter().map(|b| *b).peekable()
                 );
 
@@ -526,7 +526,7 @@ impl Esp3Packet {
                 })
             },
             3 => { // RadioSubTelegram
-                let mut radio_telegram = MaxArray::from_iter_or_panic(
+                let radio_telegram = MaxArray::from_iter_or_panic(
                     data_slice.iter().map(|b| *b).peekable()
                 );
 
@@ -597,7 +597,7 @@ impl Esp3Packet {
                 }
                 let function = u16::from_be_bytes(data_slice[0..2].try_into().unwrap());
                 let manufacturer = u16::from_be_bytes(data_slice[2..4].try_into().unwrap());
-                let mut message = MaxArray::from_iter_or_panic(
+                let message = MaxArray::from_iter_or_panic(
                     data_slice[4..].iter().map(|b| *b).peekable()
                 );
 
@@ -626,7 +626,7 @@ impl Esp3Packet {
                 }
 
                 let rorg = data_slice[0];
-                let mut data = MaxArray::from_iter_or_panic(
+                let data = MaxArray::from_iter_or_panic(
                     data_slice[1..].iter().map(|b| *b).peekable()
                 );
 
@@ -649,7 +649,7 @@ impl Esp3Packet {
                 })
             },
             10 => { // RadioErp2
-                let mut data = MaxArray::from_iter_or_panic(
+                let data = MaxArray::from_iter_or_panic(
                     data_slice.iter().map(|b| *b).peekable()
                 );
 
@@ -681,7 +681,7 @@ impl Esp3Packet {
                 })
             },
             16 => { // Radio802Dot15Dot4
-                let mut raw_data = MaxArray::from_iter_or_panic(
+                let raw_data = MaxArray::from_iter_or_panic(
                     data_slice.iter().map(|b| *b).peekable()
                 );
 
@@ -1879,7 +1879,7 @@ impl CommandData {
 
                 let memory_type = data_slice[0].into();
                 let address = u32::from_be_bytes(data_slice[1..5].try_into().unwrap());
-                let mut data = MaxArray::from_iter_or_panic(
+                let data = MaxArray::from_iter_or_panic(
                     data_slice[5..].iter().map(|b| *b).peekable()
                 );
                 Some(Self::CoWrMem {
