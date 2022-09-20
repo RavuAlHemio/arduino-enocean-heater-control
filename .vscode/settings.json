@@ -4,5 +4,6 @@
         "Cargo.toml",
         "on_board/Cargo.toml",
         "on_host/Cargo.toml"
-    ]
+    ],
+    "rust-analyzer.procMacro.enable": true
 }
