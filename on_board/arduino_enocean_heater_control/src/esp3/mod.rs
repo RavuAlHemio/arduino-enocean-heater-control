@@ -67,7 +67,7 @@ const MIN_ESP3_PACKET_LENGTH: usize =
 /// 6. The data (65535 bytes long according to the size of the data length field)
 /// 7. The optional data (255 bytes according to the size of the optional data length field)
 /// 8. The CRC8 checksum of the data (1 byte long)
-const MAX_ESP3_PACKET_LENGTH: usize =
+pub const MAX_ESP3_PACKET_LENGTH: usize =
     HEADER_LENGTH + MAX_DATA_LENGTH + MAX_OPTIONAL_LENGTH + FOOTER_LENGTH
 ;
 

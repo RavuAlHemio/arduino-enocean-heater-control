@@ -10,6 +10,7 @@
 
 use atsam3x8e::{Interrupt, interrupt, Peripherals};
 use atsam3x8e::usart0::RegisterBlock as UsartRegisterBlock;
+use buildingblocks::max_array::MaxArray;
 use buildingblocks::ring_buffer::RingBuffer;
 use cortex_m::interrupt as cortex_interrupt;
 use cortex_m::peripheral::NVIC;
@@ -182,10 +183,10 @@ pub trait Usart {
 
         let clock_divider_u32 = (clock.clock_speed / 16) / bps;
         let clock_divider: u16 = clock_divider_u32.try_into().unwrap();
-        let mut clock_divider_hex = [0u8; 2*2];
+        let mut clock_divider_hex: MaxArray<u8, {2*2}> = MaxArray::new();
         crate::hex_dump(&clock_divider.to_be_bytes(), &mut clock_divider_hex);
         crate::uart::send(peripherals, b"USART clock divider: 0x");
-        crate::uart::send(peripherals, &clock_divider_hex);
+        crate::uart::send(peripherals, clock_divider_hex.as_slice());
         crate::uart::send(peripherals, b"\r\n");
 
         unsafe {
@@ -289,31 +290,19 @@ pub trait Usart {
     }
 
     /// Clears out the receive buffer for this USART and returns its contents.
-    ///
-    /// The return value is a buffer of constant size and the number of bytes actually stored in
-    /// that buffer.
-    fn take_receive_buffer() -> Option<([u8; RING_BUFFER_SIZE], usize)> {
-        let ring_buffer_opt = unsafe { Self::get_buffer_reference() };
-        if let Some(ring_buffer) = ring_buffer_opt {
-            let mut buf = [0u8; RING_BUFFER_SIZE];
-            let mut i = 0;
-            loop {
-                if i == buf.len() {
-                    break;
-                }
-                let byte_opt = cortex_interrupt::free(|_| ring_buffer.pop());
-                let byte = match byte_opt {
-                    Some(b) => b,
-                    None => break,
-                };
-
-                buf[i] = byte;
-                i += 1;
-            }
-            Some((buf, i))
-        } else {
-            None
+    fn take_receive_buffer() -> Option<MaxArray<u8, RING_BUFFER_SIZE>> {
+        let ring_buffer = unsafe { Self::get_buffer_reference() }
+            .as_mut()?;
+        let mut buf = MaxArray::new();
+        while buf.len() < buf.max_size() {
+            let byte_opt = cortex_interrupt::free(|_| ring_buffer.pop());
+            let byte = match byte_opt {
+                Some(b) => b,
+                None => break,
+            };
+            buf.push(byte).unwrap();
         }
+        Some(buf)
     }
 
     fn handle_interrupt() {

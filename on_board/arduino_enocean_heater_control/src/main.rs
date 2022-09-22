@@ -17,12 +17,14 @@ use core::time::Duration;
 use atsam3x8e::Peripherals;
 use buildingblocks::bit_field;
 use buildingblocks::crc8;
+use buildingblocks::max_array::MaxArray;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
 
 use crate::atsam3x8e_ext::setup::system_init;
 use crate::atsam3x8e_ext::tick::{delay, enable_tick_clock};
 use crate::display::DisplayCommand;
+use crate::esp3::{CommandData, Esp3Packet};
 use crate::usart::{Usart, Usart3};
 
 
@@ -38,24 +40,6 @@ fn loopy_panic_handler(_: &PanicInfo) -> ! {
 }
 
 
-fn uart_send(peripherals: &mut Peripherals, buffer: &[u8]) {
-    for b in buffer {
-        while peripherals.UART.sr.read().txrdy().bit_is_clear() {
-            // wait until transmission is ready
-        }
-
-        unsafe {
-            peripherals.UART.thr.write_with_zero(|w| w
-                .txchr().variant(*b)
-            )
-        };
-    }
-
-    while peripherals.UART.sr.read().txempty().bit_is_clear() {
-        // wait until transmitter is empty
-    }
-}
-
 #[inline]
 fn nibble_to_hex(byte: u8) -> u8 {
     match byte {
@@ -65,22 +49,17 @@ fn nibble_to_hex(byte: u8) -> u8 {
     }
 }
 
-fn hex_dump(bytes: &[u8], hex: &mut [u8]) -> usize {
-    let mut i = 0;
+fn hex_dump<const N: usize>(bytes: &[u8], hex: &mut MaxArray<u8, N>) {
     for b in bytes {
-        if i >= hex.len() {
+        let push_res = hex.push(nibble_to_hex(*b >> 4));
+        if push_res.is_err() {
             break;
         }
-        hex[i] = nibble_to_hex(*b >> 4);
-        i += 1;
-
-        if i >= hex.len() {
+        let push_res = hex.push(nibble_to_hex(*b & 0x0F));
+        if push_res.is_err() {
             break;
         }
-        hex[i] = nibble_to_hex(*b & 0x0F);
-        i += 1;
     }
-    i
 }
 
 
@@ -98,11 +77,17 @@ fn main() -> ! {
     let mut clock = system_init(&mut peripherals);
     enable_tick_clock(&mut core_peripherals, clock.clock_speed / 1000);
 
+    // wait 10s
+    delay(Duration::from_secs(10));
+
+    // breakpoint
+    cortex_m::asm::bkpt();
+
     uart::init(&mut peripherals);
-    let mut clock_hex = [0u8; 4*2];
+    let mut clock_hex : MaxArray<u8, {4*2}> = MaxArray::new();
     hex_dump(&clock.clock_speed.to_be_bytes(), &mut clock_hex);
     uart::send(&mut peripherals, b"clock speed: 0x");
-    uart::send(&mut peripherals, &clock_hex);
+    uart::send(&mut peripherals, clock_hex.as_slice());
     uart::send(&mut peripherals, b"\r\n");
     uart::send(&mut peripherals, b"system and UART initialization complete\r\n");
 
@@ -137,6 +122,7 @@ fn main() -> ! {
     Usart3::set_rxtx_state(&mut peripherals, true, true);
     uart::send(&mut peripherals, b"TRANSMITTER AND RECEIVER ENABLED\r\n");
 
+    /*
     // wait five seconds
     delay(Duration::from_secs(5));
 
@@ -193,15 +179,64 @@ fn main() -> ! {
     loop {
         // PIOB CODR bit 27 to 1 = pin B27 is driven down
         sam_pin!(set_low, peripherals, PIOB, p27);
-        uart_send(&mut peripherals, b"-");
+        uart::send(&mut peripherals, b"-");
 
         delay(Duration::from_millis(1000));
 
         // PIOB SODR bit 27 to 1 = pin B27 is driven up
         sam_pin!(set_high, peripherals, PIOB, p27);
-        uart_send(&mut peripherals, b"+");
+        uart::send(&mut peripherals, b"+");
 
         // wait a bit
         delay(Duration::from_millis(1000));
+    }
+    */
+
+    // read the version of the EnOcean chip
+    uart::send(&mut peripherals, b"PACKAGING VERSION PACKET\r\n");
+    let version_packet_opt = Esp3Packet::CommonCommand(CommandData::CoRdVersion)
+        .to_packet();
+    let version_packet = match &version_packet_opt {
+        Some(vp) => {
+            uart::send(&mut peripherals, b"VERSION PACKET PACKAGED\r\n");
+            vp
+        },
+        None => {
+            uart::send(&mut peripherals, b"OH NO\r\n");
+            loop {
+                delay(Duration::from_secs(5));
+            }
+        }
+    };
+    Usart3::transmit(&mut peripherals, version_packet.as_slice());
+
+    loop {
+        // transfer from USART to ESP3 buffer
+        if let Some(buf) = Usart3::take_receive_buffer() {
+            uart::send(&mut peripherals, b"TRANSFERRING BUFFER\r\n");
+            for b in buf.iter() {
+                esp3::serial::push_to_buffer(*b);
+            }
+        } else {
+            uart::send(&mut peripherals, b"NO BUFFER\r\n");
+        }
+
+        // try taking a packet
+        if let Some(packet) = esp3::serial::take_esp3_packet() {
+            uart::send(&mut peripherals, b"CRUNCHING PACKET\r\n");
+            // hex-dump it
+            let mut hex: MaxArray<u8, {2*esp3::MAX_ESP3_PACKET_LENGTH+2}> = MaxArray::new();
+            hex_dump(packet.as_slice(), &mut hex);
+            hex.push(b'\r').unwrap();
+            hex.push(b'\n').unwrap();
+
+            // send the hex dump via UART
+            uart::send(&mut peripherals, hex.as_slice());
+        } else {
+            uart::send(&mut peripherals, b"NO PACKET\r\n");
+        }
+
+        // doze off for a bit
+        delay(Duration::from_millis(10));
     }
 }

@@ -61,3 +61,9 @@ pub fn send(peripherals: &mut Peripherals, buffer: &[u8]) {
         // wait until transmitter is empty
     }
 }
+
+/// Sends a message, stealing the UART for this purpose.
+pub fn send_stolen(buffer: &[u8]) {
+    let mut peripherals = unsafe { Peripherals::steal() };
+    send(&mut peripherals, buffer);
+}

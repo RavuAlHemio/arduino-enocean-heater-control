@@ -12,6 +12,12 @@ use crate::ring_buffer::CriticalRingBuffer;
 static ESP3_BUFFER: CriticalRingBuffer<u8, MAX_ESP3_PACKET_LENGTH> = CriticalRingBuffer::new();
 
 
+/// Pushes a byte into the ESP3 ring buffer.
+pub fn push_to_buffer(b: u8) {
+    ESP3_BUFFER.push(b);
+}
+
+
 /// Takes bytes from the ESP3 ring buffer until a valid ESP3 packet is decoded, then returns its
 /// bytes.
 pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
@@ -49,6 +55,11 @@ pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
             let opt_length = possible_header[3];
             // header, data, opt data, data CRC8
             let total_length = HEADER_LENGTH + usize::from(data_length) + usize::from(opt_length) + FOOTER_LENGTH;
+            if ESP3_BUFFER.max_size() < total_length {
+                // our buffer isn't large enough for this huge packet anyway
+                // pop the sync byte and search for the next one
+                ESP3_BUFFER.pop();
+            }
             if ESP3_BUFFER.len() < total_length {
                 // nope, we still need a few more bytes
                 return None;
@@ -58,7 +69,8 @@ pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
             break total_length;
         }
 
-        // no, it isn't a valid packet... pop the sync byte and search for the next one
+        // no, it isn't a valid packet...
+        // pop the sync byte and search for the next one
         ESP3_BUFFER.pop();
     };
 

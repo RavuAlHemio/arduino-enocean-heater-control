@@ -63,5 +63,7 @@ impl<T: Copy + Default, const SIZE: usize> CriticalRingBuffer<T, SIZE> {
             mut_ref.len()
         })
     }
+
+    #[inline] pub const fn max_size(&self) -> usize { SIZE }
 }
 unsafe impl<T: Copy + Default + Sync, const SIZE: usize> Sync for CriticalRingBuffer<T, SIZE> {}
