@@ -59,6 +59,7 @@ pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
                 // our buffer isn't large enough for this huge packet anyway
                 // pop the sync byte and search for the next one
                 ESP3_BUFFER.pop();
+                continue;
             }
             if ESP3_BUFFER.len() < total_length {
                 // nope, we still need a few more bytes
