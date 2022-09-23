@@ -92,9 +92,9 @@ dependencies = [
 
 [[package]]
 name = "from-to-repr"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a18eef1ae16a68130dfa1e2d0d1cdf23ae657e27e4b7ab273fb17484fa580106"
+checksum = "1c332010f2569a590ea5a1b343777a5014d9a315d03d26036b1af88415b8f1fd"
 dependencies = [
  "proc-macro2",
  "quote",

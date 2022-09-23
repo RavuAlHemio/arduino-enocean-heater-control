@@ -722,8 +722,8 @@ impl Esp3Packet {
 
 
 /// An ESP3 security level value.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum SecurityLevel {
     NoSecurity = 0x0,
     Obsolete = 0x1,
@@ -735,8 +735,8 @@ pub enum SecurityLevel {
 
 
 /// The type of response.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum ReturnCode {
     Ok = 0x00,
     Error = 0x01,
@@ -2658,8 +2658,8 @@ bitflags! {
 }
 
 /// A Smart Acknowledgement confirmation code.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum SmartAckConfirmCode {
     LearnIn = 0x00,
     DiscardEep = 0x11,
@@ -2671,8 +2671,8 @@ pub enum SmartAckConfirmCode {
 }
 
 /// The reason for the EnOcean controller being activated.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum WakeupCause {
     VoltageSupplyDrop = 0x00,
     ResetPin = 0x01,
@@ -2689,8 +2689,8 @@ pub enum WakeupCause {
 }
 
 /// The security mode in which the controller is operating.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum SecurityMode {
     Standard = 0x00,
     Extended = 0x01,
@@ -2698,8 +2698,8 @@ pub enum SecurityMode {
 }
 
 /// The cause for the secure device event.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum SecureDeviceEventCause {
     SecureLinkTableFull = 0x00,
     // 0x01 is reserved
@@ -2716,8 +2716,8 @@ pub enum SecureDeviceEventCause {
 }
 
 /// A boolean value stored in one byte.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum OneByteBoolean {
     Yes = 0x00,
     No = 0x01,
@@ -2730,8 +2730,8 @@ impl From<bool> for OneByteBoolean {
 }
 
 /// The reason for a transmission failure.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum TransmissionFailureReason {
     CsmaFailed = 0x00,
     NotAcknowledged = 0x01,
@@ -2739,8 +2739,8 @@ pub enum TransmissionFailureReason {
 }
 
 /// The mode in which to enable the internal repeater.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum RepeaterEnable {
     Off = 0x00,
     On = 0x01,
@@ -2749,8 +2749,8 @@ pub enum RepeaterEnable {
 }
 
 /// The level with which to repeat datagrams.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum RepeaterLevel {
     Off = 0x00,
     OneLevel = 0x01,
@@ -2766,8 +2766,8 @@ pub struct FilterEntry {
 }
 
 /// The channel which to target.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum ChannelNumber {
     Absolute(u8),
     RelativePrevious = 0xFE,
@@ -2775,8 +2775,8 @@ pub enum ChannelNumber {
 }
 
 /// The mode in which to operate the transceiver.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum TransceiverMode {
     Compatible = 0x00,
     Advanced = 0x01,
@@ -2784,8 +2784,8 @@ pub enum TransceiverMode {
 }
 
 /// The direction table on which to operate.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum DirectionTable {
     Inbound = 0x00,
     Outbound = 0x01,
@@ -2794,8 +2794,8 @@ pub enum DirectionTable {
 }
 
 /// The direction table on which to operate, for commands that allow specifying "both".
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum DirectionTableBoth {
     Inbound = 0x00,
     Outbound = 0x01,
@@ -2806,8 +2806,8 @@ pub enum DirectionTableBoth {
 
 /// The direction table on which to operate, for commands that allow specifying the maintenance
 /// link.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum DirectionTableMaintenance {
     Inbound = 0x00,
     Outbound = 0x01,
@@ -2817,8 +2817,8 @@ pub enum DirectionTableMaintenance {
 }
 
 /// The baud rate with which the controller should communicate via UART.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum BaudRate {
     Baud57600 = 0x00,
     Baud115200 = 0x01,
@@ -2828,8 +2828,8 @@ pub enum BaudRate {
 }
 
 /// The radio frequency on which the controller communicates.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum Frequency {
     Mhz315 = 0x00,
     Mhz868Point3 = 0x01,
@@ -2841,8 +2841,8 @@ pub enum Frequency {
 }
 
 /// The radio protocol with which the controller communicates.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum Protocol {
     Erp1 = 0x00,
     Erp2 = 0x01,
@@ -2852,8 +2852,8 @@ pub enum Protocol {
 }
 
 /// A type of transmit-only mode.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum TxOnlyMode {
     Off = 0x00,
     On = 0x01,
@@ -2862,8 +2862,8 @@ pub enum TxOnlyMode {
 }
 
 /// The criterion on which to filter messages.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum FilterCriterion {
     SourceAddress = 0x00,
     TelegramType = 0x01,
@@ -2874,8 +2874,8 @@ pub enum FilterCriterion {
 
 
 /// The action to perform on messages that match the filter criterion.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum FilterAction {
     Drop = 0x00,
     Forward = 0x80,
@@ -2885,8 +2885,8 @@ pub enum FilterAction {
 }
 
 /// The operator used to unify multiple filters.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum FilterOperator {
     Or = 0x00,
     And = 0x01,
@@ -2896,8 +2896,8 @@ pub enum FilterOperator {
 }
 
 /// The type of memory being accessed.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum MemoryType {
     Flash = 0x00,
     Ram0 = 0x01,
@@ -2909,8 +2909,8 @@ pub enum MemoryType {
 }
 
 /// The address area being queried.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum AddressArea {
     Config = 0,
     SmartAckTable = 1,
@@ -2920,8 +2920,8 @@ pub enum AddressArea {
 
 
 /// An extended learn mode.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum ExtendedLearnMode {
     Simple = 0,
     Advanced = 1,
@@ -2930,8 +2930,8 @@ pub enum ExtendedLearnMode {
 }
 
 /// Learn In/Out mode.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum LearnInOut {
     LearnIn = 0x00,
     LearnOut = 0x20,
@@ -2947,8 +2947,8 @@ pub struct LearnedClient {
 }
 
 /// The status of a mailbox.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[from_to_repr::from_to_other(base_type = u8)]
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum MailboxStatus {
     Empty = 0,
     Full = 1,
