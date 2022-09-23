@@ -24,8 +24,19 @@ const HEADER_LENGTH: usize = 1 + 2 + 1 + 1 + 1;
 
 /// The maximum length of the (non-optional) data in an ESP3 packet.
 ///
-/// The data length field can store values of up to 0xFFFF, i.e. 65535.
+/// The data length field can store values of up to 0xFFFF, i.e. 65535. However, for pragmatic
+/// reasons (RAM limitations), the maximum size can be reduced; longer packets are silently
+/// discarded.
+#[cfg(feature = "full_esp3_packet")]
 const MAX_DATA_LENGTH: usize = 0xFFFF;
+
+/// The maximum length of the (non-optional) data in an ESP3 packet.
+///
+/// The data length field can store values of up to 0xFFFF, i.e. 65535. However, for pragmatic
+/// reasons (RAM limitations), the maximum size can be reduced; longer packets are silently
+/// discarded.
+#[cfg(not(feature = "full_esp3_packet"))]
+const MAX_DATA_LENGTH: usize = 0x0FFF;
 
 
 /// The maximum length of the optional data in an ESP3 packet.
