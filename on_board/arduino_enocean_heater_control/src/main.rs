@@ -77,12 +77,6 @@ fn main() -> ! {
     let mut clock = system_init(&mut peripherals);
     enable_tick_clock(&mut core_peripherals, clock.clock_speed / 1000);
 
-    // wait 10s
-    delay(Duration::from_secs(10));
-
-    // breakpoint
-    cortex_m::asm::bkpt();
-
     uart::init(&mut peripherals);
     let mut clock_hex : MaxArray<u8, {4*2}> = MaxArray::new();
     hex_dump(&clock.clock_speed.to_be_bytes(), &mut clock_hex);
