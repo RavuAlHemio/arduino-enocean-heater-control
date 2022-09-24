@@ -67,3 +67,11 @@ impl<T: Copy + Default, const SIZE: usize> CriticalRingBuffer<T, SIZE> {
     #[inline] pub const fn max_size(&self) -> usize { SIZE }
 }
 unsafe impl<T: Copy + Default + Sync, const SIZE: usize> Sync for CriticalRingBuffer<T, SIZE> {}
+impl<T: Copy + Default, const SIZE: usize> Clone for CriticalRingBuffer<T, SIZE> {
+    fn clone(&self) -> Self {
+        let inner_buffer = unsafe { (&*self.buffer.get()).clone() };
+        Self {
+            buffer: UnsafeCell::new(inner_buffer),
+        }
+    }
+}
