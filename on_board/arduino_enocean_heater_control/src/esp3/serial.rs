@@ -46,7 +46,7 @@ pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
         ESP3_BUFFER.peek_fill(&mut possible_header);
 
         // does the CRC8 match?
-        let calculated_crc = crc8_ccitt(&possible_header[0..HEADER_LENGTH-1]);
+        let calculated_crc = crc8_ccitt(&possible_header[1..HEADER_LENGTH-1]);
         if calculated_crc == possible_header[HEADER_LENGTH-1] {
             // yes -- it's a packet!
 
@@ -71,6 +71,7 @@ pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
         }
 
         // no, it isn't a valid packet...
+        crate::uart::send_stolen(b"invalid packet :-(\r\n");
         // pop the sync byte and search for the next one
         ESP3_BUFFER.pop();
     };
