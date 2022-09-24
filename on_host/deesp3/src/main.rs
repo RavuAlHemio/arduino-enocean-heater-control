@@ -1,6 +1,7 @@
 use std::env;
 
 use buildingblocks::esp3::Esp3Packet;
+use buildingblocks::esp3::erp::ErpData;
 
 
 fn unhex_nibble(b: u8) -> Option<u8> {
@@ -40,6 +41,17 @@ fn main() {
     }
 
     // attempt to decode this
-    let pkt = Esp3Packet::from_slice(&buf);
-    println!("{:#?}", pkt);
+    let pkt_opt = Esp3Packet::from_slice(&buf);
+    println!("{:#?}", pkt_opt);
+
+    if let Some(pkt) = pkt_opt {
+        if let Esp3Packet::RadioErp1 { radio_telegram, .. } = pkt {
+            // attempt to decode this message
+            let message_opt = ErpData::from_slice(radio_telegram.as_slice());
+            match message_opt {
+                Some(msg) => println!("decoded radio message: {:#?}", msg),
+                None => println!("failed to decode radio message"),
+            }
+        }
+    }
 }

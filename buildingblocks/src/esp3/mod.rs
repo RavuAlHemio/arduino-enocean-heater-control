@@ -1,6 +1,7 @@
 //! An implementation of the EnOcean Serial Protocol 3 (ESP3).
 
 
+pub mod erp;
 pub mod response_data;
 
 
