@@ -2,9 +2,9 @@
 
 
 use buildingblocks::crc8::crc8_ccitt;
+use buildingblocks::esp3::{FOOTER_LENGTH, HEADER_LENGTH, MAX_ESP3_PACKET_LENGTH, SYNC_BYTE};
 use buildingblocks::max_array::MaxArray;
 
-use crate::esp3::{FOOTER_LENGTH, HEADER_LENGTH, MAX_ESP3_PACKET_LENGTH, SYNC_BYTE};
 use crate::ring_buffer::CriticalRingBuffer;
 
 

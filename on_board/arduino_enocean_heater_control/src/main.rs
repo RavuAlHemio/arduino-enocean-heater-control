@@ -5,7 +5,7 @@
 mod atsam3x8e_ext;
 mod click_spi;
 mod display;
-mod esp3;
+mod esp3_serial;
 mod ring_buffer;
 mod uart;
 mod usart;
@@ -17,6 +17,7 @@ use core::time::Duration;
 use atsam3x8e::Peripherals;
 use buildingblocks::bit_field;
 use buildingblocks::crc8;
+use buildingblocks::esp3::{CommandData, Esp3Packet};
 use buildingblocks::max_array::MaxArray;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
@@ -24,7 +25,6 @@ use cortex_m_rt::{entry, exception};
 use crate::atsam3x8e_ext::setup::system_init;
 use crate::atsam3x8e_ext::tick::{delay, enable_tick_clock};
 use crate::display::DisplayCommand;
-use crate::esp3::{CommandData, Esp3Packet};
 use crate::usart::{Usart, Usart3};
 
 
@@ -213,14 +213,14 @@ fn main() -> ! {
         // transfer from USART to ESP3 buffer
         if let Some(buf) = Usart3::take_receive_buffer() {
             for b in buf.iter() {
-                esp3::serial::push_to_buffer(*b);
+                esp3_serial::push_to_buffer(*b);
             }
         }
 
         // try taking a packet
-        if let Some(packet) = esp3::serial::take_esp3_packet() {
+        if let Some(packet) = esp3_serial::take_esp3_packet() {
             // hex-dump it
-            let mut hex: MaxArray<u8, {2*esp3::MAX_ESP3_PACKET_LENGTH}> = MaxArray::new();
+            let mut hex: MaxArray<u8, {2*buildingblocks::esp3::MAX_ESP3_PACKET_LENGTH}> = MaxArray::new();
             hex_dump(packet.as_slice(), &mut hex);
 
             // send the hex dump via UART

@@ -1,14 +1,13 @@
 //! Definitions of the structures of ESP3 response data.
 
 
-use buildingblocks::max_array::MaxArray;
-use buildingblocks::max_array_ext::MaxArrayPushIntExt;
-
 use crate::esp3::{
     ChannelNumber, ExtendedLearnMode, FilterEntry, Frequency, LearnedClient, MailboxStatus,
     MAX_DATA_LENGTH, MAX_OPTIONAL_LENGTH, MemoryType, OneByteBoolean, Protocol, RepeaterEnable,
     RepeaterLevel, TxOnlyMode,
 };
+use crate::max_array::MaxArray;
+use crate::max_array_ext::MaxArrayPushIntExt;
 
 
 /// Trait to be implemented by response data.

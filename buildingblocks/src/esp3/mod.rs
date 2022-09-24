@@ -1,14 +1,14 @@
 //! An implementation of the EnOcean Serial Protocol 3 (ESP3).
 
 
-pub(crate) mod response_data;
-pub(crate) mod serial;
+pub mod response_data;
 
 
 use bitflags::bitflags;
-use buildingblocks::crc8::crc8_ccitt;
-use buildingblocks::max_array::MaxArray;
-use buildingblocks::max_array_ext::MaxArrayPushIntExt;
+
+use crate::crc8::crc8_ccitt;
+use crate::max_array::MaxArray;
+use crate::max_array_ext::MaxArrayPushIntExt;
 
 
 /// The (constant) length of an ESP3 packet header.
@@ -19,7 +19,7 @@ use buildingblocks::max_array_ext::MaxArrayPushIntExt;
 /// 3. The optional data length (maximum 0xFF, 1 byte long)
 /// 4. The packet type (1 byte long)
 /// 5. The CRC8 checksum of the header (1 byte long)
-const HEADER_LENGTH: usize = 1 + 2 + 1 + 1 + 1;
+pub const HEADER_LENGTH: usize = 1 + 2 + 1 + 1 + 1;
 
 
 /// The maximum length of the (non-optional) data in an ESP3 packet.
@@ -28,7 +28,7 @@ const HEADER_LENGTH: usize = 1 + 2 + 1 + 1 + 1;
 /// reasons (RAM limitations), the maximum size can be reduced; longer packets are silently
 /// discarded.
 #[cfg(feature = "full_esp3_packet")]
-const MAX_DATA_LENGTH: usize = 0xFFFF;
+pub const MAX_DATA_LENGTH: usize = 0xFFFF;
 
 /// The maximum length of the (non-optional) data in an ESP3 packet.
 ///
@@ -36,19 +36,19 @@ const MAX_DATA_LENGTH: usize = 0xFFFF;
 /// reasons (RAM limitations), the maximum size can be reduced; longer packets are silently
 /// discarded.
 #[cfg(not(feature = "full_esp3_packet"))]
-const MAX_DATA_LENGTH: usize = 0x0FFF;
+pub const MAX_DATA_LENGTH: usize = 0x0FFF;
 
 
 /// The maximum length of the optional data in an ESP3 packet.
 ///
 /// The optional data length field can store values of up to 0xFF, i.e. 255.
-const MAX_OPTIONAL_LENGTH: usize = 0xFF;
+pub const MAX_OPTIONAL_LENGTH: usize = 0xFF;
 
 
 /// The (constant) length of an ESP3 packet footer.
 ///
 /// The footer only contains the one-byte CRC8 value of the data and optional data.
-const FOOTER_LENGTH: usize = 1;
+pub const FOOTER_LENGTH: usize = 1;
 
 
 /// The minimum theoretical length of an ESP3 packet.
@@ -62,7 +62,7 @@ const FOOTER_LENGTH: usize = 1;
 /// 6. No data (0 bytes)
 /// 7. No optional data (0 bytes)
 /// 8. The CRC8 checksum of the data (1 byte long)
-const MIN_ESP3_PACKET_LENGTH: usize =
+pub const MIN_ESP3_PACKET_LENGTH: usize =
     HEADER_LENGTH + FOOTER_LENGTH
 ;
 
@@ -84,7 +84,7 @@ pub const MAX_ESP3_PACKET_LENGTH: usize =
 
 
 /// The byte used for synchronization.
-const SYNC_BYTE: u8 = 0x55;
+pub const SYNC_BYTE: u8 = 0x55;
 
 
 /// The contents of an ESP3 data packet.
