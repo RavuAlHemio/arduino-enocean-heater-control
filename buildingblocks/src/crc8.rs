@@ -58,5 +58,8 @@ mod tests {
 
         assert_eq!(crc8_ccitt(b"hello, world\n"), 0x93); // spelling/capitalization lifted from K&R
         assert_eq!(crc8_ccitt(b"All human beings are born free and equal in dignity and rights."), 0x3e);
+
+        assert_eq!(crc8_ccitt(&[0x00, 0x02, 0x01, 0x04]), 0xDF);
+        assert_eq!(crc8_ccitt(&[0x04, 0x01, 0x00]), 0xBE);
     }
 }
