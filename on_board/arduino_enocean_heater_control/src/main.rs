@@ -94,11 +94,9 @@ fn main() -> ! {
     // set up SPI
     click_spi::setup_pins_controller(&mut peripherals);
 
-    // disable RESET on the TCM515
+    // enable RESET on the TCM515
     sam_pin!(make_output, peripherals, PIOC, p16);
     sam_pin!(set_low, peripherals, PIOC, p16);
-    delay(Duration::from_millis(1000));
-    sam_pin!(set_high, peripherals, PIOC, p16);
 
     // set up the connection to the TCM515
     Usart3::set_pins(&mut peripherals);
@@ -121,6 +119,9 @@ fn main() -> ! {
     uart::send(&mut peripherals, b"RECEIVE-READY INTERRUPT ENABLED\r\n");
     Usart3::set_rxtx_state(&mut peripherals, true, true);
     uart::send(&mut peripherals, b"TRANSMITTER AND RECEIVER ENABLED\r\n");
+
+    // turn off the TCM515 reset pin
+    sam_pin!(set_high, peripherals, PIOC, p16);
 
     /*
     // wait five seconds
