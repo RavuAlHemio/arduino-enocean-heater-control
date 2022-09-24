@@ -323,6 +323,15 @@ pub trait Usart {
             // toss it in
             cortex_interrupt::free(|_| ring_buffer.push(byte));
         }
+
+        if reg_block.csr().read().ovre().bit_is_set() {
+            crate::uart::send_stolen(b"OVERRUN\r\n");
+            unsafe {
+                reg_block.cr().write_with_zero(|w| { w
+                    .rststa().set_bit()
+                })
+            };
+        }
     }
 }
 
