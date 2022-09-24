@@ -91,7 +91,7 @@ impl<T: Copy + Default, const SIZE: usize> RingBuffer<T, SIZE> {
         if slice.len() > self.len() {
             return false;
         }
-        for i in 0..self.len() {
+        for i in 0..slice.len() {
             slice[i] = self.peek_at(i).unwrap();
         }
         true
