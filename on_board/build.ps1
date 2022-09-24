@@ -6,20 +6,26 @@ Param (
 
     [Parameter(Position=1)]
     [string]
-    $DebugPort
+    $DebugPort,
+
+    [switch]
+    $NoBuild
 )
 
 
-& cargo build --release
-If ($LASTEXITCODE -ne 0)
+If (-not $NoBuild)
 {
-    Return 1
-}
+    & cargo build --release
+    If ($LASTEXITCODE -ne 0)
+    {
+        Return 1
+    }
 
-& rust-objcopy --output-target=binary .\target\thumbv7m-none-eabi\release\arduino_enocean_heater_control .\aehc
-If ($LASTEXITCODE -ne 0)
-{
-    Return 1
+    & rust-objcopy --output-target=binary .\target\thumbv7m-none-eabi\release\arduino_enocean_heater_control .\aehc
+    If ($LASTEXITCODE -ne 0)
+    {
+        Return 1
+    }
 }
 
 $kilobytes = (Get-Item -LiteralPath .\aehc).Length / 1024
