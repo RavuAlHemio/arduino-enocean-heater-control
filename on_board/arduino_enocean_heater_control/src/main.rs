@@ -117,6 +117,8 @@ fn main() -> ! {
     uart::send(&mut peripherals, b"RECEIVE BUFFER ENABLED\r\n");
     Usart3::set_receive_ready_interrupt(&mut peripherals, true);
     uart::send(&mut peripherals, b"RECEIVE-READY INTERRUPT ENABLED\r\n");
+    Usart3::set_core_interrupt(true);
+    uart::send(&mut peripherals, b"CORE USART3 INTERRUPT ENABLED\r\n");
     Usart3::set_rxtx_state(&mut peripherals, true, true);
     uart::send(&mut peripherals, b"TRANSMITTER AND RECEIVER ENABLED\r\n");
 
