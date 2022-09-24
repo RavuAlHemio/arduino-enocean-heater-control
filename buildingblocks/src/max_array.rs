@@ -1,11 +1,11 @@
 use core::cmp::Ordering;
+use core::fmt;
 use core::hash::Hash;
 use core::iter::Peekable;
 use core::mem::{MaybeUninit, replace};
 
 
 /// A variable-length array of constant (upper-bound) size.
-#[derive(Debug)]
 pub struct MaxArray<T, const MAX_SIZE: usize> {
     array: [MaybeUninit<T>; MAX_SIZE],
     length: usize,
@@ -211,6 +211,25 @@ impl<T: Hash, const MAX_SIZE: usize> Hash for MaxArray<T, MAX_SIZE> {
             let item_init = unsafe { item.assume_init_ref() };
             item_init.hash(state);
         }
+    }
+}
+impl<T: fmt::Debug, const MAX_SIZE: usize> fmt::Debug for MaxArray<T, MAX_SIZE> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("MaxArray")
+            .field("array", &MaxArrayFormatter(&self))
+            .field("length", &self.length)
+            .finish()
+    }
+}
+
+struct MaxArrayFormatter<'a, T: fmt::Debug, const MAX_SIZE: usize>(&'a MaxArray<T, MAX_SIZE>);
+impl<'a, T: fmt::Debug, const MAX_SIZE: usize> fmt::Debug for MaxArrayFormatter<'a, T, MAX_SIZE> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut dl = f.debug_list();
+        for i in 0..self.0.len() {
+            dl.entry(unsafe { self.0.array[i].assume_init_ref() });
+        }
+        dl.finish()
     }
 }
 
