@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "deesp3",
     "png2bitfield",
     "png2pixels",
     "svd2ghidrac",
