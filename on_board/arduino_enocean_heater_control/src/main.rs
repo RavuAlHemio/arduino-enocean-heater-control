@@ -189,6 +189,7 @@ fn main() -> ! {
     }
     */
 
+    /*
     // read the version of the EnOcean chip
     uart::send(&mut peripherals, b"PACKAGING VERSION PACKET\r\n");
     let version_packet_opt = Esp3Packet::CommonCommand(CommandData::CoRdVersion)
@@ -206,31 +207,26 @@ fn main() -> ! {
         }
     };
     Usart3::transmit(&mut peripherals, version_packet.as_slice());
+    */
 
     loop {
         // transfer from USART to ESP3 buffer
         if let Some(buf) = Usart3::take_receive_buffer() {
-            uart::send(&mut peripherals, b"TRANSFERRING BUFFER\r\n");
             for b in buf.iter() {
                 esp3::serial::push_to_buffer(*b);
             }
-        } else {
-            uart::send(&mut peripherals, b"NO BUFFER\r\n");
         }
 
         // try taking a packet
         if let Some(packet) = esp3::serial::take_esp3_packet() {
-            uart::send(&mut peripherals, b"CRUNCHING PACKET\r\n");
             // hex-dump it
-            let mut hex: MaxArray<u8, {2*esp3::MAX_ESP3_PACKET_LENGTH+2}> = MaxArray::new();
+            let mut hex: MaxArray<u8, {2*esp3::MAX_ESP3_PACKET_LENGTH}> = MaxArray::new();
             hex_dump(packet.as_slice(), &mut hex);
-            hex.push(b'\r').unwrap();
-            hex.push(b'\n').unwrap();
 
             // send the hex dump via UART
+            uart::send(&mut peripherals, b"got an ESP3 packet: ");
             uart::send(&mut peripherals, hex.as_slice());
-        } else {
-            uart::send(&mut peripherals, b"NO PACKET\r\n");
+            uart::send(&mut peripherals, b"\r\n");
         }
 
         // doze off for a bit
