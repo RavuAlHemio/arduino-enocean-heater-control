@@ -208,7 +208,7 @@ impl OneByteTelegram {
         })
     }
 }
-impl ErpStatusByte for RepeatedSwitchTelegram {
+impl ErpStatusByte for OneByteTelegram {
     fn status_byte(&self) -> u8 { self.status }
 }
 
@@ -273,7 +273,7 @@ impl FourByteTelegram {
         })
     }
 }
-impl ErpStatusByte for RepeatedSwitchTelegram {
+impl ErpStatusByte for FourByteTelegram {
     fn status_byte(&self) -> u8 { self.status }
 }
 
@@ -301,7 +301,7 @@ impl VariableLengthTelegram {
         })
     }
 }
-impl ErpStatusByte for RepeatedSwitchTelegram {
+impl ErpStatusByte for VariableLengthTelegram {
     fn status_byte(&self) -> u8 { self.status }
 }
 
