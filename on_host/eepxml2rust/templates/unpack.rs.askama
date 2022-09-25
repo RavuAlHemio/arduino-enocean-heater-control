@@ -1,0 +1,112 @@
+macro_rules! implement_horner {
+    ($name:ident, $type:ty, $zero:expr, $one:expr, $two:expr $(, $max_bits:expr)?) => {
+        fn $name(&self, lowest_bit_index: usize, bit_count: usize) -> $type {
+            $(assert!(bit_count <= $max_bits);)?
+            let mut value = $zero;
+            let mut factor = $one;
+            for i in lowest_bit_index..lowest_bit_index+bit_count {
+                if self.bit_is_set(i) {
+                    value += factor;
+                }
+                factor *= $two;
+            }
+            value
+        }
+    };
+}
+
+
+trait BitTwiddling {
+    /// Returns whether the bit at the given index is set.
+    fn bit_is_set(&self, bit_index: usize) -> bool;
+
+    /// Returns the number represented by the given range of bits as a 64-bit floating-point number.
+    fn f64_from_bits(&self, lowest_bit_index: usize, bit_count: usize) -> f64;
+}
+impl<'a> BitTwiddling for &'a [u8] {
+    // this implementation assumes that bytes are in little-endian order,
+    // i.e. from least to most significant;
+    // the bits within a byte are also considered to be little-endian
+    // (index 0 is LSb of self[0], index 7 is MSb of self[0], index 8 is LSb of self[1], etc.)
+
+    fn bit_is_set(&self, bit_index: usize) -> bool {
+        let byte_index = bit_index / 8;
+        let bit_in_byte_index = bit_index % 8;
+        assert!(byte_index < self.len());
+
+        self[byte_index] & (1 << bit_in_byte_index) != 0
+    }
+
+    implement_horner!(u8_from_bits, u8, 0, 1, 2, 8);
+    implement_horner!(u16_from_bits, u16, 0, 1, 2, 16);
+    implement_horner!(u32_from_bits, u32, 0, 1, 2, 32);
+    implement_horner!(u64_from_bits, u64, 0, 1, 2, 64);
+    implement_horner!(f64_from_bits, f64, 0.0, 1.0, 2.0);
+}
+
+
+fn range_scale(mut value: f64, min_range: f64, max_range: f64, min_scale: f64, max_scale: f64) -> f64 {
+    let bottom_range = min_range.min(max_range);
+    let top_range = min_range.max(max_range);
+    if value < bottom_range {
+        value = bottom_range;
+    }
+    if value > top_range {
+        value = top_range;
+    }
+
+    let value_zeroed = value - min_range;
+    let value_zeroed_scaled = value_zeroed * (max_scale - min_scale) / (max_range - min_range);
+    let value_scaled = value_zeroed_scaled + min_scale;
+    value_scaled
+}
+
+<% for rorg in rorgs %>
+/// <$ rorg.name $> (<$ rorg.code|hex $>)
+pub mod rorg<$ rorg.code|hex $> {
+    <%- for func in rorg.funcs %>
+    /// <$ func.name $> (<$ rorg.code|hex $>-<$ func.code|hex $>)
+    pub mod func<$ func.code|hex $> {
+        <%- for tp in func.types %>
+        /// <$ tp.name $> (<$ rorg.code|hex $>-<$ func.code|hex $>-<$ tp.code|hex $>)
+        pub struct Type<$ tp.code|hex $><'b> {
+            reversed_bytes: &'b [u8],
+        }
+        impl<'b> Type<$ tp.code|hex $><'b> {
+            pub fn new(reversed_bytes: &'b [u8]) -> Self {
+                Self { reversed_bytes }
+            }
+            <%- for property in tp.properties %>
+
+            /// Get the raw <$ property.name() $> value.
+            pub fn get_<$ property.name()|snake_case $>_raw(&self) -> <$ property.raw_primitive_type() $> {
+                self.<$ property.raw_primitive_type() $>_from_bits(<$ property.lowest_bit_index() $>, <$ property.bit_count() $>)
+            }
+
+            /// Get the <$ property.name() $> value<% if let Some(u) = property.unit() %> in units of <$ u $><% endif %>.
+            <%- if let Property::Numeric(num_prop) = property %>
+            pub fn get_<$ num_prop.name|snake_case $>(&self) -> f64 {
+                let mut raw_value = self.get_<$ num_prop.name|snake_case $>_raw() as f64;
+                range_scale(raw_value, <$ num_prop.min_range $>, <$ num_prop.max_range $>, <$ num_prop.min_scale $>, <$ num_prop.max_scale $>)
+            }
+            <%- else if let Property::Enumerated(enum_prop) = property %>
+            pub fn get_<$ enum_prop.name|snake_case $>(&self) -> Type<$ tp.code|hex $>Prop<$ enum_prop.name|pascal_case $> {
+                let mut raw_value = self.get_<$ enum_prop.name|snake_case $>_raw();
+                raw_value.into()
+            }
+            <%- endif %>
+            <%- endfor %>
+        }
+        <%- for property in tp.properties %><% if let Property::Enumerated(enum_prop) = property %>
+        pub enum Type<$ tp.code|hex $>Prop<$ enum_prop.name|pascal_case $> {
+            <%- for value in enum_prop.values %>
+            <$ value.name|pascal_case $> = <$ value.value $>,
+            <%- endfor %>
+            Other(<$ enum_prop.raw_primitive_type $>),
+        }
+        <%- endif %><% endfor %>
+        <%- endfor %>
+    }
+    <%- endfor %>
+}
+<%- endfor %>
