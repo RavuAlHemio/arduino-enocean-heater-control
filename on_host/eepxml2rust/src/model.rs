@@ -28,50 +28,28 @@ pub(crate) struct Type {
 pub(crate) enum Property {
     Numeric(NumericProperty),
     Enumerated(EnumeratedProperty),
+    RawOnly(RawOnlyProperty),
 }
 impl Property {
-    pub fn name(&self) -> &str {
+    pub fn common(&self) -> &PropertyCommon {
         match self {
-            Self::Numeric(n) => n.name.as_str(),
-            Self::Enumerated(e) => e.name.as_str(),
-        }
-    }
-
-    pub fn raw_primitive_type(&self) -> &str {
-        match self {
-            Self::Numeric(n) => n.raw_primitive_type,
-            Self::Enumerated(e) => e.raw_primitive_type,
-        }
-    }
-
-    pub fn lowest_bit_index(&self) -> usize {
-        match self {
-            Self::Numeric(n) => n.lowest_bit_index,
-            Self::Enumerated(e) => e.lowest_bit_index,
-        }
-    }
-
-    pub fn bit_count(&self) -> usize {
-        match self {
-            Self::Numeric(n) => n.bit_count,
-            Self::Enumerated(e) => e.bit_count,
-        }
-    }
-
-    pub fn unit(&self) -> Option<&String> {
-        match self {
-            Self::Numeric(n) => n.unit.as_ref(),
-            Self::Enumerated(e) => e.unit.as_ref(),
+            Self::Numeric(n) => &n.common,
+            Self::Enumerated(e) => &e.common,
+            Self::RawOnly(ro) => &ro.common,
         }
     }
 }
 
-pub(crate) struct NumericProperty {
+pub(crate) struct PropertyCommon {
     pub name: String,
     pub raw_primitive_type: &'static str,
     pub lowest_bit_index: usize,
     pub bit_count: usize,
     pub unit: Option<String>,
+}
+
+pub(crate) struct NumericProperty {
+    pub common: PropertyCommon,
     pub min_range: f64,
     pub max_range: f64,
     pub min_scale: f64,
@@ -79,12 +57,12 @@ pub(crate) struct NumericProperty {
 }
 
 pub(crate) struct EnumeratedProperty {
-    pub name: String,
-    pub raw_primitive_type: &'static str,
-    pub lowest_bit_index: usize,
-    pub bit_count: usize,
-    pub unit: Option<String>,
+    pub common: PropertyCommon,
     pub values: Vec<EnumValue>,
+}
+
+pub(crate) struct RawOnlyProperty {
+    pub common: PropertyCommon,
 }
 
 pub(crate) struct EnumValue {
@@ -93,9 +71,35 @@ pub(crate) struct EnumValue {
 }
 
 pub(crate) mod filters {
+    fn remove_special_characters(value: &str) -> String {
+        let mut ret = String::new();
+        for c in value.chars() {
+            match c {
+                'a'..='z' => ret.push(c),
+                'A'..='Z' => ret.push(c),
+                '0'..='9' => ret.push(c),
+                '_' => ret.push(c),
+                '\u{B2}' => ret.push('2'),
+                '<' => ret.push_str(" less than "),
+                '>' => ret.push_str(" more than "),
+                '\u{3BC}' => ret.push_str(" mu "),
+                '\u{B0}' => ret.push_str(" degrees "),
+                ' '|'\r'|'\n'|'\t' => ret.push(' '),
+                '.'|','|':'|';'|'-'|'\u{2013}'|'\u{2014}'|'/'|'*'|'+'|'%'|'\u{2026}' => ret.push(' '),
+                '\u{201C}'|'\u{201D}' => ret.push(' '),
+                '('|')' => ret.push(' '),
+                other => {
+                    eprintln!("unhandled special character {:?}!", other);
+                },
+            }
+        }
+        ret
+    }
+
     pub fn pascal_case(value: &str) -> askama::Result<String> {
         let mut ret = String::new();
-        for word in value.split(' ') {
+        let clean_value = remove_special_characters(value);
+        for word in clean_value.split(' ') {
             let word_trimmed = word.trim();
             if word_trimmed.len() == 0 {
                 continue;
@@ -117,9 +121,24 @@ pub(crate) mod filters {
         Ok(ret)
     }
 
+    pub fn pascal_case_word_start(value: &str) -> askama::Result<String> {
+        let mut pc = pascal_case(value)?;
+
+        // prepend underscore if we begin with a digit
+        if pc.len() > 0 {
+            let first_char = pc.chars().nth(0).unwrap();
+            if first_char >= '0' && first_char <= '9' {
+                pc.insert(0, '_');
+            }
+        }
+
+        Ok(pc)
+    }
+
     pub fn snake_case(value: &str) -> askama::Result<String> {
         let mut ret = String::new();
-        for word in value.split(' ') {
+        let clean_value = remove_special_characters(value);
+        for word in clean_value.split(' ') {
             let word_trimmed = word.trim();
             if word_trimmed.len() == 0 {
                 continue;
@@ -134,5 +153,21 @@ pub(crate) mod filters {
 
     pub fn hex(value: &u8) -> askama::Result<String> {
         Ok(format!("{:02X}", value))
+    }
+
+    pub fn pascal_fallback(name: &str, fallback_value: &str) -> askama::Result<String> {
+        if name.len() > 0 {
+            return Ok(name.to_owned());
+        }
+
+        pascal_case(&format!("value {}", fallback_value))
+    }
+
+    pub fn dec(value: &f64) -> askama::Result<String> {
+        let mut string = value.to_string();
+        if !string.contains(".") {
+            string.push_str(".0");
+        }
+        Ok(string)
     }
 }

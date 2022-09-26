@@ -2,8 +2,9 @@ pub(crate) mod model;
 pub(crate) mod xpath_ext;
 
 
+use std::collections::HashMap;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::num::ParseIntError;
 use std::path::PathBuf;
 
@@ -13,15 +14,19 @@ use sxd_document;
 use sxd_xpath;
 
 use crate::model::{
-    Eeps, EnumeratedProperty, EnumValue, Func, NumericProperty, Property, Rorg, Type,
+    Eeps, EnumeratedProperty, EnumValue, Func, NumericProperty, Property, PropertyCommon,
+    RawOnlyProperty, Rorg, Type,
 };
 use crate::xpath_ext::{FactoryExt, XPathExt};
 
 
 #[derive(Parser)]
 struct Args {
-    #[clap(help = "Path to the eep.xml file.", long_help = "Path to the eep.xml file. Can be downloaded using the \"Bulk Download\" feature of the EnOcean Alliance's EEP Viewer web application. May have a different name, e.g. eep268.xml.")]
+    #[clap(help = "Path to the eep.xml file to read.", long_help = "Path to the eep.xml file to read. Can be downloaded using the \"Bulk Download\" feature of the EnOcean Alliance's EEP Viewer web application. May have a different name, e.g. eep268.xml.")]
     pub eep_xml: PathBuf,
+
+    #[clap(help = "Path to the eep.rs file to write.")]
+    pub eep_rs: PathBuf,
 }
 
 
@@ -149,18 +154,32 @@ fn main() {
                 }
                 let case = cases.swap_remove(0);
 
+                let mut field_duplicate_counters: HashMap<String, usize> = HashMap::new();
                 for field in data_fields_exp.eval_strict_nodeset(&xpath_ctx, case) {
                     if reserved_exp.eval_strict_node_exists(&xpath_ctx, field) {
                         // bits are reserved; skip them
                         continue;
                     }
 
-                    let field_name = data_sxp.eval_strict_string(&xpath_ctx, field);
+                    let mut field_name = data_sxp.eval_strict_string(&xpath_ctx, field);
                     let bit_offset = bit_offset_sxp.eval_strict_stru32(&xpath_ctx, field);
                     let bit_size = bit_size_sxp.eval_strict_stru32(&xpath_ctx, field);
-                    let unit = unit_sxp.eval_strict_string(&xpath_ctx, field);
+                    let unit = unit_sxp.eval_strict_string(&xpath_ctx, field)
+                        .trim().to_owned();
 
-                    let raw_primitive_type = if bit_size <= 8 {
+                    {
+                        let dupe_count = field_duplicate_counters
+                            .entry(field_name.clone())
+                            .or_insert(0);
+                        if *dupe_count > 0 {
+                            field_name = format!("{} {}", field_name, dupe_count);
+                        }
+                        *dupe_count += 1;
+                    }
+
+                    let raw_primitive_type = if bit_size == 1 {
+                        "bool"
+                    } else if bit_size <= 8 {
                         "u8"
                     } else if bit_size <= 16 {
                         "u16"
@@ -174,66 +193,75 @@ fn main() {
                         "f64"
                     };
 
+                    let common = PropertyCommon {
+                        name: field_name,
+                        raw_primitive_type,
+                        lowest_bit_index: bit_offset.try_into().unwrap(),
+                        bit_count: bit_size.try_into().unwrap(),
+                        unit: if unit.len() > 0 { Some(unit) } else { None },
+                    };
+
                     let enum_items = enum_item_exp.eval_strict_nodeset(&xpath_ctx, field);
                     let property = if enum_items.len() == 0 {
+                        let mut raw_only = false;
+
                         // protect against unhandled cases
                         if scale_ref_sxp.eval_strict_node_exists(&xpath_ctx, field) {
-                            eprintln!("warning: no support for scale references; cannot process property {:?}", field_name);
-                            continue;
+                            eprintln!("warning: no support for scale references; cannot process property {:?}", common.name);
+                            raw_only = true;
                         }
                         if !range_min_sxp.eval_strict_node_exists(&xpath_ctx, field) {
-                            eprintln!("warning: no range minimum found; cannot process property {:?}", field_name);
-                            continue;
+                            eprintln!("warning: no range minimum found; cannot process property {:?}", common.name);
+                            raw_only = true;
                         }
                         if !scale_min_sxp.eval_strict_node_exists(&xpath_ctx, field) {
-                            eprintln!("warning: no scale minimum found; cannot process property {:?}", field_name);
-                            continue;
+                            eprintln!("warning: no scale minimum found; cannot process property {:?}", common.name);
+                            raw_only = true;
                         }
 
                         // work around BS
                         let range_max_string = range_max_sxp.eval_strict_string(&xpath_ctx, field);
                         if range_max_string.contains(", ") {
-                            eprintln!("warning: range maximum {:?} contains more than one value; cannot process property {:?}", range_max_string, field_name);
-                            continue;
+                            eprintln!("warning: range maximum {:?} contains more than one value; cannot process property {:?}", range_max_string, common.name);
+                            raw_only = true;
                         }
                         if range_max_string.contains("0x") {
-                            eprintln!("warning: range maximum {:?} is not a valid float value; cannot process property {:?}", range_max_string, field_name);
-                            continue;
+                            eprintln!("warning: range maximum {:?} is not a valid float value; cannot process property {:?}", range_max_string, common.name);
+                            raw_only = true;
                         }
                         if scale_min_sxp.eval_strict_string(&xpath_ctx, field).contains("..") {
-                            eprintln!("warning: scale minimum contains range; cannot process property {:?}", field_name);
-                            continue;
+                            eprintln!("warning: scale minimum contains range; cannot process property {:?}", common.name);
+                            raw_only = true;
                         }
                         if scale_max_sxp.eval_strict_string(&xpath_ctx, field).contains("(") {
-                            eprintln!("warning: scale minimum contains \"(\"; cannot process property {:?}", field_name);
-                            continue;
+                            eprintln!("warning: scale minimum contains \"(\"; cannot process property {:?}", common.name);
+                            raw_only = true;
                         }
 
-                        let min_range = range_min_sxp.eval_strict_strf64(&xpath_ctx, field);
-                        let max_range = range_max_sxp.eval_strict_strf64(&xpath_ctx, field);
-                        let min_scale = scale_min_sxp.eval_strict_strf64(&xpath_ctx, field);
-                        let max_scale = scale_max_sxp.eval_strict_strf64(&xpath_ctx, field);
-                        let num_prop = NumericProperty {
-                            name: field_name,
-                            raw_primitive_type,
-                            lowest_bit_index: bit_offset.try_into().unwrap(),
-                            bit_count: bit_size.try_into().unwrap(),
-                            unit: if unit.len() > 0 { Some(unit) } else { None },
-                            min_range,
-                            max_range,
-                            min_scale,
-                            max_scale,
-                        };
-                        Property::Numeric(num_prop)
+                        if raw_only {
+                            Property::RawOnly(RawOnlyProperty {
+                                common,
+                            })
+                        } else {
+                            let min_range = range_min_sxp.eval_strict_strf64(&xpath_ctx, field);
+                            let max_range = range_max_sxp.eval_strict_strf64(&xpath_ctx, field);
+                            let min_scale = scale_min_sxp.eval_strict_strf64(&xpath_ctx, field);
+                            let max_scale = scale_max_sxp.eval_strict_strf64(&xpath_ctx, field);
+                            let num_prop = NumericProperty {
+                                common,
+                                min_range,
+                                max_range,
+                                min_scale,
+                                max_scale,
+                            };
+                            Property::Numeric(num_prop)
+                        }
                     } else {
                         let mut enum_prop = EnumeratedProperty {
-                            name: field_name,
-                            raw_primitive_type,
-                            lowest_bit_index: bit_offset.try_into().unwrap(),
-                            bit_count: bit_size.try_into().unwrap(),
-                            unit: if unit.len() > 0 { Some(unit) } else { None },
+                            common,
                             values: Vec::new(),
                         };
+                        let mut enum_item_duplicate_counters: HashMap<String, usize> = HashMap::new();
                         for enum_item in enum_items {
                             let value_string = value_sxp.eval_strict_string(&xpath_ctx, enum_item);
                             if value_string.len() == 0 {
@@ -252,13 +280,33 @@ fn main() {
                                 Ok(v) => v,
                                 Err(e) => panic!(
                                     "failed to parse value {:?} for {} as u32: {}",
-                                    value_string, enum_prop.name, e,
+                                    value_string, enum_prop.common.name, e,
                                 ),
                             };
+                            let value_string = if raw_primitive_type == "bool" {
+                                if value == 0 {
+                                    "false".to_owned()
+                                } else if value == 1 {
+                                    "true".to_owned()
+                                } else {
+                                    value.to_string()
+                                }
+                            } else {
+                                value.to_string()
+                            };
                             let description = description_sxp.eval_strict_string(&xpath_ctx, enum_item);
+                            let dupe_count = enum_item_duplicate_counters
+                                .entry(description.clone())
+                                .or_insert(0);
+                            let modified_description = if *dupe_count == 0 {
+                                description
+                            } else {
+                                format!("{} {}", description, *dupe_count)
+                            };
+                            *dupe_count += 1;
                             enum_prop.values.push(EnumValue {
-                                name: description,
-                                value: value.to_string()
+                                name: modified_description,
+                                value: value_string,
                             });
                         }
                         Property::Enumerated(enum_prop)
@@ -278,5 +326,11 @@ fn main() {
     // render
     let rendered_template = eeps.render()
         .expect("failed to render template");
-    print!("{}", rendered_template);
+
+    {
+        let mut f = File::create(args.eep_rs)
+            .expect("failed to open eep.rs file");
+        f.write_all(rendered_template.as_bytes())
+            .expect("failed to write eep.rs file");
+    }
 }
