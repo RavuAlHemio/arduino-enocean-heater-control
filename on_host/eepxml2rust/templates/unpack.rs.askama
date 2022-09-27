@@ -1,16 +1,16 @@
 macro_rules! implement_horner {
     ($name:ident, $type:ty, $zero:expr, $one:expr, $two:expr $(, $max_bits:expr)?) => {
-        fn $name(&self, lowest_bit_index: usize, bit_count: usize) -> $type {
+        fn $name(&self, lowest_bit_index: usize, bit_count: usize) -> Option<$ "<$type>" $> {
             $(assert!(bit_count <= $max_bits);)?
             let mut value = $zero;
             let mut factor = $one;
             for i in lowest_bit_index..lowest_bit_index+bit_count {
-                if self.bit_is_set(i) {
+                if self.bit_is_set(i)? {
                     value += factor;
                 }
                 factor *= $two;
             }
-            value
+            Some(value)
         }
     };
 }
@@ -18,14 +18,14 @@ macro_rules! implement_horner {
 
 trait BitTwiddling {
     /// Returns whether the bit at the given index is set.
-    fn bit_is_set(&self, bit_index: usize) -> bool;
+    fn bit_is_set(&self, bit_index: usize) -> Option<bool>;
 
-    fn bool_from_bits(&self, bit_index: usize, bit_count: usize) -> bool {
+    fn bool_from_bits(&self, bit_index: usize, bit_count: usize) -> Option<bool> {
         assert!(bit_count <= 1);
         if bit_count == 1 {
             self.bit_is_set(bit_index)
         } else {
-            false
+            None
         }
     }
 
@@ -41,12 +41,14 @@ impl<'a> BitTwiddling for &'a [u8] {
     // the bits within a byte are also considered to be little-endian
     // (index 0 is LSb of self[0], index 7 is MSb of self[0], index 8 is LSb of self[1], etc.)
 
-    fn bit_is_set(&self, bit_index: usize) -> bool {
+    fn bit_is_set(&self, bit_index: usize) -> Option<bool> {
         let byte_index = bit_index / 8;
         let bit_in_byte_index = bit_index % 8;
-        assert!(byte_index < self.len());
+        if byte_index >= self.len() {
+            return None;
+        }
 
-        self[byte_index] & (1 << bit_in_byte_index) != 0
+        Some(self[byte_index] & (1 << bit_in_byte_index) != 0)
     }
 }
 
@@ -90,21 +92,21 @@ pub mod rorg<$ rorg.code|hex $> {
             <%- for property in cs.properties %>
 
             /// Get the raw <$ property.common().name $> value.
-            pub fn get_<$ property.common().name|snake_case $>_raw(&self) -> <$ property.common().raw_primitive_type $> {
+            pub fn get_<$ property.common().name|snake_case $>_raw(&self) -> Option<<$ property.common().raw_primitive_type $>> {
                 self.reversed_bytes.<$ property.common().raw_primitive_type $>_from_bits(<$ property.common().lowest_bit_index $>, <$ property.common().bit_count $>)
             }
 
             <%- if let Property::Numeric(num_prop) = property %>
             /// Get the <$ property.common().name $> value<% if let Some(u) = property.common().unit %> in units of <$ u $><% endif %>.
-            pub fn get_<$ num_prop.common.name|snake_case $>(&self) -> f64 {
-                let raw_value = self.get_<$ num_prop.common.name|snake_case $>_raw() as f64;
-                range_scale(raw_value, <$ num_prop.min_range|dec $>, <$ num_prop.max_range|dec $>, <$ num_prop.min_scale|dec $>, <$ num_prop.max_scale|dec $>)
+            pub fn get_<$ num_prop.common.name|snake_case $>(&self) -> Option<f64> {
+                let raw_value = self.get_<$ num_prop.common.name|snake_case $>_raw()? as f64;
+                Some(range_scale(raw_value, <$ num_prop.min_range|dec $>, <$ num_prop.max_range|dec $>, <$ num_prop.min_scale|dec $>, <$ num_prop.max_scale|dec $>))
             }
             <%- else if let Property::Enumerated(enum_prop) = property %>
             /// Get the <$ property.common().name $> value<% if let Some(u) = property.common().unit %> in units of <$ u $><% endif %>.
-            pub fn get_<$ enum_prop.common.name|snake_case $>(&self) -> <$ tp|typecasename(cs) $>Prop<$ enum_prop.common.name|pascal_case $> {
-                let raw_value = self.get_<$ enum_prop.common.name|snake_case $>_raw();
-                raw_value.into()
+            pub fn get_<$ enum_prop.common.name|snake_case $>(&self) -> Option<<$ tp|typecasename(cs) $>Prop<$ enum_prop.common.name|pascal_case $>> {
+                let raw_value = self.get_<$ enum_prop.common.name|snake_case $>_raw()?;
+                Some(raw_value.into())
             }
             <%- endif %>
             <%- endfor %>
