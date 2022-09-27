@@ -166,7 +166,8 @@ fn main() {
                             continue;
                         }
 
-                        let mut field_name = data_sxp.eval_strict_string(&xpath_ctx, field);
+                        let mut field_name = data_sxp.eval_strict_string(&xpath_ctx, field)
+                            .trim().to_owned();
                         let bit_offset = bit_offset_sxp.eval_strict_stru32(&xpath_ctx, field);
                         let bit_size = bit_size_sxp.eval_strict_stru32(&xpath_ctx, field);
                         let unit = unit_sxp.eval_strict_string(&xpath_ctx, field)
@@ -279,6 +280,10 @@ fn main() {
                                 }
                                 if value_string.contains("...") {
                                     // is a range?! this should be min-max
+                                    continue;
+                                }
+                                if value_string.contains("(") {
+                                    // why do people keep making these non-machine-readable?!
                                     continue;
                                 }
                                 let value: u32 = match parse_u32(&value_string) {

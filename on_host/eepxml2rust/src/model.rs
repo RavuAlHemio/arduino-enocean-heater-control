@@ -90,9 +90,10 @@ pub(crate) mod filters {
                 '\u{3BC}' => ret.push_str(" mu "),
                 '\u{B0}' => ret.push_str(" degrees "),
                 ' '|'\r'|'\n'|'\t' => ret.push(' '),
-                '.'|','|':'|';'|'-'|'\u{2013}'|'\u{2014}'|'/'|'*'|'+'|'%'|'\u{2026}' => ret.push(' '),
-                '\u{201C}'|'\u{201D}' => ret.push(' '),
-                '('|')' => ret.push(' '),
+                '.'|','|':'|';'|'-'|'\u{2013}'|'\u{2014}'|'/'|'*'|'+'|'='|'%'|'\u{2026}' => ret.push(' '),
+                '\u{2264}'|'\u{2265}' => ret.push(' '),
+                '\u{2019}'|'\u{201C}'|'\u{201D}' => ret.push(' '),
+                '('|')'|'['|']' => ret.push(' '),
                 other => {
                     eprintln!("unhandled special character {:?}!", other);
                 },
@@ -174,5 +175,14 @@ pub(crate) mod filters {
             string.push_str(".0");
         }
         Ok(string)
+    }
+
+    pub(crate) fn typecasename(tp: &&super::Type, cs: &&super::Case) -> askama::Result<String> {
+        use std::fmt::Write;
+        let mut case_name = format!("Type{}", hex(&tp.code)?);
+        if let Some(csnum) = cs.number {
+            write!(&mut case_name, "Case{}", csnum).unwrap();
+        }
+        Ok(case_name)
     }
 }

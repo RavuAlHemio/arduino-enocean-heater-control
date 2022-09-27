@@ -79,10 +79,10 @@ pub mod rorg<$ rorg.code|hex $> {
         <%- for tp in func.types %>
         <%- for cs in tp.cases %>
         /// <$ tp.name $> (<$ rorg.code|hex $>-<$ func.code|hex $>-<$ tp.code|hex $>)<% if let Some(csnum) = cs.number %>, case <$ csnum $><% endif %>
-        pub struct Type<$ tp.code|hex $><% if let Some(csnum) = cs.number %>Case<$ csnum $><% endif %><'b> {
+        pub struct <$ tp|typecasename(cs) $><'b> {
             reversed_bytes: &'b [u8],
         }
-        impl<'b> Type<$ tp.code|hex $><% if let Some(csnum) = cs.number %>Case<$ csnum $><% endif %><'b> {
+        impl<'b> <$ tp|typecasename(cs) $><'b> {
             pub fn new(reversed_bytes: &'b [u8]) -> Self {
                 Self { reversed_bytes }
             }
@@ -101,16 +101,16 @@ pub mod rorg<$ rorg.code|hex $> {
             }
             <%- else if let Property::Enumerated(enum_prop) = property %>
             /// Get the <$ property.common().name $> value<% if let Some(u) = property.common().unit %> in units of <$ u $><% endif %>.
-            pub fn get_<$ enum_prop.common.name|snake_case $>(&self) -> Type<$ tp.code|hex $>Prop<$ enum_prop.common.name|pascal_case $> {
+            pub fn get_<$ enum_prop.common.name|snake_case $>(&self) -> <$ tp|typecasename(cs) $>Prop<$ enum_prop.common.name|pascal_case $> {
                 let raw_value = self.get_<$ enum_prop.common.name|snake_case $>_raw();
                 raw_value.into()
             }
             <%- endif %>
             <%- endfor %>
         }
-        impl<'b> ::core::fmt::Debug for Type<$ tp.code|hex $><% if let Some(csnum) = cs.number %>Case<$ csnum $><% endif %><'b> {
+        impl<'b> ::core::fmt::Debug for <$ tp|typecasename(cs) $><'b> {
             fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                f.debug_struct("Type<$ tp.code|hex $>")
+                f.debug_struct("<$ tp|typecasename(cs) $>")
                     <%- for property in cs.properties %>
                     <%- if let Property::Numeric(num_prop) = property %>
                     .field("<$ num_prop.common.name|snake_case $>", &self.get_<$ num_prop.common.name|snake_case $>())
@@ -127,7 +127,7 @@ pub mod rorg<$ rorg.code|hex $> {
         #[derive(Clone, Copy, Debug)]
         #[allow(non_camel_case_types)]
         #[from_to_repr::from_to_other(base_type = <$ enum_prop.common.raw_primitive_type $>, derive_compare = "as_int")]
-        pub enum Type<$ tp.code|hex $><% if let Some(csnum) = cs.number %>Case<$ csnum $><% endif %>Prop<$ enum_prop.common.name|pascal_case $> {
+        pub enum <$ tp|typecasename(cs) $>Prop<$ enum_prop.common.name|pascal_case $> {
             <%- for value in enum_prop.values %>
             <$ value.name|pascal_case_word_start|pascal_fallback(value.value) $> = <$ value.value $>,
             <%- endfor %>
