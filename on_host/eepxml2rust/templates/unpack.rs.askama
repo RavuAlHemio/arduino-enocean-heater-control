@@ -79,6 +79,7 @@ pub mod rorg<$ rorg.code|hex $> {
         <%- for tp in func.types %>
         <%- for cs in tp.cases %>
         /// <$ tp.name $> (<$ rorg.code|hex $>-<$ func.code|hex $>-<$ tp.code|hex $>)<% if let Some(csnum) = cs.number %>, case <$ csnum $><% endif %>
+        #[derive(Clone, Copy)]
         pub struct <$ tp|typecasename(cs) $><'b> {
             reversed_bytes: &'b [u8],
         }
@@ -137,6 +138,29 @@ pub mod rorg<$ rorg.code|hex $> {
         <%- endfor %>
         <%- endfor %>
     }
+
+    #[derive(Clone, Copy, Debug)]
+    pub enum Func<$ func.code|hex $><'b> {
+        <%- for tp in func.types %>
+        <%- for cs in tp.cases %>
+        <$ tp|typecasename(cs) $>(func<$ func.code|hex $>::<$ tp|typecasename(cs) $><'b>),
+        <%- endfor %>
+        <%- endfor %>
+    }
+    <%- endfor %>
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Rorg<$ rorg.code|hex $><'b> {
+    <%- for func in rorg.funcs %>
+    Func<$ func.code|hex $>(rorg<$ rorg.code|hex $>::Func<$ func.code|hex $><'b>),
     <%- endfor %>
 }
 <%- endfor %>
+
+#[derive(Clone, Copy, Debug)]
+pub enum Eep<'b> {
+    <%- for rorg in rorgs %>
+    Rorg<$ rorg.code|hex $>(Rorg<$ rorg.code|hex $><'b>),
+    <%- endfor %>
+}
