@@ -107,6 +107,21 @@ pub mod rorg<$ rorg.code|hex $> {
             <%- endif %>
             <%- endfor %>
         }
+        impl<'b> ::core::fmt::Debug for Type<$ tp.code|hex $><'b> {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                f.debug_struct("Type<$ tp.code|hex $>")
+                    <%- for property in tp.properties %>
+                    <%- if let Property::Numeric(num_prop) = property %>
+                    .field("<$ num_prop.common.name|snake_case $>", &self.get_<$ num_prop.common.name|snake_case $>())
+                    <%- else if let Property::Enumerated(enum_prop) = property %>
+                    .field("<$ enum_prop.common.name|snake_case $>", &self.get_<$ enum_prop.common.name|snake_case $>())
+                    <%- else if let Property::RawOnly(raw_only_prop) = property %>
+                    .field("<$ raw_only_prop.common.name|snake_case $>", &self.get_<$ raw_only_prop.common.name|snake_case $>_raw())
+                    <%- endif %>
+                    <%- endfor %>
+                    .finish()
+            }
+        }
         <%- for property in tp.properties %><% if let Property::Enumerated(enum_prop) = property %>
         #[derive(Clone, Copy, Debug)]
         #[allow(non_camel_case_types)]
