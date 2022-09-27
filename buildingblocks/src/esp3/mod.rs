@@ -197,7 +197,7 @@ impl Esp3Packet {
             buf.push(b).unwrap();
         }
 
-        let crc_data = crc8_ccitt(&buf.as_slice()[5..]);
+        let crc_data = crc8_ccitt(&buf.as_slice()[6..]);
         buf.push(crc_data).unwrap();
 
         Some(buf)
