@@ -77,15 +77,16 @@ pub mod rorg<$ rorg.code|hex $> {
     pub mod func<$ func.code|hex $> {
         #[allow(unused)] use super::{BitTwiddling, range_scale};
         <%- for tp in func.types %>
-        /// <$ tp.name $> (<$ rorg.code|hex $>-<$ func.code|hex $>-<$ tp.code|hex $>)
-        pub struct Type<$ tp.code|hex $><'b> {
+        <%- for cs in tp.cases %>
+        /// <$ tp.name $> (<$ rorg.code|hex $>-<$ func.code|hex $>-<$ tp.code|hex $>)<% if let Some(csnum) = cs.number %>, case <$ csnum $><% endif %>
+        pub struct Type<$ tp.code|hex $><% if let Some(csnum) = cs.number %>Case<$ csnum $><% endif %><'b> {
             reversed_bytes: &'b [u8],
         }
-        impl<'b> Type<$ tp.code|hex $><'b> {
+        impl<'b> Type<$ tp.code|hex $><% if let Some(csnum) = cs.number %>Case<$ csnum $><% endif %><'b> {
             pub fn new(reversed_bytes: &'b [u8]) -> Self {
                 Self { reversed_bytes }
             }
-            <%- for property in tp.properties %>
+            <%- for property in cs.properties %>
 
             /// Get the raw <$ property.common().name $> value.
             pub fn get_<$ property.common().name|snake_case $>_raw(&self) -> <$ property.common().raw_primitive_type $> {
@@ -107,10 +108,10 @@ pub mod rorg<$ rorg.code|hex $> {
             <%- endif %>
             <%- endfor %>
         }
-        impl<'b> ::core::fmt::Debug for Type<$ tp.code|hex $><'b> {
+        impl<'b> ::core::fmt::Debug for Type<$ tp.code|hex $><% if let Some(csnum) = cs.number %>Case<$ csnum $><% endif %><'b> {
             fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
                 f.debug_struct("Type<$ tp.code|hex $>")
-                    <%- for property in tp.properties %>
+                    <%- for property in cs.properties %>
                     <%- if let Property::Numeric(num_prop) = property %>
                     .field("<$ num_prop.common.name|snake_case $>", &self.get_<$ num_prop.common.name|snake_case $>())
                     <%- else if let Property::Enumerated(enum_prop) = property %>
@@ -122,17 +123,18 @@ pub mod rorg<$ rorg.code|hex $> {
                     .finish()
             }
         }
-        <%- for property in tp.properties %><% if let Property::Enumerated(enum_prop) = property %>
+        <%- for property in cs.properties %><% if let Property::Enumerated(enum_prop) = property %>
         #[derive(Clone, Copy, Debug)]
         #[allow(non_camel_case_types)]
         #[from_to_repr::from_to_other(base_type = <$ enum_prop.common.raw_primitive_type $>, derive_compare = "as_int")]
-        pub enum Type<$ tp.code|hex $>Prop<$ enum_prop.common.name|pascal_case $> {
+        pub enum Type<$ tp.code|hex $><% if let Some(csnum) = cs.number %>Case<$ csnum $><% endif %>Prop<$ enum_prop.common.name|pascal_case $> {
             <%- for value in enum_prop.values %>
             <$ value.name|pascal_case_word_start|pascal_fallback(value.value) $> = <$ value.value $>,
             <%- endfor %>
             _Other(<$ enum_prop.common.raw_primitive_type $>),
         }
         <%- endif %><% endfor %>
+        <%- endfor %>
         <%- endfor %>
     }
     <%- endfor %>

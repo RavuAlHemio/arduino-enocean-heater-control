@@ -22,6 +22,11 @@ pub(crate) struct Func {
 pub(crate) struct Type {
     pub name: String,
     pub code: u8,
+    pub cases: Vec<Case>,
+}
+
+pub(crate) struct Case {
+    pub number: Option<usize>,
     pub properties: Vec<Property>,
 }
 
