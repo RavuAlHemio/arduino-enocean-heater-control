@@ -17,7 +17,7 @@ use core::time::Duration;
 use atsam3x8e::Peripherals;
 use buildingblocks::bit_field;
 use buildingblocks::crc8;
-use buildingblocks::esp3::{CommandData, Esp3Packet};
+use buildingblocks::esp3::{CommandData, Esp3Packet, EventData};
 use buildingblocks::max_array::MaxArray;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
@@ -189,26 +189,6 @@ fn main() -> ! {
     }
     */
 
-    /*
-    // read the version of the EnOcean chip
-    uart::send(&mut peripherals, b"PACKAGING VERSION PACKET\r\n");
-    let version_packet_opt = Esp3Packet::CommonCommand(CommandData::CoRdVersion)
-        .to_packet();
-    let version_packet = match &version_packet_opt {
-        Some(vp) => {
-            uart::send(&mut peripherals, b"VERSION PACKET PACKAGED\r\n");
-            vp
-        },
-        None => {
-            uart::send(&mut peripherals, b"OH NO\r\n");
-            loop {
-                delay(Duration::from_secs(5));
-            }
-        }
-    };
-    Usart3::transmit(&mut peripherals, version_packet.as_slice());
-    */
-
     loop {
         // transfer from USART to ESP3 buffer
         if let Some(buf) = Usart3::take_receive_buffer() {
@@ -227,6 +207,36 @@ fn main() -> ! {
             uart::send(&mut peripherals, b"got an ESP3 packet: ");
             uart::send(&mut peripherals, hex.as_slice());
             uart::send(&mut peripherals, b"\r\n");
+
+            // decode it
+            let decoded_packet_opt = Esp3Packet::from_slice(packet.as_slice());
+            if let Some(decoded_packet) = decoded_packet_opt {
+                if let Esp3Packet::Event(event_packet) = decoded_packet {
+                    if let EventData::CoReady { .. } = event_packet {
+                        // send the version packet
+                        let version_packet_opt = Esp3Packet::CommonCommand(CommandData::CoRdVersion)
+                            .to_packet();
+                        let version_packet = match &version_packet_opt {
+                            Some(vp) => {
+                                uart::send(&mut peripherals, b"VERSION PACKET PACKAGED\r\n");
+                                vp
+                            },
+                            None => {
+                                uart::send(&mut peripherals, b"OH NO\r\n");
+                                loop {
+                                    delay(Duration::from_secs(5));
+                                }
+                            }
+                        };
+                        let mut outgoing_hex: MaxArray<u8, {2*buildingblocks::esp3::MAX_ESP3_PACKET_LENGTH}> = MaxArray::new();
+                        hex_dump(version_packet.as_slice(), &mut outgoing_hex);
+                        uart::send(&mut peripherals, b"sending an ESP3 packet: ");
+                        uart::send(&mut peripherals, outgoing_hex.as_slice());
+                        uart::send(&mut peripherals, b"\r\n");
+                        Usart3::transmit(&mut peripherals, version_packet.as_slice());
+                    }
+                }
+            }
         }
 
         // doze off for a bit
