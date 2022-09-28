@@ -105,7 +105,14 @@ pub(crate) struct EnumValue {
 pub(crate) mod filters {
     fn remove_special_characters(value: &str) -> String {
         let mut ret = String::new();
+        let mut previous_minus = false;
         for c in value.chars() {
+            if previous_minus {
+                if c >= '0' && c <= '9' {
+                    ret.push_str("minus ");
+                }
+                previous_minus = false;
+            }
             match c {
                 'a'..='z' => ret.push(c),
                 'A'..='Z' => ret.push(c),
@@ -116,8 +123,12 @@ pub(crate) mod filters {
                 '>' => ret.push_str(" more than "),
                 '\u{3BC}' => ret.push_str(" mu "),
                 '\u{B0}' => ret.push_str(" degrees "),
+                '-' => {
+                    previous_minus = true;
+                    ret.push(' ');
+                },
                 ' '|'\r'|'\n'|'\t' => ret.push(' '),
-                '.'|','|':'|';'|'-'|'\u{2013}'|'\u{2014}'|'/'|'*'|'+'|'='|'%'|'\u{2026}' => ret.push(' '),
+                '.'|','|':'|';'|'\u{2013}'|'\u{2014}'|'/'|'*'|'+'|'='|'%'|'\u{2026}' => ret.push(' '),
                 '\u{2264}'|'\u{2265}' => ret.push(' '),
                 '\u{2019}'|'\u{201C}'|'\u{201D}' => ret.push(' '),
                 '('|')'|'['|']' => ret.push(' '),

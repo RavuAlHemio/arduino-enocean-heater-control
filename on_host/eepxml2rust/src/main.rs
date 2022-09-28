@@ -22,7 +22,7 @@ use crate::xpath_ext::{FactoryExt, XPathExt};
 
 #[derive(Parser)]
 struct Args {
-    #[clap(help = "Path to the eep.xml file to read.", long_help = "Path to the eep.xml file to read. Can be downloaded using the \"Bulk Download\" feature of the EnOcean Alliance's EEP Viewer web application. May have a different name, e.g. eep268.xml.")]
+    #[clap(help = "Path to the eep.xml file to read.", long_help = "Path to the eep.xml file to read. Can be downloaded using the \"Bulk Download\" feature with the \"XML Representation\" option of the EnOcean Alliance's EEP Viewer web application.")]
     pub eep_xml: PathBuf,
 
     #[clap(help = "Path to the eep.rs file to write.")]
@@ -167,7 +167,8 @@ fn main() {
                         }
 
                         let mut field_name = data_sxp.eval_strict_string(&xpath_ctx, field)
-                            .trim().to_owned();
+                            .trim()
+                            .replace("\n", " ");
                         let bit_offset = bit_offset_sxp.eval_strict_stru32(&xpath_ctx, field);
                         let bit_size = bit_size_sxp.eval_strict_stru32(&xpath_ctx, field);
                         let unit = unit_sxp.eval_strict_string(&xpath_ctx, field)
