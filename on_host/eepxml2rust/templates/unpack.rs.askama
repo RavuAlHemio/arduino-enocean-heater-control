@@ -11,7 +11,9 @@ macro_rules! implement_horner {
                 if self.bit_is_set(i)? {
                     value += factor;
                 }
-                factor *= $two;
+                if i < lowest_bit_index+bit_count-1 {
+                    factor *= $two;
+                }
             }
             Some(value)
         }
