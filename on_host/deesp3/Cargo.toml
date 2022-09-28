@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 buildingblocks = { path = "../../buildingblocks" }
+clap = { version = "4.0.0-rc.1", features = ["derive"] }

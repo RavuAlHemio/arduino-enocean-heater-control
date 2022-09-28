@@ -183,6 +183,7 @@ name = "deesp3"
 version = "0.1.0"
 dependencies = [
  "buildingblocks",
+ "clap 4.0.0-rc.3",
 ]
 
 [[package]]
