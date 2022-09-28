@@ -1,3 +1,6 @@
+use crate::max_array::MaxArray;
+
+
 macro_rules! implement_horner {
     ($name:ident, $type:ty, $zero:expr, $one:expr, $two:expr $(, $max_bits:expr)?) => {
         fn $name(&self, lowest_bit_index: usize, bit_count: usize) -> Option<$ "<$type>" $> {
@@ -73,11 +76,12 @@ fn range_scale(mut value: f64, min_range: f64, max_range: f64, min_scale: f64, m
 /// <$ rorg.name $> (<$ rorg.code|hex $>)
 #[allow(non_snake_case)]
 pub mod rorg<$ rorg.code|hex $> {
-    #[allow(unused)] use super::{BitTwiddling, range_scale};
+    #[allow(unused)] use super::{BitTwiddling, MaxArray, range_scale};
     <%- for func in rorg.funcs %>
     /// <$ func.name $> (<$ rorg.code|hex $>-<$ func.code|hex $>)
     pub mod func<$ func.code|hex $> {
-        #[allow(unused)] use super::{BitTwiddling, range_scale};
+        #[allow(unused)] use super::{BitTwiddling, MaxArray, range_scale};
+
         <%- for tp in func.types %>
         <%- for cs in tp.cases %>
         /// <$ tp.name $> (<$ rorg.code|hex $>-<$ func.code|hex $>-<$ tp.code|hex $>)<% if let Some(csnum) = cs.number %>, case <$ csnum $><% endif %>
@@ -149,6 +153,35 @@ pub mod rorg<$ rorg.code|hex $> {
         <%- endfor %>
         <%- endfor %>
     }
+    impl<'b> Func<$ func.code|hex $><'b> {
+        <%- for tp in func.types %>
+        pub fn type<$ tp.code|hex $>_from_reversed_bytes(reversed_bytes: &'b [u8]) -> MaxArray<Self, <$ tp.cases.len() $>> {
+            let mut ret = MaxArray::new();
+            <%- for cs in tp.cases %>
+            ret.push(Self::<$ tp|typecasename(cs) $>(
+                func<$ func.code|hex $>::<$ tp|typecasename(cs) $>::new(reversed_bytes)
+            )).unwrap();
+            <%- endfor %>
+            ret
+        }
+        <%- endfor %>
+
+        pub fn from_reversed_bytes(type_code: u8, reversed_bytes: &'b [u8]) -> Option<MaxArray<Self, <$ func.max_cases_per_type() $>>> {
+            match type_code {
+                <%- for tp in func.types %>
+                0x<$ tp.code|hex $> => {
+                    Some(MaxArray::from_iter_or_panic(
+                        Self::type<$ tp.code|hex $>_from_reversed_bytes(reversed_bytes)
+                            .iter()
+                            .map(|b| *b)
+                            .peekable()
+                    ))
+                },
+                <%- endfor %>
+                _ => None,
+            }
+        }
+    }
     <%- endfor %>
 }
 
@@ -158,6 +191,23 @@ pub enum Rorg<$ rorg.code|hex $><'b> {
     Func<$ func.code|hex $>(rorg<$ rorg.code|hex $>::Func<$ func.code|hex $><'b>),
     <%- endfor %>
 }
+impl<'b> Rorg<$ rorg.code|hex $><'b> {
+    pub fn from_reversed_bytes(func_code: u8, type_code: u8, reversed_bytes: &'b [u8]) -> Option<MaxArray<Self, <$ rorg.max_cases_per_type() $>>> {
+        match func_code {
+            <%- for func in rorg.funcs %>
+            0x<$ func.code|hex $> => {
+                Some(MaxArray::from_iter_or_panic(
+                    rorg<$ rorg.code|hex $>::Func<$ func.code|hex $>::from_reversed_bytes(type_code, reversed_bytes)?
+                        .iter()
+                        .map(|f| Self::Func<$ func.code|hex $>(*f))
+                        .peekable()
+                ))
+            },
+            <%- endfor %>
+            _ => None,
+        }
+    }
+}
 <%- endfor %>
 
 #[derive(Clone, Copy, Debug)]
@@ -165,4 +215,21 @@ pub enum Eep<'b> {
     <%- for rorg in rorgs %>
     Rorg<$ rorg.code|hex $>(Rorg<$ rorg.code|hex $><'b>),
     <%- endfor %>
+}
+impl<'b> Eep<'b> {
+    pub fn from_reversed_bytes(rorg_code: u8, func_code: u8, type_code: u8, reversed_bytes: &'b [u8]) -> Option<MaxArray<Self, <$ self.max_cases_per_type() $>>> {
+        match rorg_code {
+            <%- for rorg in rorgs %>
+            0x<$ rorg.code|hex $> => {
+                Some(MaxArray::from_iter_or_panic(
+                    Rorg<$ rorg.code|hex $>::from_reversed_bytes(func_code, type_code, reversed_bytes)?
+                        .iter()
+                        .map(|r| Self::Rorg<$ rorg.code|hex $>(*r))
+                        .peekable()
+                ))
+            },
+            <%- endfor %>
+            _ => None,
+        }
+    }
 }

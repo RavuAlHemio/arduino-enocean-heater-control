@@ -6,17 +6,44 @@ use askama::Template;
 pub(crate) struct Eeps {
     pub rorgs: Vec<Rorg>,
 }
+impl Eeps {
+    pub fn max_cases_per_type(&self) -> usize {
+        self.rorgs
+            .iter()
+            .map(|r| r.max_cases_per_type())
+            .max()
+            .unwrap_or(0)
+    }
+}
 
 pub(crate) struct Rorg {
     pub name: String,
     pub code: u8,
     pub funcs: Vec<Func>,
 }
+impl Rorg {
+    pub fn max_cases_per_type(&self) -> usize {
+        self.funcs
+            .iter()
+            .map(|t| t.max_cases_per_type())
+            .max()
+            .unwrap_or(0)
+    }
+}
 
 pub(crate) struct Func {
     pub name: String,
     pub code: u8,
     pub types: Vec<Type>,
+}
+impl Func {
+    pub fn max_cases_per_type(&self) -> usize {
+        self.types
+            .iter()
+            .map(|t| t.cases.len())
+            .max()
+            .unwrap_or(0)
+    }
 }
 
 pub(crate) struct Type {
