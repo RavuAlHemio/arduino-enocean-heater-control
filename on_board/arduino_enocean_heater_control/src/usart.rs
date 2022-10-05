@@ -10,13 +10,12 @@
 
 use atsam3x8e::{Interrupt, interrupt, Peripherals};
 use atsam3x8e::usart0::RegisterBlock as UsartRegisterBlock;
+use atsam3x8e_ext::sam_pin;
+use atsam3x8e_ext::setup::SystemCoreClock;
 use buildingblocks::max_array::MaxArray;
 use buildingblocks::ring_buffer::RingBuffer;
 use cortex_m::interrupt as cortex_interrupt;
 use cortex_m::peripheral::NVIC;
-
-use crate::sam_pin;
-use crate::atsam3x8e_ext::setup::SystemCoreClock;
 
 
 const RING_BUFFER_SIZE: usize = 512;

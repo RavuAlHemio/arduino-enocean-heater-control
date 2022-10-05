@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 atsam3x8e = { path = "../atsam3x8e", features = ["rt"] }
+atsam3x8e_ext = { path = "../atsam3x8e_ext" }
 buildingblocks = { path = "../../buildingblocks" }
 cortex-m = { version = "0.7" }
 cortex-m-rt = { version = "0.7" }

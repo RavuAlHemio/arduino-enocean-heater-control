@@ -1,0 +1,9 @@
+[package]
+name = "atsam3x8e_ext"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+atsam3x8e = { path = "../atsam3x8e" }
+cortex-m = { version = "0.7" }
+cortex-m-rt = { version = "0.7" }

@@ -40,7 +40,7 @@ unsafe fn SysTick() {
     TICK_CLOCK.set(TICK_CLOCK.get().wrapping_add(1))
 }
 
-pub(crate) fn enable_tick_clock(core_peripherals: &mut Peripherals, frequency: u32) {
+pub fn enable_tick_clock(core_peripherals: &mut Peripherals, frequency: u32) {
     const SYST_CSR_ENABLE_ENABLED: u32 = 1 << 0;
     const SYST_CSR_TICKINT_ENABLED: u32 = 1 << 1;
     const SYST_CSR_CLKSOURCE_MCK: u32 = 1 << 2;
@@ -58,7 +58,7 @@ pub(crate) fn enable_tick_clock(core_peripherals: &mut Peripherals, frequency: u
 }
 
 #[inline]
-pub(crate) fn delay(duration: Duration) {
+pub fn delay(duration: Duration) {
     let ms_u128 = duration.as_millis();
     let ms = if ms_u128 > u32::MAX.into() {
         u32::MAX

@@ -10,8 +10,8 @@
 //! * Controller Out Peripheral In: PC12
 
 
-use crate::{Peripherals, sam_pin};
-use crate::atsam3x8e_ext::nop;
+use atsam3x8e::Peripherals;
+use atsam3x8e_ext::{nop, sam_pin};
 
 
 /// Set up the SPI pins, assuming the role of controller (as opposed to peripheral).

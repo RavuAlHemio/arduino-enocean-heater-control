@@ -4,8 +4,7 @@
 
 use atsam3x8e::Peripherals;
 use atsam3x8e::uart::mr::{CHMODE_A, PAR_A};
-
-use crate::sam_pin;
+use atsam3x8e_ext::sam_pin;
 
 
 /// Initialize the UART.

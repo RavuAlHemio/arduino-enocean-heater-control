@@ -2,7 +2,6 @@
 #![no_std]
 
 
-mod atsam3x8e_ext;
 mod click_spi;
 mod display;
 mod esp3_serial;
@@ -15,6 +14,9 @@ use core::panic::PanicInfo;
 use core::time::Duration;
 
 use atsam3x8e::Peripherals;
+use atsam3x8e_ext::sam_pin;
+use atsam3x8e_ext::setup::system_init;
+use atsam3x8e_ext::tick::{delay, enable_tick_clock};
 use buildingblocks::bit_field;
 use buildingblocks::crc8;
 use buildingblocks::esp3::{CommandData, Esp3Packet, EventData};
@@ -22,8 +24,6 @@ use buildingblocks::max_array::MaxArray;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
 
-use crate::atsam3x8e_ext::setup::system_init;
-use crate::atsam3x8e_ext::tick::{delay, enable_tick_clock};
 use crate::display::DisplayCommand;
 use crate::usart::{Usart, Usart3};
 

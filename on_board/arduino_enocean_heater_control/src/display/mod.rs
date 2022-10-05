@@ -6,9 +6,9 @@ mod settings;
 use core::time::Duration;
 
 use atsam3x8e::Peripherals;
+use atsam3x8e_ext::{multinop, sam_pin};
+use atsam3x8e_ext::tick::delay;
 
-use crate::{delay, sam_pin};
-use crate::atsam3x8e_ext::multinop;
 use crate::bit_field::BitField;
 use crate::click_spi;
 
