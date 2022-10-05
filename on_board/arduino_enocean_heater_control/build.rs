@@ -13,7 +13,7 @@ fn copy_memory_x() {
         .write_all(include_bytes!("src/memory.x"))
         .expect("failed to write memory.x output file");
     println!("cargo:rustc-link-search={}", out_dir.display());
-    println!("cargo:rerun-if-changed=memory.x");
+    println!("cargo:rerun-if-changed=src/memory.x");
 }
 
 
