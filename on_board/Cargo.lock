@@ -94,6 +94,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "dcf77_faker"
+version = "0.1.0"
+dependencies = [
+ "atsam3x8e",
+ "atsam3x8e_ext",
+ "buildingblocks",
+ "cortex-m",
+ "cortex-m-rt",
+ "from-to-repr",
+]
+
+[[package]]
 name = "embedded-hal"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
