@@ -6,9 +6,10 @@ use core::panic::PanicInfo;
 
 use atsam3x8e::{Interrupt, interrupt, Peripherals};
 use atsam3x8e::tc0::wave_eq_1_cmr0_wave_eq_1 as tc0cmr0;
-use atsam3x8e::tc0::wave_eq_1_cmr1_wave_eq_1 as tc0cmr1;
+use atsam3x8e::tc1::wave_eq_1_cmr0_wave_eq_1 as tc1cmr0;
 use atsam3x8e_ext::sam_pin;
 use atsam3x8e_ext::setup::{CHIP_FREQ_CPU_MAX, system_init};
+use atsam3x8e_ext::uart;
 use buildingblocks::bit_field::BitField;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m::peripheral::NVIC;
@@ -18,8 +19,10 @@ use cortex_m_rt::{entry, exception};
 // most accurate timer is MCLK/2 = 42 MHz = 42_000_000 Hz
 // carrier signal is 77.5 kHz = 77_500 Hz
 // => one period is 541 + 29/31 counter values
-const PERIOD_WHOLE: u32 = 541;
-const PERIOD_NUMER: i32 = 29;
+// however, the oscilloscope says we're more like 74 kHz, so tune this
+//const PERIOD_WHOLE: u32 = 541;
+const PERIOD_WHOLE: u32 = 518;
+const PERIOD_NUMER: i32 = 0;
 const PERIOD_DENOM: i32 = 31;
 
 
@@ -41,28 +44,46 @@ unsafe fn DefaultHandler(_: i16) {
 
 
 #[inline]
-fn update_duty_cycle(peripherals: &mut Peripherals) {
+fn update_timer0_duty_cycle(peripherals: &mut Peripherals) {
     let duty_cycle_value = unsafe {
         if CURRENT_IS_DATA {
             // "data" is transmitted using a duty cycle of 1/44 of a period
+            //sam_pin!(set_high, peripherals, PIOB, p27);
             CURRENT_PERIOD_WHOLE / 44
         } else {
             // "no data" is transmitted using a duty cycle of half a period
+            //sam_pin!(set_low, peripherals, PIOB, p27);
             CURRENT_PERIOD_WHOLE / 2
         }
     };
-    peripherals.TC0.rc0.write(|w| w.rc().variant(duty_cycle_value));
+    peripherals.TC0.ra0.write(|w| w.ra().variant(duty_cycle_value));
 }
 
 
 #[entry]
 fn main() -> ! {
-    let mut core_peripherals = CorePeripherals::take().unwrap();
     let mut peripherals = Peripherals::take().unwrap();
-    let _clock = system_init(&mut peripherals);
+
+    // first things first: disable the watchdog
+    peripherals.WDT.mr.modify(|_, w| w
+        .wddis().set_bit()
+    );
+
+    // set up the clocks
+    let mut core_peripherals = CorePeripherals::take().unwrap();
+    let clock = system_init(&mut peripherals);
+
+    // enable the tick clock and give us 3s to connect the debugger
+    atsam3x8e_ext::tick::enable_tick_clock(&mut core_peripherals, clock.clock_speed / 1000);
+    //atsam3x8e_ext::tick::delay(core::time::Duration::from_secs(3));
+
+    // initialize UART
+    uart::init(&mut peripherals);
 
     let mut dcf = Dcf77::new();
     dcf.set_date(Dcf77Date { day_of_month: 10, day_of_week: 2, month: 4, year_of_century: 90 });
+    dcf.set_hours(10);
+    dcf.set_minutes(40);
     dcf.set_winter_time(false);
     dcf.set_summer_time(true);
     unsafe { DCF77_DATA = dcf.get_storage_copy() };
@@ -73,92 +94,188 @@ fn main() -> ! {
     sam_pin!(make_output, peripherals, PIOB, p25);
     sam_pin!(peripheral_ab, peripherals, PIOB, p25, set_bit);
 
-    // set up timer counter for PWM (TC0)
+    // set LED pin as output
+    sam_pin!(enable_io, peripherals, PIOB, p27);
+    sam_pin!(make_output, peripherals, PIOB, p27);
+    sam_pin!(set_low, peripherals, PIOB, p27);
+
+    // feed clock to a few peripherals
+    unsafe {
+        peripherals.PMC.pmc_pcer0.write_with_zero(|w| w
+            .pid12().set_bit() // PIOB
+            .pid27().set_bit() // timer 0
+            .pid30().set_bit() // timer 3
+        )
+    };
+
+    // set up timer counter for PWM (timer 0)
+    // disable and re-enable the clock first
+    unsafe {
+        peripherals.TC0.ccr0.write_with_zero(|w| w
+            .clkdis().set_bit()
+        )
+    };
+    unsafe {
+        peripherals.TC0.ccr0.write_with_zero(|w| w
+            .clken().set_bit()
+        )
+    };
+    // disable write protection
+    peripherals.TC0.wpmr.write(|w| w
+        .wpkey().variant(atsam3x8e::tc0::wpmr::WPKEY_A::PASSWD)
+        .wpen().clear_bit()
+    );
+    // read the status register, which clears it
+    peripherals.TC0.sr0.read().bits();
+    // set up everything
     peripherals.TC0.wave_eq_1_cmr0_wave_eq_1().modify(|_, w| w
         .tcclks().variant(tc0cmr0::TCCLKS_A::TIMER_CLOCK1) // MCLK/2
+        .clki().clear_bit() // increment on rising clock edge
+        .burst().variant(tc0cmr0::BURST_A::NONE) // clock not gated by external signal
         .wave().set_bit() // wave mode
-        .wavsel().variant(tc0cmr0::WAVSEL_A::UP_RC) // count up until RC, then wrap around to 0
-        .acpa().variant(tc0cmr0::ACPA_A::CLEAR) // once we hit RA ("on" period is over), turn off power
-        .acpc().variant(tc0cmr0::ACPC_A::SET) // once we hit RC (one cycle of "on" followed by "off" is over), turn on power
+        .wavsel().variant(tc0cmr0::WAVSEL_A::UP_RC) // count up and reset on hitting RC
+        .aswtrg().variant(tc0cmr0::ASWTRG_A::SET) // when triggered by software (we do this on every overflow), turn on power of TIOA0
+        .acpa().variant(tc0cmr0::ACPA_A::CLEAR) // once we hit RA ("on" period is over), turn off power on TIOA0
+        .acpc().variant(tc0cmr0::ACPC_A::SET) // enable TIOA0 once we hit RC
+        .aeevt().variant(tc0cmr0::AEEVT_A::NONE) // do nothing with TIOA0 if we receive an external event
+        .bcpb().variant(tc0cmr0::BCPB_A::NONE) // do nothing with TIOB0 when we hit RB
+        .bcpc().variant(tc0cmr0::BCPC_A::NONE) // do nothing with TIOB0 when we hit RC
+        .beevt().variant(tc0cmr0::BEEVT_A::NONE) // do nothing with TIOB0 if we receive an external event
+        .bswtrg().variant(tc0cmr0::BSWTRG_A::NONE) // do nothing with TIOB0 if we receive a software trigger
+        .cpcstop().clear_bit() // don't stop clock when we hit RC
+        .cpcdis().clear_bit() // don't disable clock when we hit RC
+        .eevt().variant(tc0cmr0::EEVT_A::XC0) // external event is XC0 (not TIOB)
+        .eevtedg().variant(tc0cmr0::EEVTEDG_A::NONE) // detect no external event edge
+        .enetrg().clear_bit() // no trigger by external event
     );
 
-    // => set RC to on duration and RA to on+off duration
-    peripherals.TC0.ra0.write(|w| w.ra().variant(PERIOD_WHOLE));
+    // => set RA to on duration and RC to on+off duration
+    peripherals.TC0.rc0.write(|w| w.rc().variant(PERIOD_WHOLE));
     unsafe { CURRENT_IS_DATA = false };
-    update_duty_cycle(&mut peripherals);
+    update_timer0_duty_cycle(&mut peripherals);
     unsafe {
         peripherals.TC0.ier0.write_with_zero(|w| w
             .cpcs().set_bit() // interrupt when counter overflows RC
         )
     };
 
-    // set up timer counter for sender on/off (10 times per second)
+    // set up timer counter for sender on/off (timer 3; 10 times per second)
     const TEN_HZ_COUNTER_MCLK_BY_128: u32 = (CHIP_FREQ_CPU_MAX/128) / 10;
-    peripherals.TC0.wave_eq_1_cmr1_wave_eq_1().modify(|_, w| w
-        .tcclks().variant(tc0cmr1::TCCLKS_A::TIMER_CLOCK4) // MCLK/128
-        .wave().set_bit() // wave mode
-        .wavsel().variant(tc0cmr1::WAVSEL_A::UP_RC) // count up until RC, then wrap around to 0
-    );
-    peripherals.TC0.rc1.write(|w| w.rc().variant(TEN_HZ_COUNTER_MCLK_BY_128));
     unsafe {
-        peripherals.TC0.ier1.write_with_zero(|w| w
+        peripherals.TC1.ccr0.write_with_zero(|w| w
+            .clkdis().set_bit()
+        )
+    };
+    unsafe {
+        peripherals.TC1.ccr0.write_with_zero(|w| w
+            .clken().set_bit()
+        )
+    };
+    peripherals.TC1.wave_eq_1_cmr0_wave_eq_1().modify(|_, w| w
+        .tcclks().variant(tc1cmr0::TCCLKS_A::TIMER_CLOCK4) // MCLK/128
+        .wave().set_bit() // wave mode
+        .wavsel().variant(tc1cmr0::WAVSEL_A::UP) // count up (we reset by triggering in the interrupt handler)
+        .cpcstop().clear_bit() // don't stop clock when we hit RC
+        .cpcdis().clear_bit() // don't disable clock when we hit RC
+    );
+    peripherals.TC1.ra0.write(|w| w.ra().variant(0));
+    peripherals.TC1.rc0.write(|w| w.rc().variant(TEN_HZ_COUNTER_MCLK_BY_128));
+    unsafe {
+        peripherals.TC1.ier0.write_with_zero(|w| w
             .cpcs().set_bit() // interrupt when counter overflows RC
         )
     };
 
-    // enable system-level interrupts for timers 0 and 1 (= TC0 timers 0 and 1)
+    // enable system-level interrupts for timers 0 and 3
     unsafe { NVIC::unmask(Interrupt::TC0) };
-    unsafe { NVIC::unmask(Interrupt::TC1) };
+    unsafe { NVIC::unmask(Interrupt::TC3) };
 
-    // start both timers
-    unsafe {
-        peripherals.TC0.ccr0.write_with_zero(|w| w
-            .clken().set_bit()
-        )
-    };
-    unsafe {
-        peripherals.TC0.ccr1.write_with_zero(|w| w
-            .clken().set_bit()
-        )
-    };
+    // increase TC0 priority value
+    // (reduces its priority and allows it to be preempted by TC3)
+    unsafe { core_peripherals.NVIC.set_priority(Interrupt::TC0, 1 << 4) };
+
+    // enable and start both timers
+    trigger_timer0(&mut peripherals);
+    trigger_timer3(&mut peripherals);
 
     loop {
+        cortex_m::asm::wfi();
     }
 }
+
+#[inline]
+fn nibble_to_ascii_hex(number: u8) -> u8 {
+    if number < 0xA {
+        b'0' + number
+    } else if number < 0x10 {
+        b'A' - 10 + number
+    } else {
+        0x00
+    }
+}
+fn u8_to_hex(number: u8) -> [u8; 2] {
+    let upper = nibble_to_ascii_hex(number >> 4);
+    let lower = nibble_to_ascii_hex(number & 0xF);
+    [upper, lower]
+}
+
+#[inline]
+fn trigger_timer0(peripherals: &mut Peripherals) {
+    unsafe {
+        peripherals.TC0.ccr0.write_with_zero(|w| w
+            .swtrg().set_bit()
+        )
+    };
+}
+
+#[inline]
+fn trigger_timer3(peripherals: &mut Peripherals) {
+    unsafe {
+        peripherals.TC1.ccr0.write_with_zero(|w| w
+            .swtrg().set_bit()
+        )
+    };
+}
+
 
 #[interrupt]
 fn TC0() {
     // timer 0 ticked over
     // adjust fractional part of duty cycle
     let mut stolen_peripherals = unsafe { Peripherals::steal() };
+    //sam_pin!(set_high, stolen_peripherals, PIOB, p27);
+
+    // read-and-clear status register
+    stolen_peripherals.TC0.sr0.read().bits();
+
     unsafe { CURRENT_NUMER += PERIOD_NUMER };
-    if unsafe { CURRENT_NUMER >= PERIOD_DENOM } {
-        // perform compensation
-        unsafe { CURRENT_PERIOD_WHOLE = PERIOD_WHOLE + 1 };
-        unsafe { CURRENT_NUMER -= PERIOD_DENOM };
-        update_duty_cycle(&mut stolen_peripherals);
-    } else {
-        // no compensation is required
-        if unsafe { CURRENT_PERIOD_WHOLE == PERIOD_WHOLE + 1 } {
-            // but it's active; deactivate it
-            unsafe { CURRENT_PERIOD_WHOLE = PERIOD_WHOLE };
-            update_duty_cycle(&mut stolen_peripherals);
+    if unsafe { CURRENT_NUMER < PERIOD_DENOM } {
+        if unsafe { CURRENT_PERIOD_WHOLE != PERIOD_WHOLE - 1 } {
+            // compensate downward
+            unsafe { CURRENT_PERIOD_WHOLE = PERIOD_WHOLE - 1 };
+            update_timer0_duty_cycle(&mut stolen_peripherals);
         }
+    } else {
+        // compensate upward
+        unsafe { CURRENT_NUMER -= PERIOD_DENOM };
+        unsafe { CURRENT_PERIOD_WHOLE = PERIOD_WHOLE };
+        update_timer0_duty_cycle(&mut stolen_peripherals);
     }
+
+    trigger_timer0(&mut stolen_peripherals);
 }
 
 #[interrupt]
-fn TC1() {
+fn TC3() {
     // 0.1s elapsed
-
     static mut BIT_POS: usize = 0;
-    static mut WITHIN_SECOND: u32 = 0;
+    static mut WITHIN_SECOND: u8 = 0;
 
     *WITHIN_SECOND += 1;
-    if *WITHIN_SECOND == 10 {
+    if *WITHIN_SECOND >= 10 {
         *WITHIN_SECOND = 0;
         *BIT_POS += 1;
-        if *BIT_POS == 60 {
+        if *BIT_POS >= 60 {
             // repeat from the beginning
             *BIT_POS = 0;
         }
@@ -167,21 +284,38 @@ fn TC1() {
     // a 0 bit is transmitted using 0.1s of "data" followed by 0.9s of "no data"
     // a 1 bit is transmitted using 0.2s of "data" followed by 0.8s of "no data"
     let mut stolen_peripherals = unsafe { Peripherals::steal() };
+    //sam_pin!(set_low, stolen_peripherals, PIOB, p27);
+    sam_pin!(set_high, stolen_peripherals, PIOB, p27);
+
+    // read-and-clear status register
+    stolen_peripherals.TC1.sr0.read().bits();
+
+    /*
+    let hexy = u8_to_hex(*BIT_POS as u8);
+    let buf = [b'0', b'x', hexy[0], hexy[1], b'\r', b'\n'];
+    uart::send(&mut stolen_peripherals, &buf);
+    */
+
     if *WITHIN_SECOND == 0 {
         // start of a new second -- activate the "data" duty cycle
-        unsafe { CURRENT_IS_DATA = true };
-        update_duty_cycle(&mut stolen_peripherals);
+        // except: shut up completely if we are at second 59
+        let is_data = *BIT_POS != 59;
+        unsafe { CURRENT_IS_DATA = is_data };
+        update_timer0_duty_cycle(&mut stolen_peripherals);
     } else if *WITHIN_SECOND == 1 && unsafe { !DCF77_DATA.is_bit_set(*BIT_POS) } {
         // bit is 0 and we are at n+0.1s -- switch to "no data" duty cycle
         unsafe { CURRENT_IS_DATA = false };
-        update_duty_cycle(&mut stolen_peripherals);
+        update_timer0_duty_cycle(&mut stolen_peripherals);
     } else if *WITHIN_SECOND == 2 && unsafe { DCF77_DATA.is_bit_set(*BIT_POS) } {
         // bit is 1 and we are at n+0.2s -- switch to "no data" duty cycle
         unsafe { CURRENT_IS_DATA = false };
-        update_duty_cycle(&mut stolen_peripherals);
+        update_timer0_duty_cycle(&mut stolen_peripherals);
     }
 
     // change nothing in all the remaining cases
+
+    // re-trigger timer 3
+    trigger_timer3(&mut stolen_peripherals);
 }
 
 
@@ -231,6 +365,10 @@ impl Dcf77 {
         let mut ret = Self {
             storage: BitField::from_bytes([0; 8]),
         };
+        // bit 20 (start of time) is always set
+        ret.storage.set_bit(20);
+        ret.set_minutes(0);
+        ret.set_hours(0);
         ret.set_date(Dcf77Date { day_of_month: 1, day_of_week: 4, month: 1, year_of_century: 70 });
         ret.set_winter_time(true);
         ret
