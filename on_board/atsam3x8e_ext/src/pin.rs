@@ -72,11 +72,17 @@ macro_rules! sam_pin {
             )
         }
     };
-    (is_up, $peripherals:expr, $pio:ident, $pin:ident) => {
+    (input_is_high, $peripherals:expr, $pio:ident, $pin:ident) => {
         $peripherals.$pio.pdsr.read().$pin().bit_is_set()
     };
-    (is_down, $peripherals:expr, $pio:ident, $pin:ident) => {
+    (input_is_low, $peripherals:expr, $pio:ident, $pin:ident) => {
         $peripherals.$pio.pdsr.read().$pin().bit_is_clear()
+    };
+    (output_is_high, $peripherals:expr, $pio:ident, $pin:ident) => {
+        $peripherals.$pio.odsr.read().$pin().bit_is_set()
+    };
+    (output_is_low, $peripherals:expr, $pio:ident, $pin:ident) => {
+        $peripherals.$pio.odsr.read().$pin().bit_is_clear()
     };
     (disable_interrupt, $peripherals:expr, $pio:ident, $($pin:ident),+) => {
         // disable interrupt on pins

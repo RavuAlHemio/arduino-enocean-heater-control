@@ -96,7 +96,7 @@ pub fn bitbang<const NOPCOUNT: usize>(peripherals: &mut Peripherals, write_byte:
 
         // read a bit (MSB first)
         read_byte <<= 1;
-        if sam_pin!(is_up, peripherals, PIOC, p13) {
+        if sam_pin!(input_is_high, peripherals, PIOC, p13) {
             read_byte |= 1;
         }
 
