@@ -1,3 +1,4 @@
 /target
 /on_board/target
+/on_board/*.bin
 /on_host/target
