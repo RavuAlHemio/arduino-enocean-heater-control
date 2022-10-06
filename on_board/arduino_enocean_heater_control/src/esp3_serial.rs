@@ -1,6 +1,7 @@
 //! Code related to EnOcean serial I/O.
 
 
+use atsam3x8e_ext::uart;
 use buildingblocks::crc8::crc8_ccitt;
 use buildingblocks::esp3::{FOOTER_LENGTH, HEADER_LENGTH, MAX_ESP3_PACKET_LENGTH, SYNC_BYTE};
 use buildingblocks::max_array::MaxArray;
@@ -71,7 +72,7 @@ pub fn take_esp3_packet() -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
         }
 
         // no, it isn't a valid packet...
-        crate::uart::send_stolen(b"invalid packet :-(\r\n");
+        uart::send_stolen(b"invalid packet :-(\r\n");
         // pop the sync byte and search for the next one
         ESP3_BUFFER.pop();
     };

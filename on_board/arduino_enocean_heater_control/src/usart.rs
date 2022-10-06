@@ -12,6 +12,7 @@ use atsam3x8e::{Interrupt, interrupt, Peripherals};
 use atsam3x8e::usart0::RegisterBlock as UsartRegisterBlock;
 use atsam3x8e_ext::sam_pin;
 use atsam3x8e_ext::setup::SystemCoreClock;
+use atsam3x8e_ext::uart;
 use buildingblocks::max_array::MaxArray;
 use buildingblocks::ring_buffer::RingBuffer;
 use cortex_m::interrupt as cortex_interrupt;
@@ -184,9 +185,9 @@ pub trait Usart {
         let clock_divider: u16 = clock_divider_u32.try_into().unwrap();
         let mut clock_divider_hex: MaxArray<u8, {2*2}> = MaxArray::new();
         crate::hex_dump(&clock_divider.to_be_bytes(), &mut clock_divider_hex);
-        crate::uart::send(peripherals, b"USART clock divider: 0x");
-        crate::uart::send(peripherals, clock_divider_hex.as_slice());
-        crate::uart::send(peripherals, b"\r\n");
+        uart::send(peripherals, b"USART clock divider: 0x");
+        uart::send(peripherals, clock_divider_hex.as_slice());
+        uart::send(peripherals, b"\r\n");
 
         unsafe {
             Self::register_block(peripherals)
@@ -235,12 +236,12 @@ pub trait Usart {
 
     /// Sends the given data.
     fn transmit(peripherals: &mut Peripherals, data: &[u8]) {
-        crate::uart::send(peripherals, b"PREPARING FOR TRANSMISSION\r\n");
+        uart::send(peripherals, b"PREPARING FOR TRANSMISSION\r\n");
         for b in data {
             while Self::register_block(peripherals).csr().read().txrdy().bit_is_clear() {
                 // transmitter is not ready; wait...
             }
-            crate::uart::send(peripherals, b"b");
+            uart::send(peripherals, b"b");
             unsafe {
                 Self::register_block(peripherals)
                     .thr.write_with_zero(|w| w
@@ -249,17 +250,17 @@ pub trait Usart {
                     )
             };
         }
-        crate::uart::send(peripherals, b"\r\nFLUSHING\r\n");
+        uart::send(peripherals, b"\r\nFLUSHING\r\n");
         while Self::register_block(peripherals).csr().read().txempty().bit_is_clear() {
             // transmitter is not empty; wait...
         }
-        crate::uart::send(peripherals, b"SENT\r\n");
+        uart::send(peripherals, b"SENT\r\n");
     }
 
     /// Receives enough data to fill the buffer.
     fn receive_exact(peripherals: &mut Peripherals, buffer: &mut [u8]) {
         let mut i = 0;
-        crate::uart::send(peripherals, b"RECEIVING\r\n");
+        uart::send(peripherals, b"RECEIVING\r\n");
         while i < buffer.len() {
             while Self::register_block(peripherals).csr().read().rxrdy().bit_is_clear() {
                 // receiver is not ready; wait...
@@ -275,7 +276,7 @@ pub trait Usart {
                     )
             };
         }
-        crate::uart::send(peripherals, b"RECEIVED\r\n");
+        uart::send(peripherals, b"RECEIVED\r\n");
     }
 
     /// Sets whether the receive buffer for this USART is enabled. Also clears the buffer.
@@ -324,7 +325,7 @@ pub trait Usart {
         }
 
         if reg_block.csr().read().ovre().bit_is_set() {
-            crate::uart::send_stolen(b"OVERRUN\r\n");
+            uart::send_stolen(b"OVERRUN\r\n");
             unsafe {
                 reg_block.cr().write_with_zero(|w| { w
                     .rststa().set_bit()

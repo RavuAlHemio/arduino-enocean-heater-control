@@ -6,7 +6,6 @@ mod click_spi;
 mod display;
 mod esp3_serial;
 mod ring_buffer;
-mod uart;
 mod usart;
 
 
@@ -17,6 +16,7 @@ use atsam3x8e::Peripherals;
 use atsam3x8e_ext::sam_pin;
 use atsam3x8e_ext::setup::system_init;
 use atsam3x8e_ext::tick::{delay, enable_tick_clock};
+use atsam3x8e_ext::uart;
 use buildingblocks::bit_field;
 use buildingblocks::crc8;
 use buildingblocks::esp3::{CommandData, Esp3Packet, EventData};

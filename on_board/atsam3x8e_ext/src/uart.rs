@@ -4,7 +4,8 @@
 
 use atsam3x8e::Peripherals;
 use atsam3x8e::uart::mr::{CHMODE_A, PAR_A};
-use atsam3x8e_ext::sam_pin;
+
+use crate::sam_pin;
 
 
 /// Initialize the UART.
@@ -15,6 +16,13 @@ pub fn init(peripherals: &mut Peripherals) {
 
     // PIOA ABSR bits 8 and 9 to 0 = pins A8 and A9 are used by peripheral A (UART)
     sam_pin!(peripheral_ab, peripherals, PIOA, p8, clear_bit, p9, clear_bit);
+
+    // feed clock to UART
+    unsafe {
+        peripherals.PMC.pmc_pcer0.write_with_zero(|w| w
+            .pid8().set_bit() // UART
+        )
+    };
 
     // enable UART transmitter
     unsafe {

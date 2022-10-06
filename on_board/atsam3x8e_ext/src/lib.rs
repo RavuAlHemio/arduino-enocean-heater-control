@@ -4,6 +4,7 @@
 pub mod pin;
 pub mod setup;
 pub mod tick;
+pub mod uart;
 
 #[inline]
 pub fn nop() {
