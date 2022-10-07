@@ -26,6 +26,11 @@ impl<const SIZE_BYTES: usize> BitField<SIZE_BYTES> {
         (index / 8, index % 8)
     }
 
+    /// Creates a new, empty bit field.
+    pub const fn new() -> Self {
+        Self { field: [0u8; SIZE_BYTES] }
+    }
+
     /// Wraps the given byte array as a bit field.
     pub const fn from_bytes(bytes: [u8; SIZE_BYTES]) -> Self {
         Self {
@@ -107,9 +112,7 @@ impl<const SIZE_BYTES: usize> BitField<SIZE_BYTES> {
 }
 impl<const SIZE_BYTES: usize> Default for BitField<SIZE_BYTES> {
     fn default() -> Self {
-        Self {
-            field: [0; SIZE_BYTES],
-        }
+        Self::new()
     }
 }
 
@@ -131,6 +134,45 @@ impl<'a, const SIZE_BYTES: usize> Iterator for BitFieldIterator<'a, SIZE_BYTES> 
             Some(ret)
         }
     }
+}
+
+
+/// Assembles a [`BitField`] from a series of `bool` values.
+///
+/// The number of `bool` values must be divisible by 8, otherwise the macro fails.
+#[macro_export]
+macro_rules! bit_field_from_bool {
+    (@eight_block : [$($previous:expr,)*]) => {
+        // we're done; output our expressions
+        [$($previous,)*]
+    };
+    (@eight_block : [$($previous:expr,)*], $zero:expr, $one:expr, $two:expr, $three:expr, $four:expr, $five:expr, $six:expr, $seven:expr $(, $more:expr)* $(,)?) => {
+        // push down
+        bit_field_from_bool!(
+            @eight_block : [
+                $($previous,)*
+
+                if $zero { 1 << 0 } else { 0 }
+                | if $one { 1 << 1 } else { 0 }
+                | if $two { 1 << 2 } else { 0 }
+                | if $three { 1 << 3 } else { 0 }
+                | if $four { 1 << 4 } else { 0 }
+                | if $five { 1 << 5 } else { 0 }
+                | if $six { 1 << 6 } else { 0 }
+                | if $seven { 1 << 7 } else { 0 }
+                ,
+            ]
+            $(, $more)*
+        )
+    };
+    ($first:expr $(, $more:expr)* $(,)?) => {
+        BitField::from_bytes(
+            bit_field_from_bool!(@eight_block: [], $first $(, $more)*)
+        )
+    };
+    () => {
+        BitField::new()
+    };
 }
 
 
@@ -412,5 +454,24 @@ mod tests {
                 true, true, true, true, true, true, false, true,
             ],
         );
+    }
+
+    #[test]
+    fn test_bit_field_from_bool() {
+        let bf = bit_field_from_bool!(
+            // a comment
+            true, false, true, false, false, true, false, true,
+            // another comment
+        );
+        assert_eq!(bf.len_bits(), 8);
+        assert_eq!(bf.size_bytes(), 1);
+        assert_eq!(bf.is_bit_set(0), true);
+        assert_eq!(bf.is_bit_set(1), false);
+        assert_eq!(bf.is_bit_set(2), true);
+        assert_eq!(bf.is_bit_set(3), false);
+        assert_eq!(bf.is_bit_set(4), false);
+        assert_eq!(bf.is_bit_set(5), true);
+        assert_eq!(bf.is_bit_set(6), false);
+        assert_eq!(bf.is_bit_set(7), true);
     }
 }
