@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "collect_eepxml",
     "deesp3",
     "eepxml2rust",
     "png2bitfield",
