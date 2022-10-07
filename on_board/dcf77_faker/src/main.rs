@@ -276,6 +276,9 @@ fn TC3() {
         *WITHIN_SECOND = 0;
         *BIT_POS += 1;
         if *BIT_POS >= 60 {
+            // increment
+            unsafe { DCF77_DATA.increment() };
+
             // repeat from the beginning
             *BIT_POS = 0;
         }
@@ -508,6 +511,22 @@ impl Dcf77 {
         } else {
             self.storage.clear_bit(58);
         }
+    }
+
+    pub fn increment(&mut self) {
+        let mut new_minutes = self.get_minutes() + 1;
+        if new_minutes == 60 {
+            new_minutes = 0;
+
+            let mut new_hours = self.get_hours() + 1;
+            if new_hours == 24 {
+                new_hours = 0;
+            }
+
+            // don't bother with the date
+            self.set_hours(new_hours);
+        }
+        self.set_minutes(new_minutes);
     }
 
     pub fn get_storage_copy(&self) -> BitField<8> {
