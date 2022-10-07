@@ -22,7 +22,7 @@ use crate::xpath_ext::{FactoryExt, XPathExt};
 
 #[derive(Parser)]
 struct Args {
-    #[clap(help = "Path to the eep.xml file to read.", long_help = "Path to the eep.xml file to read. Can be downloaded using the \"Bulk Download\" feature with the \"XML Representation\" option of the EnOcean Alliance's EEP Viewer web application.")]
+    #[clap(help = "Path to the eep.xml file to read.", long_help = "Path to the eep.xml file to read. Can be downloaded using the \"Bulk Download\" feature with the \"XML Representation\" option of the EnOcean Alliance's EEP Viewer web application. Alternatively, can be merged from the single-EEP XML definitions from the EEP Viewer using the collect_eepxml tool.")]
     pub eep_xml: PathBuf,
 
     #[clap(help = "Path to the eep.rs file to write.")]

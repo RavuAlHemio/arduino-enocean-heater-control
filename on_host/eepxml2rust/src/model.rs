@@ -121,13 +121,13 @@ pub(crate) mod filters {
                 '\u{B2}' => ret.push('2'),
                 '<' => ret.push_str(" less than "),
                 '>' => ret.push_str(" more than "),
-                '\u{3BC}' => ret.push_str(" mu "),
+                '\u{3BC}'|'\u{B5}' => ret.push_str(" mu "),
                 '\u{B0}' => ret.push_str(" degrees "),
                 '-' => {
                     previous_minus = true;
                     ret.push(' ');
                 },
-                ' '|'\r'|'\n'|'\t' => ret.push(' '),
+                ' '|'\r'|'\n'|'\t'|'\u{A0}' => ret.push(' '),
                 '.'|','|':'|';'|'\u{2013}'|'\u{2014}'|'/'|'*'|'+'|'='|'%'|'\u{2026}' => ret.push(' '),
                 '\u{2264}'|'\u{2265}' => ret.push(' '),
                 '\u{2019}'|'\u{201C}'|'\u{201D}' => ret.push(' '),
