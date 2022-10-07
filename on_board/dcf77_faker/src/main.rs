@@ -10,6 +10,7 @@ use atsam3x8e::tc1::wave_eq_1_cmr0_wave_eq_1 as tc1cmr0;
 use atsam3x8e_ext::sam_pin;
 use atsam3x8e_ext::setup::{CHIP_FREQ_CPU_MAX, system_init};
 use atsam3x8e_ext::uart;
+use buildingblocks::bit_field_from_bool;
 use buildingblocks::bit_field::BitField;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m::peripheral::NVIC;
@@ -26,6 +27,7 @@ const PERIOD_NUMER: i32 = 0;
 const PERIOD_DENOM: i32 = 31;
 
 
+static mut DCF77: Dcf77 = Dcf77::new();
 static mut DCF77_DATA: BitField<8> = BitField::from_bytes([0u8; 8]);
 static mut CURRENT_IS_DATA: bool = false;
 static mut CURRENT_PERIOD_WHOLE: u32 = PERIOD_WHOLE;
@@ -80,13 +82,14 @@ fn main() -> ! {
     // initialize UART
     uart::init(&mut peripherals);
 
-    let mut dcf = Dcf77::new();
-    dcf.set_date(Dcf77Date { day_of_month: 10, day_of_week: 2, month: 4, year_of_century: 90 });
-    dcf.set_hours(10);
-    dcf.set_minutes(40);
-    dcf.set_winter_time(false);
-    dcf.set_summer_time(true);
-    unsafe { DCF77_DATA = dcf.get_storage_copy() };
+    unsafe {
+        DCF77.set_date(Dcf77Date { day_of_month: 10, day_of_week: 2, month: 4, year_of_century: 90 });
+        DCF77.set_hours(10);
+        DCF77.set_minutes(40);
+        DCF77.set_winter_time(false);
+        DCF77.set_summer_time(true);
+        DCF77_DATA = DCF77.get_storage_copy();
+    }
 
     // give pin to timer
     // TIOA0 = PB25 (= Arduino Due: D2) peripheral B
@@ -277,7 +280,8 @@ fn TC3() {
         *BIT_POS += 1;
         if *BIT_POS >= 60 {
             // increment
-            unsafe { DCF77_DATA.increment() };
+            unsafe { DCF77.increment() };
+            unsafe { DCF77_DATA = DCF77.get_storage_copy() };
 
             // repeat from the beginning
             *BIT_POS = 0;
@@ -364,17 +368,52 @@ struct Dcf77 {
     storage: BitField<8>,
 }
 impl Dcf77 {
-    pub fn new() -> Self {
-        let mut ret = Self {
-            storage: BitField::from_bytes([0; 8]),
-        };
-        // bit 20 (start of time) is always set
-        ret.storage.set_bit(20);
-        ret.set_minutes(0);
-        ret.set_hours(0);
-        ret.set_date(Dcf77Date { day_of_month: 1, day_of_week: 4, month: 1, year_of_century: 70 });
-        ret.set_winter_time(true);
-        ret
+    pub const fn new() -> Self {
+        let storage = bit_field_from_bool![
+            // BCD encoding means: 1, 2, 4, 8, 10, 20, 40, 80, ...
+
+            false, // start of minute is always 0
+
+            // 13 bits of civil warning and weather
+            false, false, false, false, false, false, false, false,
+            false, false, false, false, false,
+
+            false, // abnormal transmitter operation
+            false, // on the next hour, a summer<->winter time changeover will happen
+            false, // summer time is in effect
+            true, // winter time is in effect
+            false, // on the next hour, a leap second will be introduced
+
+            true, // start of time data is always 1
+
+            // BCD encoding of minutes (7 bits) + even parity (xor sum)
+            false, false, false, false, false, false, false, false,
+
+            // BCD encoding of hours (6 bits) + even parity (xor sum)
+            false, false, false, false, false, false, false, false,
+
+            // BCD encoding of day-of-month (6 bits)
+            true, false, false, false, false, false,
+
+            // BCD encoding of day-of-week (3 bits; Unix Epoch was a Thursday)
+            false, false, true,
+
+            // BCD encoding of month (5 bits)
+            true, false, false, false, false,
+
+            // BCD encoding of year within century (8 bits; 70 = 10 + 20 + 40)
+            false, false, false, false, true, true, true, false,
+
+            // even parity over the previous fields (xor sum)
+            false,
+
+            // final byte of silence (pad with false)
+            false,
+
+            // 4 bits of padding to 64 bits = 8 bytes
+            false, false, false, false,
+        ];
+        Dcf77 { storage }
     }
 
     single_bit_op!(15, is_abnormal_operation, set_abnormal_operation);
