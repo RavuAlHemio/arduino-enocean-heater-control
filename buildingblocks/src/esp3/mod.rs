@@ -102,6 +102,7 @@ pub enum Esp3Packet {
     Response {
         return_code: ReturnCode,
         response_data: MaxArray<u8, {MAX_DATA_LENGTH - 1}>,
+        optional_data: MaxArray<u8, {MAX_OPTIONAL_LENGTH}>,
     },
     RadioSubTelegram {
         radio_telegram: MaxArray<u8, MAX_DATA_LENGTH>,
@@ -215,6 +216,7 @@ impl Esp3Packet {
             Self::Response {
                 return_code,
                 response_data,
+                ..
             } => {
                 let mut ret = MaxArray::new();
                 ret.push_any(*return_code).unwrap();
@@ -316,9 +318,10 @@ impl Esp3Packet {
                 Some(ret)
             },
             Self::Response {
+                optional_data,
                 ..
             } => {
-                Some(MaxArray::new())
+                Some(optional_data.clone())
             },
             Self::RadioSubTelegram {
                 opt_sub_telegram_number,
@@ -532,10 +535,14 @@ impl Esp3Packet {
                 let response_data = MaxArray::from_iter_or_panic(
                     data_slice[1..].iter().map(|b| *b).peekable()
                 );
+                let optional_data = MaxArray::from_iter_or_panic(
+                    optional_slice.iter().map(|b| *b).peekable()
+                );
 
                 Some(Self::Response {
                     return_code,
                     response_data,
+                    optional_data,
                 })
             },
             3 => { // RadioSubTelegram
