@@ -5,7 +5,7 @@
 //! The most helpful document describing the common packet types is _EnOcean Equipment Profiles_.
 
 
-use crate::esp3::MAX_DATA_LENGTH;
+use crate::esp3::{MAX_DATA_LENGTH, OneByteBoolean};
 use crate::max_array::MaxArray;
 
 
@@ -20,6 +20,11 @@ pub const MAXIMUM_VLD_DATA_LENGTH: usize = 14;
 ///
 /// Specified in _EnOcean Equipment Profiles_ (section 3.1.3).
 pub const MAXIMUM_MSC_DATA_LENGTH: usize = 13;
+
+/// The maximum length of variable data in a SIG ESP3 packet.
+///
+/// Specified in _Signal Telegram_ (section 2).
+pub const MAXIMUM_SIG_DATA_LENGTH: usize = 13;
 
 
 /// EnOcean Radio Protocol data in an ESP3 packet.
@@ -36,6 +41,12 @@ pub enum ErpData {
 
     /// VLD (0xD2)
     VariableLength(VariableLengthTelegram),
+
+    /// SIGNAL (0xD0)
+    Signal(SignalTelegram),
+
+    /// UTE (0xD4)
+    UniversalTeachIn(UniversalTeachInTelegram),
 
     // the following telegrams might be implemented eventually
     // but are currently considered out-of-scope
@@ -67,12 +78,6 @@ pub enum ErpData {
 
     /// SEC_MAN (0x34)
     MaintenanceSecurity(MaintenanceSecurityTelegram),
-
-    /// SIGNAL (0xD0)
-    Signal(SignalTelegram),
-
-    /// UTE (0xD4)
-    UniversalTeachIn(UniversalTeachInTelegram),
     */
 
     /// Another type of telegram.
@@ -89,6 +94,8 @@ impl ErpData {
             Self::OneByte(_) => 0xD5,
             Self::FourByte(_) => 0xA5,
             Self::VariableLength(_) => 0xD2,
+            Self::Signal(_) => 0xD0,
+            Self::UniversalTeachIn(_) => 0xD4,
             Self::Other { rorg, .. } => *rorg,
         }
     }
@@ -112,6 +119,10 @@ impl ErpData {
                 .map(Self::FourByte),
             0xD2 => VariableLengthTelegram::from_slice(&data_bytes)
                 .map(Self::VariableLength),
+            0xD0 => SignalTelegram::from_slice(&data_bytes)
+                .map(Self::Signal),
+            0xD4 => UniversalTeachInTelegram::from_slice(&data_bytes)
+                .map(Self::UniversalTeachIn),
             other => Some(Self::Other {
                 rorg: other,
                 data: MaxArray::from_iter_or_panic(
@@ -144,7 +155,7 @@ pub trait ErpStatusByte {
 
 
 /// Repeated Switch Telegram (RPS, 0xF6)
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct RepeatedSwitchTelegram {
     pub data: u8,
     pub sender: u32,
@@ -183,7 +194,7 @@ impl ErpStatusByte for RepeatedSwitchTelegram {
 }
 
 /// One-Byte Telegram (1BS, 0xD5)
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct OneByteTelegram {
     pub data: u8,
     pub sender: u32,
@@ -213,7 +224,7 @@ impl ErpStatusByte for OneByteTelegram {
 }
 
 /// Four-Byte Telegram (4BS, 0xA5)
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FourByteTelegram {
     pub data: u32,
     pub sender: u32,
@@ -353,4 +364,460 @@ pub struct FourByteTeachInFlags {
 
     /// `false` if EEP is not supported, `true` if it is. (EEP Result)
     pub eep_is_supported: bool,
+}
+
+
+/// Signal telegram (SIG, 0xD0)
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SignalTelegram {
+    pub data: SignalData,
+    pub sender: u32,
+    pub status: u8,
+}
+impl SignalTelegram {
+    /// Attempts to assemble this telegram from the given slice.
+    pub fn from_slice(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() < 6 || bytes.len() > 6 + MAXIMUM_SIG_DATA_LENGTH {
+            return None;
+        }
+
+        let message_id = bytes[0];
+        let signal_data = SignalData::from_id_and_slice(message_id, &bytes[1..bytes.len()-5])?;
+        let sender = u32::from_be_bytes(bytes[bytes.len()-5..bytes.len()-1].try_into().unwrap());
+        let status = bytes[bytes.len()-1];
+
+        Some(Self {
+            data: signal_data,
+            sender,
+            status,
+        })
+    }
+}
+impl ErpStatusByte for SignalTelegram {
+    fn status_byte(&self) -> u8 { self.status }
+}
+
+
+/// Data of a signal telegram.
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum SignalData {
+    SmartAckMailboxEmpty,
+    SmartAckMailboxDoesNotExist,
+    SmartAckReset,
+    TriggerStatusMessage(StatusType),
+    LastUnicastAcknowledge,
+    EnergyPercentage(u8),
+    Revision {
+        software_version: u32,
+        hardware_version: u32,
+    },
+    Heartbeat,
+    RxWindowOpen,
+    RxChannelQuality {
+        request_sender: u32,
+        worst_dbm: i8,
+        best_dbm: i8,
+        subtelegram_count: u8,
+        max_repeater_level: u8,
+    },
+    DutyCycleAvailable(OneByteBoolean),
+    ConfigChanged,
+    HarvesterEnergyQuality(HarvesterEnergyQuality),
+    TxOff,
+    TxOn,
+    BackupBatteryStatus(BackupBatteryStatus),
+    LearnModeStatus {
+        link_table_full: bool,
+        teach_request_message_reception_enabled: bool,
+        learn_mode_type: LearnModeType,
+        teach_result: TeachResult,
+        remaining_timeout_10s: u8,
+        device_id: u32,
+        device_eep: [u8; 3],
+    },
+    ProductId {
+        manufacturer_id: u16,
+        product_reference: u32,
+    },
+    Other {
+        code: u8,
+        data: MaxArray<u8, MAXIMUM_SIG_DATA_LENGTH>,
+    }
+}
+impl SignalData {
+    /// Assembles signal data from a message ID and a slice of optional data.
+    pub fn from_id_and_slice(message_id: u8, signal_data: &[u8]) -> Option<Self> {
+        match message_id {
+            0x01 => Some(Self::SmartAckMailboxEmpty),
+            0x02 => Some(Self::SmartAckMailboxDoesNotExist),
+            0x03 => Some(Self::SmartAckReset),
+            0x04 => {
+                if signal_data.len() != 1 {
+                    None
+                } else {
+                    Some(Self::TriggerStatusMessage(signal_data[0].into()))
+                }
+            },
+            0x05 => Some(Self::LastUnicastAcknowledge),
+            0x06 => {
+                if signal_data.len() != 1 {
+                    None
+                } else {
+                    Some(Self::EnergyPercentage(signal_data[0]))
+                }
+            },
+            0x07 => {
+                if signal_data.len() != 8 {
+                    None
+                } else {
+                    Some(Self::Revision {
+                        software_version: u32::from_be_bytes(signal_data[0..4].try_into().unwrap()),
+                        hardware_version: u32::from_be_bytes(signal_data[4..8].try_into().unwrap()),
+                    })
+                }
+            },
+            0x08 => Some(Self::Heartbeat),
+            0x09 => Some(Self::RxWindowOpen),
+            0x0A => {
+                if signal_data.len() != 7 {
+                    None
+                } else {
+                    let request_sender = u32::from_be_bytes(signal_data[0..4].try_into().unwrap());
+                    let worst_dbm = -(signal_data[4] as i8);
+                    let best_dbm = -(signal_data[5] as i8);
+                    let subtelegram_count = signal_data[6] >> 4;
+                    let max_repeater_level = signal_data[6] & 0xF;
+
+                    Some(Self::RxChannelQuality {
+                        request_sender,
+                        worst_dbm,
+                        best_dbm,
+                        subtelegram_count,
+                        max_repeater_level,
+                    })
+                }
+            },
+            0x0B => {
+                if signal_data.len() != 1 {
+                    None
+                } else {
+                    Some(Self::DutyCycleAvailable(signal_data[0].into()))
+                }
+            },
+            0x0C => Some(Self::ConfigChanged),
+            0x0D => {
+                if signal_data.len() != 1 {
+                    None
+                } else {
+                    Some(Self::HarvesterEnergyQuality(signal_data[0].into()))
+                }
+            },
+            0x0E => Some(Self::TxOff),
+            0x0F => Some(Self::TxOn),
+            0x10 => {
+                if signal_data.len() != 1 {
+                    None
+                } else {
+                    Some(Self::BackupBatteryStatus(signal_data[0].into()))
+                }
+            },
+            0x11 => {
+                if signal_data.len() != 9 {
+                    None
+                } else {
+                    let link_table_full = (signal_data[0] & 0b1000_0000) != 0;
+                    let teach_request_message_reception_enabled = (signal_data[0] & 0b0100_0000) != 0;
+                    let learn_mode_type = ((signal_data[0] & 0b0011_0000) >> 4).into();
+                    let teach_result = (signal_data[0] & 0b0000_1111).into();
+                    let remaining_timeout_10s = signal_data[1];
+                    let device_id = u32::from_be_bytes(signal_data[2..6].try_into().unwrap());
+                    let device_eep = [
+                        signal_data[6],
+                        signal_data[7],
+                        signal_data[8],
+                    ];
+
+                    Some(Self::LearnModeStatus {
+                        link_table_full,
+                        teach_request_message_reception_enabled,
+                        learn_mode_type,
+                        teach_result,
+                        remaining_timeout_10s,
+                        device_id,
+                        device_eep,
+                    })
+                }
+            },
+            0x12 => {
+                if signal_data.len() != 6 {
+                    None
+                } else {
+                    let manufacturer_id = u16::from_be_bytes(signal_data[0..2].try_into().unwrap());
+                    let product_reference = u32::from_be_bytes(signal_data[2..6].try_into().unwrap());
+                    Some(Self::ProductId {
+                        manufacturer_id,
+                        product_reference,
+                    })
+                }
+            },
+            other => {
+                if signal_data.len() > MAXIMUM_SIG_DATA_LENGTH {
+                    None
+                } else {
+                    let data = MaxArray::from_iter_or_panic(
+                        signal_data.iter().map(|b| *b).peekable()
+                    );
+                    Some(Self::Other {
+                        code: other,
+                        data,
+                    })
+                }
+            },
+        }
+    }
+}
+
+
+/// A status message that may be requested.
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
+pub enum StatusType {
+    EepStatus = 0x00,
+    EnergyPercentage = 0x01,
+    DeviceRevision = 0x02,
+    RxLevelOfThisRequest = 0x03,
+    CurrentHarvestedEnergy = 0x04,
+    Other(u8),
+}
+
+/// The quality of the energy provided by the energy harvester.
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
+pub enum HarvesterEnergyQuality {
+    VeryGood = 0x00,
+    Good = 0x01,
+    Average = 0x02,
+    Bad = 0x03,
+    VeryBad = 0x04,
+    Other(u8),
+}
+
+/// The status of a backup battery.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum BackupBatteryStatus {
+    Percentage(u8),
+    Reserved(u8),
+    NoBattery,
+}
+impl From<u8> for BackupBatteryStatus {
+    fn from(val: u8) -> Self {
+        match val {
+            0..=100 => Self::Percentage(val),
+            101..=254 => Self::Reserved(val),
+            255 => Self::NoBattery,
+        }
+    }
+}
+impl From<BackupBatteryStatus> for u8 {
+    fn from(bbs: BackupBatteryStatus) -> Self {
+        match bbs {
+            BackupBatteryStatus::Percentage(v) => v,
+            BackupBatteryStatus::Reserved(v) => v,
+            BackupBatteryStatus::NoBattery => 255,
+        }
+    }
+}
+
+/// The type of learn mode used by the device.
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
+pub enum LearnModeType {
+    Standard = 0b00,
+    Extended1 = 0b01,
+    Extended2 = 0b10,
+    NotApplicable = 0b11,
+    Other(u8),
+}
+
+/// The result of the teach-in process.
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
+pub enum TeachResult {
+    TeachInSuccess = 0x0,
+    TeachInFailedUnsupportedEep = 0x1,
+    TeachInFailedTooManyDevicesOfEep = 0x2,
+    TeachInFailedTooManyDevices = 0x3,
+    TeachOutSuccess = 0x4,
+    TeachOutFailedUnknownDeviceId = 0x5,
+    Other(u8),
+    NotApplicable = 0xF,
+}
+
+/// Universal Teach-In telegram (UTE, 0xD4)
+///
+/// Defined in _EnOcean Equipment Profiles_.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct UniversalTeachInTelegram {
+    pub data: UteData,
+    pub sender: u32,
+    pub status: u8,
+}
+impl UniversalTeachInTelegram {
+    /// Attempts to assemble this telegram from the given slice.
+    pub fn from_slice(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() != 12 {
+            return None;
+        }
+
+        let data = UteData::from_slice(&bytes[0..7])?;
+        Some(Self {
+            data,
+            sender: u32::from_be_bytes(bytes[7..11].try_into().unwrap()),
+            status: bytes[11],
+        })
+    }
+}
+impl ErpStatusByte for UniversalTeachInTelegram {
+    fn status_byte(&self) -> u8 { self.status }
+}
+
+/// Data in a Universal Teach-In (UTE) telegram.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum UteData {
+    Request(UteRequest),
+    Response(UteResponse),
+    Other {
+        bidirectional_eep: bool,
+        expects_teach_in_response: bool,
+        status: u8,
+        command: u8,
+        data: [u8; 6],
+    },
+}
+impl UteData {
+    pub fn from_slice(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() != 7 {
+            return None;
+        }
+
+        // pick through the first byte
+        let bidirectional_eep = (bytes[0] & 0b1000_0000) != 0;
+        let expects_teach_in_response = (bytes[0] & 0b0100_0000) != 0;
+        let status = (bytes[0] & 0b0011_0000) >> 4;
+        let command = bytes[0] & 0b0000_1111;
+
+        match command {
+            0x00 => UteRequest::from_ute_data(bidirectional_eep, expects_teach_in_response, status, &bytes[1..7])
+                .map(Self::Request),
+            0x01 => UteResponse::from_ute_data(bidirectional_eep, expects_teach_in_response, status, &bytes[1..7])
+                .map(Self::Response),
+            other => Some(Self::Other {
+                bidirectional_eep,
+                expects_teach_in_response,
+                status,
+                command: other,
+                data: bytes[1..7].try_into().unwrap(),
+            }),
+        }
+    }
+}
+
+
+/// A Universal Teach-In (UTE) request.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct UteRequest {
+    pub bidirectional_eep: bool,
+    pub expects_teach_in_response: bool,
+    pub request_type: UteRequestType,
+    pub teach_in_channel: u8,
+    pub manufacturer: u16,
+    pub eep_type: u8,
+    pub eep_func: u8,
+    pub eep_rorg: u8,
+}
+impl UteRequest {
+    pub fn from_ute_data(bidirectional_eep: bool, expects_teach_in_response: bool, status: u8, data: &[u8]) -> Option<Self> {
+        if data.len() != 6 {
+            return None;
+        }
+
+        let request_type = status.into();
+        let teach_in_channel = data[0];
+        let manufacturer =
+            (u16::from(data[2]) << 8)
+            | u16::from(data[1]);
+        let eep_type = data[3];
+        let eep_func = data[4];
+        let eep_rorg = data[5];
+
+        Some(Self {
+            bidirectional_eep,
+            expects_teach_in_response,
+            request_type,
+            teach_in_channel,
+            manufacturer,
+            eep_type,
+            eep_func,
+            eep_rorg,
+        })
+    }
+}
+
+/// The type of Universal Teach-In (UTE) request.
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
+pub enum UteRequestType {
+    TeachIn = 0b00,
+    TeachInDeletion = 0b01,
+    TeachInOrDeletion = 0b10,
+    Other(u8),
+}
+
+/// A Universal Teach-In (UTE) response.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct UteResponse {
+    pub bidirectional_eep: bool,
+    pub response_type: UteResponseType,
+    pub teach_in_channel: u8,
+    pub manufacturer: u16,
+    pub eep_type: u8,
+    pub eep_func: u8,
+    pub eep_rorg: u8,
+}
+impl UteResponse {
+    pub fn from_ute_data(bidirectional_eep: bool, _expects_teach_in_response: bool, status: u8, data: &[u8]) -> Option<Self> {
+        if data.len() != 6 {
+            return None;
+        }
+
+        let response_type = status.into();
+        let teach_in_channel = data[0];
+        let manufacturer =
+            (u16::from(data[2]) << 8)
+            | u16::from(data[1]);
+        let eep_type = data[3];
+        let eep_func = data[4];
+        let eep_rorg = data[5];
+
+        Some(Self {
+            bidirectional_eep,
+            response_type,
+            teach_in_channel,
+            manufacturer,
+            eep_type,
+            eep_func,
+            eep_rorg,
+        })
+    }
+}
+
+/// The type of Universal Teach-In (UTE) response.
+#[derive(Clone, Copy, Debug)]
+#[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
+pub enum UteResponseType {
+    NotAccepted = 0b00,
+    TeachInSuccess = 0b01,
+    DeletionSuccess = 0b10,
+    UnsupportedEep = 0b11,
+    Other(u8),
 }
