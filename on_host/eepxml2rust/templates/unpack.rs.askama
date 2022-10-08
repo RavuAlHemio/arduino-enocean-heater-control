@@ -1,3 +1,8 @@
+<%- macro enum_name(tp, enum_prop) -%>
+    <$ tp|typecasename(cs) $>Prop<$ enum_prop.common.name|pascal_case $>
+<%- endmacro -%>
+
+
 use crate::max_array::MaxArray;
 
 
@@ -74,15 +79,22 @@ fn range_scale(mut value: f64, min_range: f64, max_range: f64, min_scale: f64, m
     value_scaled
 }
 
+/// A variable with a raw and a scaled value.
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+pub struct ScaledVariable {
+    pub raw: f64,
+    pub scaled: f64,
+}
+
 <% for rorg in rorgs %>
 /// <$ rorg.name $> (<$ rorg.code|hex $>)
 #[allow(non_snake_case)]
 pub mod rorg<$ rorg.code|hex $> {
-    #[allow(unused)] use super::{BitTwiddling, MaxArray, range_scale};
+    #[allow(unused)] use super::{BitTwiddling, MaxArray, range_scale, ScaledVariable};
     <%- for func in rorg.funcs %>
     /// <$ func.name $> (<$ rorg.code|hex $>-<$ func.code|hex $>)
     pub mod func<$ func.code|hex $> {
-        #[allow(unused)] use super::{BitTwiddling, MaxArray, range_scale};
+        #[allow(unused)] use super::{BitTwiddling, MaxArray, range_scale, ScaledVariable};
 
         <%- for tp in func.types %>
         <%- for cs in tp.cases %>
@@ -104,13 +116,16 @@ pub mod rorg<$ rorg.code|hex $> {
 
             <%- if let Property::Numeric(num_prop) = property %>
             /// Get the <$ property.common().name $> value<% if let Some(u) = property.common().unit %> in units of <$ u $><% endif %>.
-            pub fn get_<$ num_prop.common.name|snake_case $>(&self) -> Option<f64> {
+            pub fn get_<$ num_prop.common.name|snake_case $>(&self) -> Option<ScaledVariable> {
                 let raw_value = self.get_<$ num_prop.common.name|snake_case $>_raw()? as f64;
-                Some(range_scale(raw_value, <$ num_prop.min_range|dec $>, <$ num_prop.max_range|dec $>, <$ num_prop.min_scale|dec $>, <$ num_prop.max_scale|dec $>))
+                Some(ScaledVariable {
+                    raw: raw_value,
+                    scaled: range_scale(raw_value, <$ num_prop.min_range|dec $>, <$ num_prop.max_range|dec $>, <$ num_prop.min_scale|dec $>, <$ num_prop.max_scale|dec $>),
+                })
             }
             <%- else if let Property::Enumerated(enum_prop) = property %>
             /// Get the <$ property.common().name $> value<% if let Some(u) = property.common().unit %> in units of <$ u $><% endif %>.
-            pub fn get_<$ enum_prop.common.name|snake_case $>(&self) -> Option<<$ tp|typecasename(cs) $>Prop<$ enum_prop.common.name|pascal_case $>> {
+            pub fn get_<$ enum_prop.common.name|snake_case $>(&self) -> Option<<% call enum_name(tp, enum_prop) %>> {
                 let raw_value = self.get_<$ enum_prop.common.name|snake_case $>_raw()?;
                 Some(raw_value.into())
             }
@@ -135,12 +150,62 @@ pub mod rorg<$ rorg.code|hex $> {
         <%- for property in cs.properties %><% if let Property::Enumerated(enum_prop) = property %>
         #[derive(Clone, Copy, Debug)]
         #[allow(non_camel_case_types)]
-        #[from_to_repr::from_to_other(base_type = <$ enum_prop.common.raw_primitive_type $>, derive_compare = "as_int")]
-        pub enum <$ tp|typecasename(cs) $>Prop<$ enum_prop.common.name|pascal_case $> {
+        pub enum <% call enum_name(tp, enum_prop) %> {
             <%- for value in enum_prop.values %>
-            <$ value.name|pascal_case_word_start|pascal_fallback(value.value) $> = <$ value.value $>,
+            <%- if let EnumValue::Const(cev) = value %>
+            <$ cev.name_pascal|pascal_fallback(cev.value) $>,
+            <%- else if let EnumValue::Ranged(rev) = value %>
+            <$ rev.name_pascal|pascal_fallback(rev.min_range.to_string().as_str()) $> { raw: <$ enum_prop.common.raw_primitive_type $>, scaled: f64 },
+            <%- endif %>
             <%- endfor %>
             _Other(<$ enum_prop.common.raw_primitive_type $>),
+        }
+        impl From<<$ enum_prop.common.raw_primitive_type $>> for <% call enum_name(tp, enum_prop) %> {
+            fn from(raw_value: <$ enum_prop.common.raw_primitive_type $>) -> Self {
+                match raw_value {
+                    <%- for value in enum_prop.values %>
+                    <%- if let EnumValue::Const(cev) = value %>
+                    <$ cev.value $> => Self::<$ cev.name_pascal|pascal_fallback(cev.value) $>,
+                    <%- else if let EnumValue::Ranged(rev) = value %>
+                    <$ rev.min_range $>..=<$ rev.max_range $> => Self::<$ rev.name_pascal|pascal_fallback(rev.min_range.to_string().as_str()) $> {
+                        raw: raw_value,
+                        scaled: range_scale(raw_value as f64, <$ rev.min_range|dec $>, <$ rev.max_range|dec $>, <$ rev.min_scale|dec $>, <$ rev.max_scale|dec $>),
+                    },
+                    <%- endif %>
+                    <%- endfor %>
+                    #[allow(unreachable_patterns)] other => Self::_Other(other),
+                }
+            }
+        }
+        impl From<<% call enum_name(tp, enum_prop) %>> for <$ enum_prop.common.raw_primitive_type $> {
+            fn from(enum_value: <% call enum_name(tp, enum_prop) %>) -> Self {
+                match enum_value {
+                    <%- for value in enum_prop.values %>
+                    <%- if let EnumValue::Const(cev) = value %>
+                    <% call enum_name(tp, enum_prop) %>::<$ cev.name_pascal|pascal_fallback(cev.value) $> => <$ cev.value $>,
+                    <%- else if let EnumValue::Ranged(rev) = value %>
+                    <% call enum_name(tp, enum_prop) %>::<$ rev.name_pascal|pascal_fallback(rev.min_range.to_string().as_str()) $> { raw, .. } => raw,
+                    <%- endif %>
+                    <%- endfor %>
+                    <% call enum_name(tp, enum_prop) %>::_Other(other) => other,
+                }
+            }
+        }
+        impl ::core::cmp::PartialEq for <% call enum_name(tp, enum_prop) %> {
+            fn eq(&self, other: &<% call enum_name(tp, enum_prop) %>) -> bool {
+                <$ enum_prop.common.raw_primitive_type $>::from(*self).eq(&<$ enum_prop.common.raw_primitive_type $>::from(*other))
+            }
+        }
+        impl ::core::cmp::Eq for <% call enum_name(tp, enum_prop) %> {}
+        impl ::core::cmp::PartialOrd for <% call enum_name(tp, enum_prop) %> {
+            fn partial_cmp(&self, other: &<% call enum_name(tp, enum_prop) %>) -> Option<::core::cmp::Ordering> {
+                <$ enum_prop.common.raw_primitive_type $>::from(*self).partial_cmp(&<$ enum_prop.common.raw_primitive_type $>::from(*other))
+            }
+        }
+        impl ::core::cmp::Ord for <% call enum_name(tp, enum_prop) %> {
+            fn cmp(&self, other: &<% call enum_name(tp, enum_prop) %>) -> ::core::cmp::Ordering {
+                <$ enum_prop.common.raw_primitive_type $>::from(*self).cmp(&<$ enum_prop.common.raw_primitive_type $>::from(*other))
+            }
         }
         <%- endif %><% endfor %>
         <%- endfor %>

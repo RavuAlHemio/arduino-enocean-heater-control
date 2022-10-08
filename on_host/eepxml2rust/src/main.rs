@@ -14,8 +14,8 @@ use sxd_document;
 use sxd_xpath;
 
 use crate::model::{
-    Case, Eeps, EnumeratedProperty, EnumValue, Func, NumericProperty, Property, PropertyCommon,
-    RawOnlyProperty, Rorg, Type,
+    Case, ConstEnumValue, Eeps, EnumeratedProperty, EnumValue, Func, NumericProperty, Property,
+    PropertyCommon, RangedEnumValue, RawOnlyProperty, Rorg, Type,
 };
 use crate::xpath_ext::{FactoryExt, XPathExt};
 
@@ -104,6 +104,8 @@ fn main() {
     let bit_offset_sxp = xpath_factory.build_strict("./bitoffs/text()");
     let bit_size_sxp = xpath_factory.build_strict("./bitsize/text()");
     let data_sxp = xpath_factory.build_strict("./data/text()");
+    let min_sxp = xpath_factory.build_strict("./min/text()");
+    let max_sxp = xpath_factory.build_strict("./max/text()");
     let range_min_sxp = xpath_factory.build_strict("./range/min/text()");
     let range_max_sxp = xpath_factory.build_strict("./range/max/text()");
     let scale_min_sxp = xpath_factory.build_strict("./scale/min/text()");
@@ -270,9 +272,52 @@ fn main() {
                             };
                             let mut enum_item_duplicate_counters: HashMap<String, usize> = HashMap::new();
                             for enum_item in enum_items {
+                                // is it a range?
+                                if min_sxp.eval_strict_node_exists(&xpath_ctx, enum_item) {
+                                    let min_range = min_sxp.eval_strict_stru32(&xpath_ctx, enum_item);
+                                    let max_range = max_sxp.eval_strict_stru32(&xpath_ctx, enum_item);
+
+                                    // scaled?
+                                    let (min_scale, max_scale) = if scale_min_sxp.eval_strict_node_exists(&xpath_ctx, enum_item) {
+                                        let min_scale = scale_min_sxp.eval_strict_strf64(&xpath_ctx, enum_item);
+                                        let max_scale = scale_max_sxp.eval_strict_strf64(&xpath_ctx, enum_item);
+                                        (min_scale, max_scale)
+                                    } else {
+                                        (min_range as f64, max_range as f64)
+                                    };
+
+                                    let description = if description_sxp.eval_strict_node_exists(&xpath_ctx, enum_item) {
+                                        crate::model::filters::pascal_case_word_start(
+                                            &description_sxp.eval_strict_string(&xpath_ctx, enum_item)
+                                        ).unwrap()
+                                    } else {
+                                        "_RegularValue".to_owned()
+                                    };
+
+                                    let dupe_count = enum_item_duplicate_counters
+                                        .entry(description.clone())
+                                        .or_insert(0);
+                                    let modified_description = if *dupe_count == 0 {
+                                        description
+                                    } else if description.len() == 0 {
+                                        format!("_{}", *dupe_count)
+                                    } else {
+                                        format!("{}{}", description, *dupe_count)
+                                    };
+                                    *dupe_count += 1;
+
+                                    enum_prop.values.push(EnumValue::Ranged(RangedEnumValue {
+                                        name_pascal: modified_description,
+                                        min_range: min_range as f64,
+                                        max_range: max_range as f64,
+                                        min_scale,
+                                        max_scale,
+                                    }));
+                                    continue;
+                                }
+
                                 let value_string = value_sxp.eval_strict_string(&xpath_ctx, enum_item);
                                 if value_string.len() == 0 {
-                                    // FIXME: possibly has min-max values instead
                                     continue;
                                 }
                                 if value_string.contains('X') {
@@ -305,20 +350,24 @@ fn main() {
                                 } else {
                                     value.to_string()
                                 };
-                                let description = description_sxp.eval_strict_string(&xpath_ctx, enum_item);
+                                let description = crate::model::filters::pascal_case_word_start(
+                                    &description_sxp.eval_strict_string(&xpath_ctx, enum_item)
+                                ).unwrap();
                                 let dupe_count = enum_item_duplicate_counters
                                     .entry(description.clone())
                                     .or_insert(0);
                                 let modified_description = if *dupe_count == 0 {
                                     description
+                                } else if description.len() == 0 {
+                                    format!("_{}", *dupe_count)
                                 } else {
-                                    format!("{} {}", description, *dupe_count)
+                                    format!("{}{}", description, *dupe_count)
                                 };
                                 *dupe_count += 1;
-                                enum_prop.values.push(EnumValue {
-                                    name: modified_description,
+                                enum_prop.values.push(EnumValue::Const(ConstEnumValue {
+                                    name_pascal: modified_description,
                                     value: value_string,
-                                });
+                                }));
                             }
                             Property::Enumerated(enum_prop)
                         };

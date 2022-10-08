@@ -97,9 +97,22 @@ pub(crate) struct RawOnlyProperty {
     pub common: PropertyCommon,
 }
 
-pub(crate) struct EnumValue {
-    pub name: String,
+pub(crate) enum EnumValue {
+    Const(ConstEnumValue),
+    Ranged(RangedEnumValue),
+}
+
+pub(crate) struct ConstEnumValue {
+    pub name_pascal: String,
     pub value: String,
+}
+
+pub(crate) struct RangedEnumValue {
+    pub name_pascal: String,
+    pub min_range: f64,
+    pub max_range: f64,
+    pub min_scale: f64,
+    pub max_scale: f64,
 }
 
 pub(crate) mod filters {
