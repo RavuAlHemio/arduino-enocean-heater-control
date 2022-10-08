@@ -7,11 +7,11 @@ macro_rules! implement_horner {
             $(assert!(bit_count <= $max_bits);)?
             let mut value = $zero;
             let mut factor = $one;
-            for i in lowest_bit_index..lowest_bit_index+bit_count {
-                if self.bit_is_set(i)? {
+            for i in 0..bit_count {
+                if self.bit_is_set(lowest_bit_index + bit_count - (i + 1))? {
                     value += factor;
                 }
-                if i < lowest_bit_index+bit_count-1 {
+                if i < bit_count-1 {
                     factor *= $two;
                 }
             }

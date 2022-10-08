@@ -80,7 +80,7 @@ fn main() {
                         // decode further, using EEP
                         match msg {
                             ErpData::RepeatedSwitch(rst) => {
-                                let reversed_bytes = [rst.data];
+                                let reversed_bytes = [rst.data.reverse_bits()];
                                 let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
                                 if let Some(decoded) = decoded_opt {
                                     println!("decoded EEP: {:#?}", decoded);
@@ -89,7 +89,7 @@ fn main() {
                                 }
                             },
                             ErpData::OneByte(ob) => {
-                                let reversed_bytes = [ob.data];
+                                let reversed_bytes = [ob.data.reverse_bits()];
                                 let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
                                 if let Some(decoded) = decoded_opt {
                                     println!("decoded EEP: {:#?}", decoded);
@@ -98,7 +98,13 @@ fn main() {
                                 }
                             },
                             ErpData::FourByte(fb) => {
-                                let reversed_bytes: [u8; 4] = fb.data.to_le_bytes();
+                                let bytes: [u8; 4] = fb.data.to_be_bytes();
+                                let reversed_bytes = [
+                                    bytes[0].reverse_bits(),
+                                    bytes[1].reverse_bits(),
+                                    bytes[2].reverse_bits(),
+                                    bytes[3].reverse_bits(),
+                                ];
                                 let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
                                 if let Some(decoded) = decoded_opt {
                                     println!("decoded EEP: {:#?}", decoded);
@@ -108,7 +114,7 @@ fn main() {
                             },
                             ErpData::VariableLength(fb) => {
                                 let mut reversed_bytes: Vec<u8> = Vec::with_capacity(fb.data.len());
-                                reversed_bytes.extend(fb.data.iter().map(|b| *b));
+                                reversed_bytes.extend(fb.data.iter().map(|b| b.reverse_bits()));
                                 let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
                                 if let Some(decoded) = decoded_opt {
                                     println!("decoded EEP: {:#?}", decoded);
