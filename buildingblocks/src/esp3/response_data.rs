@@ -874,6 +874,67 @@ impl ResponseData for CoRdTxOnlyMode {
     }
 }
 
+/// An enumeration of all common command responses.
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[allow(deprecated)]
+pub enum CommonCommandResponse {
+    RdVersion(CoRdVersion),
+    RdSysLog(CoRdSysLog),
+    WrBiSt(CoWrBiSt),
+    RdIdBase(CoRdIdBase),
+    RdRepeater(CoRdRepeater),
+    RdFilter(CoRdFilter),
+    RdMem(CoRdMem),
+    RdMemAddress(CoRdMemAddress),
+    RdSecurity(CoRdSecurity),
+    RdLearnMode(CoRdLearnMode),
+    RdSecureDeviceByIndex(CoRdSecureDeviceByIndex),
+    RdNumSecureDevices(CoRdNumSecureDevices),
+    RdSecureDeviceById(CoRdSecureDeviceById),
+    RdSecureDevicePsk(CoRdSecureDevicePsk),
+    RdDutyCycleLimit(CoRdDutyCycleLimit),
+    GetFrequencyInfo(CoGetFrequencyInfo),
+    GetStepCode(CoGetStepCode),
+    RdReManRepeating(CoRdReManRepeating),
+    GetNoiseThreshold(CoGetNoiseThreshold),
+    RdSecureDeviceV2ByIndex(CoRdSecureDeviceV2ByIndex),
+    OneByteBoolean(OneByteBooleanResponseData),
+    RdSecureDeviceMaintenanceKey(CoRdSecureDeviceMaintenanceKey),
+    RdTxOnlyMode(CoRdTxOnlyMode),
+}
+impl CommonCommandResponse {
+    /// Decodes response data for the command with the given command code.
+    pub fn decode_for_command(command: u8, data_slice: &[u8], optional_slice: &[u8]) -> Option<Self> {
+        match command {
+            3 => CoRdVersion::from_data(data_slice, optional_slice).map(Self::RdVersion),
+            4 => CoRdSysLog::from_data(data_slice, optional_slice).map(Self::RdSysLog),
+            6 => CoWrBiSt::from_data(data_slice, optional_slice).map(Self::WrBiSt),
+            8 => CoRdIdBase::from_data(data_slice, optional_slice).map(Self::RdIdBase),
+            10 => CoRdRepeater::from_data(data_slice, optional_slice).map(Self::RdRepeater),
+            15 => CoRdFilter::from_data(data_slice, optional_slice).map(Self::RdFilter),
+            19 => CoRdMem::from_data(data_slice, optional_slice).map(Self::RdMem),
+            20 => CoRdMemAddress::from_data(data_slice, optional_slice).map(Self::RdMemAddress),
+            #[allow(deprecated)] 21 => CoRdSecurity::from_data(data_slice, optional_slice).map(Self::RdSecurity),
+            24 => CoRdLearnMode::from_data(data_slice, optional_slice).map(Self::RdLearnMode),
+            #[allow(deprecated)] 27 => CoRdSecureDeviceByIndex::from_data(data_slice, optional_slice).map(Self::RdSecureDeviceByIndex),
+            29 => CoRdNumSecureDevices::from_data(data_slice, optional_slice).map(Self::RdNumSecureDevices),
+            30 => CoRdSecureDeviceById::from_data(data_slice, optional_slice).map(Self::RdSecureDeviceById),
+            34 => CoRdSecureDevicePsk::from_data(data_slice, optional_slice).map(Self::RdSecureDevicePsk),
+            35 => CoRdDutyCycleLimit::from_data(data_slice, optional_slice).map(Self::RdDutyCycleLimit),
+            37 => CoGetFrequencyInfo::from_data(data_slice, optional_slice).map(Self::GetFrequencyInfo),
+            39 => CoGetStepCode::from_data(data_slice, optional_slice).map(Self::GetStepCode),
+            49 => CoRdReManRepeating::from_data(data_slice, optional_slice).map(Self::RdReManRepeating),
+            51 => CoGetNoiseThreshold::from_data(data_slice, optional_slice).map(Self::GetNoiseThreshold),
+            57 => CoRdSecureDeviceV2ByIndex::from_data(data_slice, optional_slice).map(Self::RdSecureDeviceV2ByIndex),
+            59|63 => OneByteBooleanResponseData::from_data(data_slice, optional_slice).map(Self::OneByteBoolean),
+            61 => CoRdSecureDeviceMaintenanceKey::from_data(data_slice, optional_slice).map(Self::RdSecureDeviceMaintenanceKey),
+            65 => CoRdTxOnlyMode::from_data(data_slice, optional_slice).map(Self::RdTxOnlyMode),
+            _ => None,
+        }
+    }
+}
+
+
 /// Response data to SmartAckData::SaRdLearnMode.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SaRdLearnMode {
