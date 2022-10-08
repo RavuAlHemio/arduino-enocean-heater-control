@@ -1,6 +1,7 @@
 use buildingblocks::esp3::Esp3Packet;
 use buildingblocks::esp3::eep;
 use buildingblocks::esp3::erp::ErpData;
+use buildingblocks::esp3::response_data::CommonCommandResponse;
 use clap::Parser;
 
 
@@ -8,6 +9,9 @@ use clap::Parser;
 struct Args {
     #[arg(short, long)]
     pub eep: Option<String>,
+
+    #[arg(short, long)]
+    pub common_command: Option<u8>,
 
     pub packet_hex_dump: String,
 }
@@ -69,65 +73,83 @@ fn main() {
     println!("{:#?}", pkt_opt);
 
     if let Some(pkt) = pkt_opt {
-        if let Esp3Packet::RadioErp1 { radio_telegram, .. } = pkt {
-            // attempt to decode this message
-            let message_opt = ErpData::from_slice(radio_telegram.as_slice());
-            match message_opt {
-                Some(msg) => {
-                    println!("decoded radio message: {:#?}", msg);
+        match pkt {
+            Esp3Packet::RadioErp1 { radio_telegram, .. } => {
+                // attempt to decode this message
+                let message_opt = ErpData::from_slice(radio_telegram.as_slice());
+                match message_opt {
+                    Some(msg) => {
+                        println!("decoded radio message: {:#?}", msg);
 
-                    if let Some((rorg, func, tp)) = rorg_func_type_opt {
-                        // decode further, using EEP
-                        match msg {
-                            ErpData::RepeatedSwitch(rst) => {
-                                let reversed_bytes = [rst.data.reverse_bits()];
-                                let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
-                                if let Some(decoded) = decoded_opt {
-                                    println!("decoded EEP: {:#?}", decoded);
-                                } else {
-                                    println!("failed to decode EEP");
-                                }
-                            },
-                            ErpData::OneByte(ob) => {
-                                let reversed_bytes = [ob.data.reverse_bits()];
-                                let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
-                                if let Some(decoded) = decoded_opt {
-                                    println!("decoded EEP: {:#?}", decoded);
-                                } else {
-                                    println!("failed to decode EEP");
-                                }
-                            },
-                            ErpData::FourByte(fb) => {
-                                let bytes: [u8; 4] = fb.data.to_be_bytes();
-                                let reversed_bytes = [
-                                    bytes[0].reverse_bits(),
-                                    bytes[1].reverse_bits(),
-                                    bytes[2].reverse_bits(),
-                                    bytes[3].reverse_bits(),
-                                ];
-                                let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
-                                if let Some(decoded) = decoded_opt {
-                                    println!("decoded EEP: {:#?}", decoded);
-                                } else {
-                                    println!("failed to decode EEP");
-                                }
-                            },
-                            ErpData::VariableLength(fb) => {
-                                let mut reversed_bytes: Vec<u8> = Vec::with_capacity(fb.data.len());
-                                reversed_bytes.extend(fb.data.iter().map(|b| b.reverse_bits()));
-                                let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
-                                if let Some(decoded) = decoded_opt {
-                                    println!("decoded EEP: {:#?}", decoded);
-                                } else {
-                                    println!("failed to decode EEP");
-                                }
-                            },
-                            _ => {},
+                        if let Some((rorg, func, tp)) = rorg_func_type_opt {
+                            // decode further, using EEP
+                            match msg {
+                                ErpData::RepeatedSwitch(rst) => {
+                                    let reversed_bytes = [rst.data.reverse_bits()];
+                                    let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
+                                    if let Some(decoded) = decoded_opt {
+                                        println!("decoded EEP: {:#?}", decoded);
+                                    } else {
+                                        println!("failed to decode EEP");
+                                    }
+                                },
+                                ErpData::OneByte(ob) => {
+                                    let reversed_bytes = [ob.data.reverse_bits()];
+                                    let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
+                                    if let Some(decoded) = decoded_opt {
+                                        println!("decoded EEP: {:#?}", decoded);
+                                    } else {
+                                        println!("failed to decode EEP");
+                                    }
+                                },
+                                ErpData::FourByte(fb) => {
+                                    let bytes: [u8; 4] = fb.data.to_be_bytes();
+                                    let reversed_bytes = [
+                                        bytes[0].reverse_bits(),
+                                        bytes[1].reverse_bits(),
+                                        bytes[2].reverse_bits(),
+                                        bytes[3].reverse_bits(),
+                                    ];
+                                    let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
+                                    if let Some(decoded) = decoded_opt {
+                                        println!("decoded EEP: {:#?}", decoded);
+                                    } else {
+                                        println!("failed to decode EEP");
+                                    }
+                                },
+                                ErpData::VariableLength(fb) => {
+                                    let mut reversed_bytes: Vec<u8> = Vec::with_capacity(fb.data.len());
+                                    reversed_bytes.extend(fb.data.iter().map(|b| b.reverse_bits()));
+                                    let decoded_opt = eep::Eep::from_reversed_bytes(rorg, func, tp, &reversed_bytes);
+                                    if let Some(decoded) = decoded_opt {
+                                        println!("decoded EEP: {:#?}", decoded);
+                                    } else {
+                                        println!("failed to decode EEP");
+                                    }
+                                },
+                                _ => {},
+                            }
                         }
+                    },
+                    None => println!("failed to decode radio message"),
+                }
+            },
+            Esp3Packet::Response { response_data, optional_data, .. } => {
+                if let Some(common_command) = args.common_command {
+                    // the user is hinting that this is a response to a common command
+                    let decoded_opt = CommonCommandResponse::decode_for_command(
+                        common_command,
+                        response_data.as_slice(),
+                        optional_data.as_slice(),
+                    );
+                    if let Some(decoded) = decoded_opt {
+                        println!("decoded common command response: {:#?}", decoded);
+                    } else {
+                        println!("failed to decode common command response");
                     }
-                },
-                None => println!("failed to decode radio message"),
-            }
+                }
+            },
+            _ => {},
         }
     }
 }
