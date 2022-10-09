@@ -62,6 +62,14 @@ fn hex_dump<const N: usize>(bytes: &[u8], hex: &mut MaxArray<u8, N>) {
     }
 }
 
+fn uart_send_hex_dump_outgoing(peripherals: &mut Peripherals, bytes: &[u8]) {
+    let mut outgoing_hex: MaxArray<u8, {2*buildingblocks::esp3::MAX_ESP3_PACKET_LENGTH}> = MaxArray::new();
+    hex_dump(bytes, &mut outgoing_hex);
+    uart::send(peripherals, b"sending an ESP3 packet: ");
+    uart::send(peripherals, outgoing_hex.as_slice());
+    uart::send(peripherals, b"\r\n");
+}
+
 
 #[entry]
 fn main() -> ! {
@@ -189,6 +197,12 @@ fn main() -> ! {
     }
     */
 
+    enum AwaitingWhat {
+        Nothing,
+        Version,
+    }
+    let mut awaiting = AwaitingWhat::Nothing;
+
     loop {
         // transfer from USART to ESP3 buffer
         if let Some(buf) = Usart3::take_receive_buffer() {
@@ -228,12 +242,22 @@ fn main() -> ! {
                                 }
                             }
                         };
-                        let mut outgoing_hex: MaxArray<u8, {2*buildingblocks::esp3::MAX_ESP3_PACKET_LENGTH}> = MaxArray::new();
-                        hex_dump(version_packet.as_slice(), &mut outgoing_hex);
-                        uart::send(&mut peripherals, b"sending an ESP3 packet: ");
-                        uart::send(&mut peripherals, outgoing_hex.as_slice());
-                        uart::send(&mut peripherals, b"\r\n");
+                        uart_send_hex_dump_outgoing(&mut peripherals, version_packet.as_slice());
                         Usart3::transmit(&mut peripherals, version_packet.as_slice());
+                        awaiting = AwaitingWhat::Version;
+                    }
+                } else if let Esp3Packet::Response { .. } = decoded_packet {
+                    if let AwaitingWhat::Version = awaiting {
+                        // version packet received
+                        awaiting = AwaitingWhat::Nothing;
+
+                        // switch to transparent mode
+                        let pkt = Esp3Packet::CommonCommand(CommandData::CoWrTransparentMode {
+                            enable: true.into(),
+                        }).to_packet().unwrap();
+                        uart::send(&mut peripherals, b"switching to transparent mode\r\n");
+                        uart_send_hex_dump_outgoing(&mut peripherals, pkt.as_slice());
+                        Usart3::transmit(&mut peripherals, pkt.as_slice());
                     }
                 }
             }
