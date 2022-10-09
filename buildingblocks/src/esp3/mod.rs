@@ -178,9 +178,9 @@ impl Esp3Packet {
     }
 
     pub fn to_packet(&self) -> Option<MaxArray<u8, MAX_ESP3_PACKET_LENGTH>> {
-        let mut packet_data = self.to_packet_data();
+        let packet_data = self.to_packet_data();
         assert!(packet_data.len() <= MAX_DATA_LENGTH);
-        let mut packet_optional = self.to_packet_optional()?;
+        let packet_optional = self.to_packet_optional()?;
         assert!(packet_optional.len() <= MAX_OPTIONAL_LENGTH);
 
         let mut buf = MaxArray::new();
@@ -192,11 +192,11 @@ impl Esp3Packet {
         let crc_header = crc8_ccitt(&buf.as_slice()[1..5]);
         buf.push(crc_header).unwrap();
 
-        while let Some(b) = packet_data.pop() {
-            buf.push(b).unwrap();
+        for b in packet_data.iter() {
+            buf.push(*b).unwrap();
         }
-        while let Some(b) = packet_optional.pop() {
-            buf.push(b).unwrap();
+        for b in packet_optional.iter() {
+            buf.push(*b).unwrap();
         }
 
         let crc_data = crc8_ccitt(&buf.as_slice()[6..]);
