@@ -2739,8 +2739,8 @@ pub enum SecureDeviceEventCause {
 #[derive(Clone, Copy, Debug)]
 #[from_to_repr::from_to_other(base_type = u8, derive_compare = "as_int")]
 pub enum OneByteBoolean {
-    Yes = 0x00,
-    No = 0x01,
+    No = 0x00,
+    Yes = 0x01,
     Other(u8),
 }
 impl From<bool> for OneByteBoolean {
