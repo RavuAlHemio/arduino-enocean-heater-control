@@ -2,19 +2,27 @@
 #![no_std]
 
 
+mod i2c_display;
+
+
 use core::panic::PanicInfo;
+use core::time::Duration;
 
 use atsam3x8e::{Interrupt, interrupt, Peripherals};
 use atsam3x8e::tc0::wave_eq_1_cmr0_wave_eq_1 as tc0cmr0;
 use atsam3x8e::tc1::wave_eq_1_cmr0_wave_eq_1 as tc1cmr0;
 use atsam3x8e_ext::sam_pin;
 use atsam3x8e_ext::setup::{CHIP_FREQ_CPU_MAX, system_init};
+use atsam3x8e_ext::tick::delay;
 use atsam3x8e_ext::uart;
 use buildingblocks::bit_field_from_bool;
 use buildingblocks::bit_field::BitField;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m::peripheral::NVIC;
 use cortex_m_rt::{entry, exception};
+use vcell::VolatileCell;
+
+use crate::i2c_display::{I2cDisplay, I2cDisplayTwi0, I2cDisplayTwi1};
 
 
 // most accurate timer is MCLK/2 = 42 MHz = 42_000_000 Hz
@@ -32,6 +40,11 @@ static mut DCF77_DATA: BitField<8> = BitField::from_bytes([0u8; 8]);
 static mut CURRENT_IS_DATA: bool = false;
 static mut CURRENT_PERIOD_WHOLE: u32 = PERIOD_WHOLE;
 static mut CURRENT_NUMER: i32 = 0;
+static mut DISPLAY: I2cDisplayTwi1 = I2cDisplayTwi1::new(
+    0b0100_111, // PCF8574 is always 0b0100xxx; we didn't change the jumpers from 0b111
+    true,
+);
+static mut UPDATE_TIME: VolatileCell<bool> = VolatileCell::new(true);
 
 
 #[panic_handler]
@@ -110,6 +123,54 @@ fn main() -> ! {
             .pid30().set_bit() // timer 3
         )
     };
+
+    // wait 50ms to ensure display chip is ready
+    delay(Duration::from_millis(50));
+
+    I2cDisplayTwi1::grab_io_pins(&mut peripherals);
+    I2cDisplayTwi1::enable_system_clock_to_twi(&mut peripherals);
+    I2cDisplayTwi1::setup_twi(&mut peripherals);
+
+    // set display to 8-bit mode
+    // send the same nibble three times so that we take care of all situations:
+    // * 8-bit mode (reads 0011_0000, sets to 8 bit)
+    // * 4-bit mode, start of a byte (reads 0011 & 0011, sets to 8 bit, reads 0011_0000, sets to 8 bit)
+    // * 4-bit mode, middle of a byte (reads 0011, executes something, then reads 0011 & 0011, sets to 8 bit)
+    unsafe { &DISPLAY }.set_target(&mut peripherals);
+    unsafe { &DISPLAY }.transmit_nibble(&mut peripherals, 0b0011, false);
+    I2cDisplayTwi1::long_delay();
+    unsafe { &DISPLAY }.transmit_nibble(&mut peripherals, 0b0011, false);
+    I2cDisplayTwi1::short_delay();
+    unsafe { &DISPLAY }.transmit_nibble(&mut peripherals, 0b0011, false);
+    I2cDisplayTwi1::short_delay();
+
+    // set display to 4-bit mode
+    unsafe { &DISPLAY }.transmit_nibble(&mut peripherals, 0b0010, false);
+    I2cDisplayTwi1::short_delay();
+    unsafe { &DISPLAY }.transmit_byte(&mut peripherals, 0b0010_1000, false);
+    I2cDisplayTwi1::short_delay();
+
+    // disable display
+    unsafe { &DISPLAY }.transmit_byte(&mut peripherals, 0b0000_1000, false);
+    I2cDisplayTwi1::short_delay();
+
+    // clear display and go home
+    unsafe { &DISPLAY }.transmit_byte(&mut peripherals, 0b0000_0001, false);
+    I2cDisplayTwi1::long_delay();
+
+    // increment but don't shift
+    unsafe { &DISPLAY }.transmit_byte(&mut peripherals, 0b0000_0110, false);
+    I2cDisplayTwi1::short_delay();
+
+    // enable display
+    unsafe { &DISPLAY }.transmit_byte(&mut peripherals, 0b0000_1100, false);
+    I2cDisplayTwi1::short_delay();
+
+    // write a bunch of characters
+    for b in b"DCF77 Faker" {
+        unsafe { &DISPLAY }.transmit_byte(&mut peripherals, *b, true);
+        I2cDisplayTwi1::short_delay();
+    }
 
     // set up timer counter for PWM (timer 0)
     // disable and re-enable the clock first
@@ -203,6 +264,37 @@ fn main() -> ! {
 
     loop {
         cortex_m::asm::wfi();
+
+        let should_update_time = unsafe { UPDATE_TIME.get() };
+        if should_update_time {
+            unsafe { UPDATE_TIME.set(false) };
+
+            // go to address 20
+            unsafe { &DISPLAY }.transmit_byte(&mut peripherals, 0b1000_0000 | 20, false);
+
+            // write the new time
+            let date = unsafe { DCF77.get_date() };
+            let day_buf = u8_to_dec(date.day_of_month);
+            let mon_buf = u8_to_dec(date.month);
+            let year_buf = u8_to_dec(date.year_of_century);
+            let hour_buf = u8_to_dec(unsafe { DCF77.get_hours() });
+            let minute_buf = u8_to_dec(unsafe { DCF77.get_minutes() });
+            let all_buf = [
+                day_buf[0], day_buf[1],
+                b'.',
+                mon_buf[0], mon_buf[1],
+                b'.',
+                year_buf[0], year_buf[1],
+                b' ',
+                hour_buf[0], hour_buf[1],
+                b':',
+                minute_buf[0], minute_buf[1],
+            ];
+            for b in all_buf {
+                unsafe { &DISPLAY }.transmit_byte(&mut peripherals, b, true);
+                I2cDisplayTwi1::short_delay();
+            }
+        }
     }
 }
 
@@ -220,6 +312,11 @@ fn u8_to_hex(number: u8) -> [u8; 2] {
     let upper = nibble_to_ascii_hex(number >> 4);
     let lower = nibble_to_ascii_hex(number & 0xF);
     [upper, lower]
+}
+fn u8_to_dec(number: u8) -> [u8; 2] {
+    let upper = number / 10;
+    let lower = number % 10;
+    [nibble_to_ascii_hex(upper), nibble_to_ascii_hex(lower)]
 }
 
 #[inline]
@@ -274,6 +371,8 @@ fn TC3() {
     static mut BIT_POS: usize = 0;
     static mut WITHIN_SECOND: u8 = 0;
 
+    let mut stolen_peripherals = unsafe { Peripherals::steal() };
+
     *WITHIN_SECOND += 1;
     if *WITHIN_SECOND >= 10 {
         *WITHIN_SECOND = 0;
@@ -283,6 +382,9 @@ fn TC3() {
             unsafe { DCF77.increment() };
             unsafe { DCF77_DATA = DCF77.get_storage_copy() };
 
+            // update the display next time around
+            unsafe { UPDATE_TIME.set(true) };
+
             // repeat from the beginning
             *BIT_POS = 0;
         }
@@ -290,7 +392,6 @@ fn TC3() {
 
     // a 0 bit is transmitted using 0.1s of "data" followed by 0.9s of "no data"
     // a 1 bit is transmitted using 0.2s of "data" followed by 0.8s of "no data"
-    let mut stolen_peripherals = unsafe { Peripherals::steal() };
     //sam_pin!(set_low, stolen_peripherals, PIOB, p27);
     sam_pin!(set_high, stolen_peripherals, PIOB, p27);
 
