@@ -5,6 +5,7 @@
 mod i2c_display;
 
 
+use core::borrow::BorrowMut;
 use core::panic::PanicInfo;
 use core::time::Duration;
 
@@ -33,6 +34,7 @@ use crate::i2c_display::{I2cDisplay, I2cDisplayTwi0, I2cDisplayTwi1};
 const PERIOD_WHOLE: u32 = 518;
 const PERIOD_NUMER: i32 = 0;
 const PERIOD_DENOM: i32 = 31;
+const BACKLIGHT_SECONDS: u8 = 16;
 
 
 static mut DCF77: Dcf77 = Dcf77::new();
@@ -44,7 +46,9 @@ static mut DISPLAY: I2cDisplayTwi1 = I2cDisplayTwi1::new(
     0b0100_111, // PCF8574 is always 0b0100xxx; we didn't change the jumpers from 0b111
     true,
 );
-static mut UPDATE_TIME: VolatileCell<bool> = VolatileCell::new(true);
+static mut UPDATE_TIME: bool = true;
+static mut BACKLIGHT_TIMER: u8 = BACKLIGHT_SECONDS;
+static mut UPDATE_BACKLIGHT: bool = true;
 
 
 #[panic_handler]
@@ -95,6 +99,7 @@ fn main() -> ! {
     // initialize UART
     uart::init(&mut peripherals);
 
+    // prepare the initial time
     unsafe {
         DCF77.set_date(Dcf77Date { day_of_month: 10, day_of_week: 2, month: 4, year_of_century: 90 });
         DCF77.set_hours(10);
@@ -104,7 +109,7 @@ fn main() -> ! {
         DCF77_DATA = DCF77.get_storage_copy();
     }
 
-    // give pin to timer
+    // give pin to timer for DCF77 PWM
     // TIOA0 = PB25 (= Arduino Due: D2) peripheral B
     sam_pin!(disable_io, peripherals, PIOB, p25);
     sam_pin!(make_output, peripherals, PIOB, p25);
@@ -114,6 +119,12 @@ fn main() -> ! {
     sam_pin!(enable_io, peripherals, PIOB, p27);
     sam_pin!(make_output, peripherals, PIOB, p27);
     sam_pin!(set_low, peripherals, PIOB, p27);
+
+    // set PB14 as input for "enable backlight for a few seconds" functionality
+    // (dual-column connector on the right side of the board, right column, bottommost-but-one pin)
+    sam_pin!(enable_io, peripherals, PIOB, p14);
+    sam_pin!(make_input, peripherals, PIOB, p14);
+    sam_pin!(enable_pullup, peripherals, PIOB, p14);
 
     // feed clock to a few peripherals
     unsafe {
@@ -262,12 +273,29 @@ fn main() -> ! {
     trigger_timer0(&mut peripherals);
     trigger_timer3(&mut peripherals);
 
+    // main loop
     loop {
         cortex_m::asm::wfi();
 
-        let should_update_time = unsafe { UPDATE_TIME.get() };
+        unsafe {
+            // backlight pin is pulled up by default => act if it is low
+            if sam_pin!(input_is_low, peripherals, PIOB, p14) {
+                // backlight requested
+                BACKLIGHT_TIMER = BACKLIGHT_SECONDS;
+                DISPLAY.set_wants_backlight(true);
+                if !UPDATE_TIME {
+                    DISPLAY.update_backlight(&mut peripherals);
+                    // otherwise, this gets updated along with the time anyway
+                }
+            } else if UPDATE_BACKLIGHT && !UPDATE_TIME {
+                // the timer has turned it off
+                DISPLAY.update_backlight(&mut peripherals);
+            }
+        }
+
+        let should_update_time = unsafe { UPDATE_TIME };
         if should_update_time {
-            unsafe { UPDATE_TIME.set(false) };
+            unsafe { UPDATE_TIME = false };
 
             // go to address 20
             unsafe { &DISPLAY }.transmit_byte(&mut peripherals, 0b1000_0000 | 20, false);
@@ -375,15 +403,28 @@ fn TC3() {
 
     *WITHIN_SECOND += 1;
     if *WITHIN_SECOND >= 10 {
+        // 1s elapsed
         *WITHIN_SECOND = 0;
+
+        unsafe {
+            if BACKLIGHT_TIMER > 0 {
+                BACKLIGHT_TIMER -= 1;
+                if BACKLIGHT_TIMER == 0 {
+                    DISPLAY.set_wants_backlight(false);
+                    UPDATE_BACKLIGHT = true;
+                }
+            }
+        }
+
         *BIT_POS += 1;
         if *BIT_POS >= 60 {
+            // 60s elapsed
             // increment
             unsafe { DCF77.increment() };
             unsafe { DCF77_DATA = DCF77.get_storage_copy() };
 
             // update the display next time around
-            unsafe { UPDATE_TIME.set(true) };
+            unsafe { UPDATE_TIME = true };
 
             // repeat from the beginning
             *BIT_POS = 0;

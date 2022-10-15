@@ -46,6 +46,9 @@ pub trait I2cDisplay {
     /// Whether the user wants the backlight of the display turned on.
     fn wants_backlight(&self) -> bool;
 
+    /// Changes whether the user wants the backlight of the display turned on.
+    fn set_wants_backlight(&mut self, wants_backlight: bool);
+
     /// Initializes the Two-Wire Interface controller.
     fn setup_twi(peripherals: &mut Peripherals) {
         let mut twi = Self::get_twi_registers(peripherals);
@@ -162,6 +165,7 @@ pub trait I2cDisplay {
         delay(Duration::from_nanos(500));
     }
 
+    /// Transmits a byte (8 bits) of data.
     fn transmit_byte(&self, peripherals: &mut Peripherals, byte: u8, rs: bool) {
         // in 4-bit mode, the upper nibble is transmitted first
 
@@ -172,12 +176,22 @@ pub trait I2cDisplay {
         self.transmit_nibble(peripherals, byte & 0xF, rs);
     }
 
+    /// Waits for the "short delay" (nominally 37µs according to the HD44780 datasheet).
     fn short_delay() {
         delay(SHORT_DELAY);
     }
 
+    /// Waits for the "long delay" (nominally 1.52ms according to the HD44780 datasheet).
     fn long_delay() {
         delay(LONG_DELAY);
+    }
+
+    /// Updates the backlight status for the display.
+    fn update_backlight(&self, peripherals: &mut Peripherals) {
+        // as long as we keep E low, the display controller ignores us
+        // => simply transmit all low bits except for the backlight
+        let backlight_byte = if self.wants_backlight() { 0b0000_1000 } else { 0b0000_0000 };
+        Self::low_level_transmit(peripherals, &[backlight_byte]);
     }
 }
 
@@ -222,6 +236,7 @@ impl I2cDisplay for I2cDisplayTwi0 {
 
     #[inline] fn display_address(&self) -> u8 { self.display_address }
     #[inline] fn wants_backlight(&self) -> bool { self.wants_backlight }
+    #[inline] fn set_wants_backlight(&mut self, wants_backlight: bool) { self.wants_backlight = wants_backlight; }
 }
 
 /// I2C LCD on Two-Wire Interface 1.
@@ -264,4 +279,5 @@ impl I2cDisplay for I2cDisplayTwi1 {
 
     #[inline] fn display_address(&self) -> u8 { self.display_address }
     #[inline] fn wants_backlight(&self) -> bool { self.wants_backlight }
+    #[inline] fn set_wants_backlight(&mut self, wants_backlight: bool) { self.wants_backlight = wants_backlight; }
 }
