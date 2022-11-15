@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:5 - NWE Setup Length"]
     #[inline(always)]
+    #[must_use]
     pub fn nwe_setup(&mut self) -> NWE_SETUP_W<0> {
         NWE_SETUP_W::new(self)
     }
     #[doc = "Bits 8:13 - NCS Setup Length in Write Access"]
     #[inline(always)]
+    #[must_use]
     pub fn ncs_wr_setup(&mut self) -> NCS_WR_SETUP_W<8> {
         NCS_WR_SETUP_W::new(self)
     }
     #[doc = "Bits 16:21 - NRD Setup Length"]
     #[inline(always)]
+    #[must_use]
     pub fn nrd_setup(&mut self) -> NRD_SETUP_W<16> {
         NRD_SETUP_W::new(self)
     }
     #[doc = "Bits 24:29 - NCS Setup Length in Read Access"]
     #[inline(always)]
+    #[must_use]
     pub fn ncs_rd_setup(&mut self) -> NCS_RD_SETUP_W<24> {
         NCS_RD_SETUP_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for SETUP3_SPEC {
 #[doc = "`write(|w| ..)` method takes [setup3::W](W) writer structure"]
 impl crate::Writable for SETUP3_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SETUP3 to value 0x0101_0101"]
 impl crate::Resettable for SETUP3_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0101_0101
-    }
+    const RESET_VALUE: Self::Ux = 0x0101_0101;
 }

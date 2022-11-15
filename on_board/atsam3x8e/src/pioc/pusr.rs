@@ -250,8 +250,5 @@ impl crate::Readable for PUSR_SPEC {
 }
 #[doc = "`reset()` method sets PUSR to value 0"]
 impl crate::Resettable for PUSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

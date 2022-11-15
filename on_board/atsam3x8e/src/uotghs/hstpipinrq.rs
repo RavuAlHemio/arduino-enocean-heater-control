@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - IN Request Number before Freeze"]
     #[inline(always)]
+    #[must_use]
     pub fn inrq(&mut self) -> INRQ_W<0> {
         INRQ_W::new(self)
     }
     #[doc = "Bit 8 - IN Request Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn inmode(&mut self) -> INMODE_W<8> {
         INMODE_W::new(self)
     }
@@ -84,4 +86,6 @@ impl crate::Readable for HSTPIPINRQ_SPEC {
 #[doc = "`write(|w| ..)` method takes [hstpipinrq::W](W) writer structure"]
 impl crate::Writable for HSTPIPINRQ_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

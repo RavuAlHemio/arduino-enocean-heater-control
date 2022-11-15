@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:31"]
     #[inline(always)]
+    #[must_use]
     pub fn addr(&mut self) -> ADDR_W<0> {
         ADDR_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for SA4B_SPEC {
 #[doc = "`write(|w| ..)` method takes [sa4b::W](W) writer structure"]
 impl crate::Writable for SA4B_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SA4B to value 0"]
 impl crate::Resettable for SA4B_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -57,7 +57,7 @@ pub type FSLEN_W<'a, const O: u8> = crate::FieldWriter<'a, u32, TFMR_SPEC, u8, u
 #[doc = "Field `FSOS` reader - Transmit Frame Sync Output Selection"]
 pub type FSOS_R = crate::FieldReader<u8, FSOS_A>;
 #[doc = "Transmit Frame Sync Output Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum FSOS_A {
     #[doc = "0: None, RF pin is an input"]
@@ -165,7 +165,7 @@ pub type FSDEN_W<'a, const O: u8> = crate::BitWriter<'a, u32, TFMR_SPEC, bool, O
 #[doc = "Field `FSEDGE` reader - Frame Sync Edge Detection"]
 pub type FSEDGE_R = crate::BitReader<FSEDGE_A>;
 #[doc = "Frame Sync Edge Detection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FSEDGE_A {
     #[doc = "0: Positive Edge Detection"]
     POSITIVE = 0,
@@ -266,46 +266,55 @@ impl R {
 impl W {
     #[doc = "Bits 0:4 - Data Length"]
     #[inline(always)]
+    #[must_use]
     pub fn datlen(&mut self) -> DATLEN_W<0> {
         DATLEN_W::new(self)
     }
     #[doc = "Bit 5 - Data Default Value"]
     #[inline(always)]
+    #[must_use]
     pub fn datdef(&mut self) -> DATDEF_W<5> {
         DATDEF_W::new(self)
     }
     #[doc = "Bit 7 - Most Significant Bit First"]
     #[inline(always)]
+    #[must_use]
     pub fn msbf(&mut self) -> MSBF_W<7> {
         MSBF_W::new(self)
     }
     #[doc = "Bits 8:11 - Data Number per frame"]
     #[inline(always)]
+    #[must_use]
     pub fn datnb(&mut self) -> DATNB_W<8> {
         DATNB_W::new(self)
     }
     #[doc = "Bits 16:19 - Transmit Frame Sync Length"]
     #[inline(always)]
+    #[must_use]
     pub fn fslen(&mut self) -> FSLEN_W<16> {
         FSLEN_W::new(self)
     }
     #[doc = "Bits 20:22 - Transmit Frame Sync Output Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn fsos(&mut self) -> FSOS_W<20> {
         FSOS_W::new(self)
     }
     #[doc = "Bit 23 - Frame Sync Data Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn fsden(&mut self) -> FSDEN_W<23> {
         FSDEN_W::new(self)
     }
     #[doc = "Bit 24 - Frame Sync Edge Detection"]
     #[inline(always)]
+    #[must_use]
     pub fn fsedge(&mut self) -> FSEDGE_W<24> {
         FSEDGE_W::new(self)
     }
     #[doc = "Bits 28:31 - FSLEN Field Extension"]
     #[inline(always)]
+    #[must_use]
     pub fn fslen_ext(&mut self) -> FSLEN_EXT_W<28> {
         FSLEN_EXT_W::new(self)
     }
@@ -328,11 +337,10 @@ impl crate::Readable for TFMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [tfmr::W](W) writer structure"]
 impl crate::Writable for TFMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets TFMR to value 0"]
 impl crate::Resettable for TFMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

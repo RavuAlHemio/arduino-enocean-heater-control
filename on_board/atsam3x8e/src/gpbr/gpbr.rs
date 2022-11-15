@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:31 - Value of GPBR x"]
     #[inline(always)]
+    #[must_use]
     pub fn gpbr_value(&mut self) -> GPBR_VALUE_W<0> {
         GPBR_VALUE_W::new(self)
     }
@@ -70,4 +71,6 @@ impl crate::Readable for GPBR_SPEC {
 #[doc = "`write(|w| ..)` method takes [gpbr::W](W) writer structure"]
 impl crate::Writable for GPBR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

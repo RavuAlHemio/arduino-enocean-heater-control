@@ -113,7 +113,7 @@ pub type UNLOCK_W<'a, const O: u8> = crate::BitWriter<'a, u32, CTRL_SPEC, bool, 
 #[doc = "Field `UIDE` reader - UOTGID Pin Enable"]
 pub type UIDE_R = crate::BitReader<UIDE_A>;
 #[doc = "UOTGID Pin Enable\n\nValue on reset: 1"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum UIDE_A {
     #[doc = "0: The USB mode (device/host) is selected from the UIMOD bit."]
     UIMOD = 0,
@@ -163,7 +163,7 @@ impl<'a, const O: u8> UIDE_W<'a, O> {
 #[doc = "Field `UIMOD` reader - UOTGHS Mode"]
 pub type UIMOD_R = crate::BitReader<UIMOD_A>;
 #[doc = "UOTGHS Mode\n\nValue on reset: 1"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum UIMOD_A {
     #[doc = "0: The module is in USB host mode."]
     HOST = 0,
@@ -320,106 +320,127 @@ impl R {
 impl W {
     #[doc = "Bit 0 - ID Transition Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn idte(&mut self) -> IDTE_W<0> {
         IDTE_W::new(self)
     }
     #[doc = "Bit 1 - VBus Transition Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn vbuste(&mut self) -> VBUSTE_W<1> {
         VBUSTE_W::new(self)
     }
     #[doc = "Bit 2 - SRP Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn srpe(&mut self) -> SRPE_W<2> {
         SRPE_W::new(self)
     }
     #[doc = "Bit 3 - VBus Error Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn vberre(&mut self) -> VBERRE_W<3> {
         VBERRE_W::new(self)
     }
     #[doc = "Bit 4 - B-Connection Error Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn bcerre(&mut self) -> BCERRE_W<4> {
         BCERRE_W::new(self)
     }
     #[doc = "Bit 5 - Role Exchange Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn roleexe(&mut self) -> ROLEEXE_W<5> {
         ROLEEXE_W::new(self)
     }
     #[doc = "Bit 6 - HNP Error Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn hnperre(&mut self) -> HNPERRE_W<6> {
         HNPERRE_W::new(self)
     }
     #[doc = "Bit 7 - Suspend Time-Out Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn stoe(&mut self) -> STOE_W<7> {
         STOE_W::new(self)
     }
     #[doc = "Bit 8 - VBus Hardware Control"]
     #[inline(always)]
+    #[must_use]
     pub fn vbushwc(&mut self) -> VBUSHWC_W<8> {
         VBUSHWC_W::new(self)
     }
     #[doc = "Bit 9 - SRP Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn srpsel(&mut self) -> SRPSEL_W<9> {
         SRPSEL_W::new(self)
     }
     #[doc = "Bit 10 - SRP Request"]
     #[inline(always)]
+    #[must_use]
     pub fn srpreq(&mut self) -> SRPREQ_W<10> {
         SRPREQ_W::new(self)
     }
     #[doc = "Bit 11 - HNP Request"]
     #[inline(always)]
+    #[must_use]
     pub fn hnpreq(&mut self) -> HNPREQ_W<11> {
         HNPREQ_W::new(self)
     }
     #[doc = "Bit 12 - OTG Pad Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn otgpade(&mut self) -> OTGPADE_W<12> {
         OTGPADE_W::new(self)
     }
     #[doc = "Bit 13 - VBus Polarity Off"]
     #[inline(always)]
+    #[must_use]
     pub fn vbuspo(&mut self) -> VBUSPO_W<13> {
         VBUSPO_W::new(self)
     }
     #[doc = "Bit 14 - Freeze USB Clock"]
     #[inline(always)]
+    #[must_use]
     pub fn frzclk(&mut self) -> FRZCLK_W<14> {
         FRZCLK_W::new(self)
     }
     #[doc = "Bit 15 - UOTGHS Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn usbe(&mut self) -> USBE_W<15> {
         USBE_W::new(self)
     }
     #[doc = "Bits 16:17 - Timer Value"]
     #[inline(always)]
+    #[must_use]
     pub fn timvalue(&mut self) -> TIMVALUE_W<16> {
         TIMVALUE_W::new(self)
     }
     #[doc = "Bits 20:21 - Timer Page"]
     #[inline(always)]
+    #[must_use]
     pub fn timpage(&mut self) -> TIMPAGE_W<20> {
         TIMPAGE_W::new(self)
     }
     #[doc = "Bit 22 - Timer Access Unlock"]
     #[inline(always)]
+    #[must_use]
     pub fn unlock(&mut self) -> UNLOCK_W<22> {
         UNLOCK_W::new(self)
     }
     #[doc = "Bit 24 - UOTGID Pin Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn uide(&mut self) -> UIDE_W<24> {
         UIDE_W::new(self)
     }
     #[doc = "Bit 25 - UOTGHS Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn uimod(&mut self) -> UIMOD_W<25> {
         UIMOD_W::new(self)
     }
@@ -442,11 +463,10 @@ impl crate::Readable for CTRL_SPEC {
 #[doc = "`write(|w| ..)` method takes [ctrl::W](W) writer structure"]
 impl crate::Writable for CTRL_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CTRL to value 0x0300_4000"]
 impl crate::Resettable for CTRL_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0300_4000
-    }
+    const RESET_VALUE: Self::Ux = 0x0300_4000;
 }

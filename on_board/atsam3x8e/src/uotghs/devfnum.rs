@@ -47,8 +47,5 @@ impl crate::Readable for DEVFNUM_SPEC {
 }
 #[doc = "`reset()` method sets DEVFNUM to value 0"]
 impl crate::Resettable for DEVFNUM_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

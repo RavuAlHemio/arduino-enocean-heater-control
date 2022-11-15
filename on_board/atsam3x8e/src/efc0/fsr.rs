@@ -47,8 +47,5 @@ impl crate::Readable for FSR_SPEC {
 }
 #[doc = "`reset()` method sets FSR to value 0x01"]
 impl crate::Resettable for FSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x01
-    }
+    const RESET_VALUE: Self::Ux = 0x01;
 }

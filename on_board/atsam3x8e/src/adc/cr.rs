@@ -26,11 +26,13 @@ pub type START_W<'a, const O: u8> = crate::BitWriter<'a, u32, CR_SPEC, bool, O>;
 impl W {
     #[doc = "Bit 0 - Software Reset"]
     #[inline(always)]
+    #[must_use]
     pub fn swrst(&mut self) -> SWRST_W<0> {
         SWRST_W::new(self)
     }
     #[doc = "Bit 1 - Start Conversion"]
     #[inline(always)]
+    #[must_use]
     pub fn start(&mut self) -> START_W<1> {
         START_W::new(self)
     }
@@ -49,4 +51,6 @@ impl crate::RegisterSpec for CR_SPEC {
 #[doc = "`write(|w| ..)` method takes [cr::W](W) writer structure"]
 impl crate::Writable for CR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

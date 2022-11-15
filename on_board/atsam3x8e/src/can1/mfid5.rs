@@ -19,7 +19,7 @@ impl R {
     #[doc = "Bits 0:28 - Family ID"]
     #[inline(always)]
     pub fn mfid(&self) -> MFID_R {
-        MFID_R::new((self.bits & 0x1fff_ffff) as u32)
+        MFID_R::new(self.bits & 0x1fff_ffff)
     }
 }
 #[doc = "Mailbox Family ID Register (MB = 5)\n\nThis register you can [`read`](crate::generic::Reg::read). See [API](https://docs.rs/svd2rust/#read--modify--write-api).\n\nFor information about available fields see [mfid5](index.html) module"]
@@ -33,8 +33,5 @@ impl crate::Readable for MFID5_SPEC {
 }
 #[doc = "`reset()` method sets MFID5 to value 0"]
 impl crate::Resettable for MFID5_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

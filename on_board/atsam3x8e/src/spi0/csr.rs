@@ -53,7 +53,7 @@ pub type CSAAT_W<'a, const O: u8> = crate::BitWriter<'a, u32, CSR_SPEC, bool, O>
 #[doc = "Field `BITS` reader - Bits Per Transfer"]
 pub type BITS_R = crate::FieldReader<u8, BITS_A>;
 #[doc = "Bits Per Transfer"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum BITS_A {
     #[doc = "0: 8 bits for transfer"]
@@ -250,41 +250,49 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Clock Polarity"]
     #[inline(always)]
+    #[must_use]
     pub fn cpol(&mut self) -> CPOL_W<0> {
         CPOL_W::new(self)
     }
     #[doc = "Bit 1 - Clock Phase"]
     #[inline(always)]
+    #[must_use]
     pub fn ncpha(&mut self) -> NCPHA_W<1> {
         NCPHA_W::new(self)
     }
     #[doc = "Bit 2 - Chip Select Not Active After Transfer (Ignored if CSAAT = 1)"]
     #[inline(always)]
+    #[must_use]
     pub fn csnaat(&mut self) -> CSNAAT_W<2> {
         CSNAAT_W::new(self)
     }
     #[doc = "Bit 3 - Chip Select Active After Transfer"]
     #[inline(always)]
+    #[must_use]
     pub fn csaat(&mut self) -> CSAAT_W<3> {
         CSAAT_W::new(self)
     }
     #[doc = "Bits 4:7 - Bits Per Transfer"]
     #[inline(always)]
+    #[must_use]
     pub fn bits_(&mut self) -> BITS_W<4> {
         BITS_W::new(self)
     }
     #[doc = "Bits 8:15 - Serial Clock Baud Rate"]
     #[inline(always)]
+    #[must_use]
     pub fn scbr(&mut self) -> SCBR_W<8> {
         SCBR_W::new(self)
     }
     #[doc = "Bits 16:23 - Delay Before SPCK"]
     #[inline(always)]
+    #[must_use]
     pub fn dlybs(&mut self) -> DLYBS_W<16> {
         DLYBS_W::new(self)
     }
     #[doc = "Bits 24:31 - Delay Between Consecutive Transfers"]
     #[inline(always)]
+    #[must_use]
     pub fn dlybct(&mut self) -> DLYBCT_W<24> {
         DLYBCT_W::new(self)
     }
@@ -307,4 +315,6 @@ impl crate::Readable for CSR_SPEC {
 #[doc = "`write(|w| ..)` method takes [csr::W](W) writer structure"]
 impl crate::Writable for CSR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

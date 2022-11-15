@@ -37,7 +37,7 @@ impl From<crate::W<RCMR_SPEC>> for W {
 #[doc = "Field `CKS` reader - Receive Clock Selection"]
 pub type CKS_R = crate::FieldReader<u8, CKS_A>;
 #[doc = "Receive Clock Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CKS_A {
     #[doc = "0: Divided Clock"]
@@ -102,7 +102,7 @@ impl<'a, const O: u8> CKS_W<'a, O> {
 #[doc = "Field `CKO` reader - Receive Clock Output Mode Selection"]
 pub type CKO_R = crate::FieldReader<u8, CKO_A>;
 #[doc = "Receive Clock Output Mode Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CKO_A {
     #[doc = "0: None, RK pin is an input"]
@@ -171,7 +171,7 @@ pub type CKI_W<'a, const O: u8> = crate::BitWriter<'a, u32, RCMR_SPEC, bool, O>;
 #[doc = "Field `CKG` reader - Receive Clock Gating Selection"]
 pub type CKG_R = crate::FieldReader<u8, CKG_A>;
 #[doc = "Receive Clock Gating Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CKG_A {
     #[doc = "0: None"]
@@ -236,7 +236,7 @@ impl<'a, const O: u8> CKG_W<'a, O> {
 #[doc = "Field `START` reader - Receive Start Selection"]
 pub type START_R = crate::FieldReader<u8, START_A>;
 #[doc = "Receive Start Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum START_A {
     #[doc = "0: Continuous, as soon as the receiver is enabled, and immediately after the end of transfer of the previous data."]
@@ -433,41 +433,49 @@ impl R {
 impl W {
     #[doc = "Bits 0:1 - Receive Clock Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn cks(&mut self) -> CKS_W<0> {
         CKS_W::new(self)
     }
     #[doc = "Bits 2:4 - Receive Clock Output Mode Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn cko(&mut self) -> CKO_W<2> {
         CKO_W::new(self)
     }
     #[doc = "Bit 5 - Receive Clock Inversion"]
     #[inline(always)]
+    #[must_use]
     pub fn cki(&mut self) -> CKI_W<5> {
         CKI_W::new(self)
     }
     #[doc = "Bits 6:7 - Receive Clock Gating Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn ckg(&mut self) -> CKG_W<6> {
         CKG_W::new(self)
     }
     #[doc = "Bits 8:11 - Receive Start Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn start(&mut self) -> START_W<8> {
         START_W::new(self)
     }
     #[doc = "Bit 12 - Receive Stop Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn stop(&mut self) -> STOP_W<12> {
         STOP_W::new(self)
     }
     #[doc = "Bits 16:23 - Receive Start Delay"]
     #[inline(always)]
+    #[must_use]
     pub fn sttdly(&mut self) -> STTDLY_W<16> {
         STTDLY_W::new(self)
     }
     #[doc = "Bits 24:31 - Receive Period Divider Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn period(&mut self) -> PERIOD_W<24> {
         PERIOD_W::new(self)
     }
@@ -490,11 +498,10 @@ impl crate::Readable for RCMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [rcmr::W](W) writer structure"]
 impl crate::Writable for RCMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets RCMR to value 0"]
 impl crate::Resettable for RCMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

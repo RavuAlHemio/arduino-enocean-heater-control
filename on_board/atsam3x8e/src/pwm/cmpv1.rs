@@ -46,7 +46,7 @@ impl R {
     #[doc = "Bits 0:23 - Comparison x Value"]
     #[inline(always)]
     pub fn cv(&self) -> CV_R {
-        CV_R::new((self.bits & 0x00ff_ffff) as u32)
+        CV_R::new(self.bits & 0x00ff_ffff)
     }
     #[doc = "Bit 24 - Comparison x Value Mode"]
     #[inline(always)]
@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bits 0:23 - Comparison x Value"]
     #[inline(always)]
+    #[must_use]
     pub fn cv(&mut self) -> CV_W<0> {
         CV_W::new(self)
     }
     #[doc = "Bit 24 - Comparison x Value Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn cvm(&mut self) -> CVM_W<24> {
         CVM_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for CMPV1_SPEC {
 #[doc = "`write(|w| ..)` method takes [cmpv1::W](W) writer structure"]
 impl crate::Writable for CMPV1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CMPV1 to value 0"]
 impl crate::Resettable for CMPV1_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

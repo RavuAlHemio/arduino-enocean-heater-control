@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - Carrier Sense Errors"]
     #[inline(always)]
+    #[must_use]
     pub fn cse(&mut self) -> CSE_W<0> {
         CSE_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for CSE_SPEC {
 #[doc = "`write(|w| ..)` method takes [cse::W](W) writer structure"]
 impl crate::Writable for CSE_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CSE to value 0"]
 impl crate::Resettable for CSE_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

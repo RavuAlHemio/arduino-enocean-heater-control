@@ -42,12 +42,13 @@ impl R {
     #[doc = "Bits 0:23 - Channel Period"]
     #[inline(always)]
     pub fn cprd(&self) -> CPRD_R {
-        CPRD_R::new((self.bits & 0x00ff_ffff) as u32)
+        CPRD_R::new(self.bits & 0x00ff_ffff)
     }
 }
 impl W {
     #[doc = "Bits 0:23 - Channel Period"]
     #[inline(always)]
+    #[must_use]
     pub fn cprd(&mut self) -> CPRD_W<0> {
         CPRD_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for CPRD0_SPEC {
 #[doc = "`write(|w| ..)` method takes [cprd0::W](W) writer structure"]
 impl crate::Writable for CPRD0_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CPRD0 to value 0"]
 impl crate::Resettable for CPRD0_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

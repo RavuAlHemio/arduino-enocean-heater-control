@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bit 0 - HSMCI Internal FIFO control mode"]
     #[inline(always)]
+    #[must_use]
     pub fn fifomode(&mut self) -> FIFOMODE_W<0> {
         FIFOMODE_W::new(self)
     }
     #[doc = "Bit 4 - Flow Error flag reset control mode"]
     #[inline(always)]
+    #[must_use]
     pub fn ferrctrl(&mut self) -> FERRCTRL_W<4> {
         FERRCTRL_W::new(self)
     }
     #[doc = "Bit 8 - High Speed Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn hsmode(&mut self) -> HSMODE_W<8> {
         HSMODE_W::new(self)
     }
     #[doc = "Bit 12 - Synchronize on the last block"]
     #[inline(always)]
+    #[must_use]
     pub fn lsync(&mut self) -> LSYNC_W<12> {
         LSYNC_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for CFG_SPEC {
 #[doc = "`write(|w| ..)` method takes [cfg::W](W) writer structure"]
 impl crate::Writable for CFG_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CFG to value 0"]
 impl crate::Resettable for CFG_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

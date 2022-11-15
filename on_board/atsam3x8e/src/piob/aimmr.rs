@@ -250,8 +250,5 @@ impl crate::Readable for AIMMR_SPEC {
 }
 #[doc = "`reset()` method sets AIMMR to value 0"]
 impl crate::Resettable for AIMMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

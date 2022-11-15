@@ -33,8 +33,5 @@ impl crate::Readable for ODATA_SPEC {
 }
 #[doc = "`reset()` method sets ODATA to value 0"]
 impl crate::Resettable for ODATA_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

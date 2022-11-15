@@ -41,7 +41,7 @@ pub type SMTH_W<'a, const O: u8> = crate::FieldWriter<'a, u32, SMMR_SPEC, u8, u8
 #[doc = "Field `SMSMPL` reader - Supply Monitor Sampling Period"]
 pub type SMSMPL_R = crate::FieldReader<u8, SMSMPL_A>;
 #[doc = "Supply Monitor Sampling Period\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SMSMPL_A {
     #[doc = "0: Supply Monitor disabled"]
@@ -132,7 +132,7 @@ impl<'a, const O: u8> SMSMPL_W<'a, O> {
 #[doc = "Field `SMRSTEN` reader - Supply Monitor Reset Enable"]
 pub type SMRSTEN_R = crate::BitReader<SMRSTEN_A>;
 #[doc = "Supply Monitor Reset Enable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SMRSTEN_A {
     #[doc = "0: the core reset signal \"vddcore_nreset\" is not affected when a supply monitor detection occurs."]
     NOT_ENABLE = 0,
@@ -182,7 +182,7 @@ impl<'a, const O: u8> SMRSTEN_W<'a, O> {
 #[doc = "Field `SMIEN` reader - Supply Monitor Interrupt Enable"]
 pub type SMIEN_R = crate::BitReader<SMIEN_A>;
 #[doc = "Supply Monitor Interrupt Enable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SMIEN_A {
     #[doc = "0: the SUPC interrupt signal is not affected when a supply monitor detection occurs."]
     NOT_ENABLE = 0,
@@ -254,21 +254,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:3 - Supply Monitor Threshold"]
     #[inline(always)]
+    #[must_use]
     pub fn smth(&mut self) -> SMTH_W<0> {
         SMTH_W::new(self)
     }
     #[doc = "Bits 8:10 - Supply Monitor Sampling Period"]
     #[inline(always)]
+    #[must_use]
     pub fn smsmpl(&mut self) -> SMSMPL_W<8> {
         SMSMPL_W::new(self)
     }
     #[doc = "Bit 12 - Supply Monitor Reset Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn smrsten(&mut self) -> SMRSTEN_W<12> {
         SMRSTEN_W::new(self)
     }
     #[doc = "Bit 13 - Supply Monitor Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn smien(&mut self) -> SMIEN_W<13> {
         SMIEN_W::new(self)
     }
@@ -291,11 +295,10 @@ impl crate::Readable for SMMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [smmr::W](W) writer structure"]
 impl crate::Writable for SMMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SMMR to value 0"]
 impl crate::Resettable for SMMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

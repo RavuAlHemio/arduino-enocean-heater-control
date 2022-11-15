@@ -41,7 +41,7 @@ pub type ALLOC_W<'a, const O: u8> = crate::BitWriter<'a, u32, HSTPIPCFG_SPEC, bo
 #[doc = "Field `PBK` reader - Pipe Banks"]
 pub type PBK_R = crate::FieldReader<u8, PBK_A>;
 #[doc = "Pipe Banks"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PBK_A {
     #[doc = "0: Single-bank pipe"]
@@ -106,7 +106,7 @@ impl<'a, const O: u8> PBK_W<'a, O> {
 #[doc = "Field `PSIZE` reader - Pipe Size"]
 pub type PSIZE_R = crate::FieldReader<u8, PSIZE_A>;
 #[doc = "Pipe Size"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PSIZE_A {
     #[doc = "0: 8 bytes"]
@@ -237,7 +237,7 @@ impl<'a, const O: u8> PSIZE_W<'a, O> {
 #[doc = "Field `PTOKEN` reader - Pipe Token"]
 pub type PTOKEN_R = crate::FieldReader<u8, PTOKEN_A>;
 #[doc = "Pipe Token"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PTOKEN_A {
     #[doc = "0: SETUP"]
@@ -307,7 +307,7 @@ pub type AUTOSW_W<'a, const O: u8> = crate::BitWriter<'a, u32, HSTPIPCFG_SPEC, b
 #[doc = "Field `PTYPE` reader - Pipe Type"]
 pub type PTYPE_R = crate::FieldReader<u8, PTYPE_A>;
 #[doc = "Pipe Type"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PTYPE_A {
     #[doc = "0: Control"]
@@ -436,41 +436,49 @@ impl R {
 impl W {
     #[doc = "Bit 1 - Pipe Memory Allocate"]
     #[inline(always)]
+    #[must_use]
     pub fn alloc(&mut self) -> ALLOC_W<1> {
         ALLOC_W::new(self)
     }
     #[doc = "Bits 2:3 - Pipe Banks"]
     #[inline(always)]
+    #[must_use]
     pub fn pbk(&mut self) -> PBK_W<2> {
         PBK_W::new(self)
     }
     #[doc = "Bits 4:6 - Pipe Size"]
     #[inline(always)]
+    #[must_use]
     pub fn psize(&mut self) -> PSIZE_W<4> {
         PSIZE_W::new(self)
     }
     #[doc = "Bits 8:9 - Pipe Token"]
     #[inline(always)]
+    #[must_use]
     pub fn ptoken(&mut self) -> PTOKEN_W<8> {
         PTOKEN_W::new(self)
     }
     #[doc = "Bit 10 - Automatic Switch"]
     #[inline(always)]
+    #[must_use]
     pub fn autosw(&mut self) -> AUTOSW_W<10> {
         AUTOSW_W::new(self)
     }
     #[doc = "Bits 12:13 - Pipe Type"]
     #[inline(always)]
+    #[must_use]
     pub fn ptype(&mut self) -> PTYPE_W<12> {
         PTYPE_W::new(self)
     }
     #[doc = "Bits 16:19 - Pipe Endpoint Number"]
     #[inline(always)]
+    #[must_use]
     pub fn pepnum(&mut self) -> PEPNUM_W<16> {
         PEPNUM_W::new(self)
     }
     #[doc = "Bits 24:31 - Pipe Interrupt Request Frequency"]
     #[inline(always)]
+    #[must_use]
     pub fn intfrq(&mut self) -> INTFRQ_W<24> {
         INTFRQ_W::new(self)
     }
@@ -493,4 +501,6 @@ impl crate::Readable for HSTPIPCFG_SPEC {
 #[doc = "`write(|w| ..)` method takes [hstpipcfg::W](W) writer structure"]
 impl crate::Writable for HSTPIPCFG_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

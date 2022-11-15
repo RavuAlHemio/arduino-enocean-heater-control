@@ -22,7 +22,7 @@ impl From<crate::W<WPCR_SPEC>> for W {
 #[doc = "Field `WP_EN` writer - Write Protection Enable"]
 pub type WP_EN_W<'a, const O: u8> = crate::BitWriter<'a, u32, WPCR_SPEC, bool, O>;
 #[doc = "Write Protection KEY Password\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u32)]
 pub enum WP_KEY_AW {
     #[doc = "5459267: Writing any other value in this field aborts the write operation of the WP_EN bit. Always reads as 0."]
@@ -46,11 +46,13 @@ impl<'a, const O: u8> WP_KEY_W<'a, O> {
 impl W {
     #[doc = "Bit 0 - Write Protection Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn wp_en(&mut self) -> WP_EN_W<0> {
         WP_EN_W::new(self)
     }
     #[doc = "Bits 8:31 - Write Protection KEY Password"]
     #[inline(always)]
+    #[must_use]
     pub fn wp_key(&mut self) -> WP_KEY_W<8> {
         WP_KEY_W::new(self)
     }
@@ -69,11 +71,10 @@ impl crate::RegisterSpec for WPCR_SPEC {
 #[doc = "`write(|w| ..)` method takes [wpcr::W](W) writer structure"]
 impl crate::Writable for WPCR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets WPCR to value 0"]
 impl crate::Resettable for WPCR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - Fault Protection Enable for channel 0 (fault input bit varies from 0 to 5)"]
     #[inline(always)]
+    #[must_use]
     pub fn fpe0(&mut self) -> FPE0_W<0> {
         FPE0_W::new(self)
     }
     #[doc = "Bits 8:15 - Fault Protection Enable for channel 1 (fault input bit varies from 0 to 5)"]
     #[inline(always)]
+    #[must_use]
     pub fn fpe1(&mut self) -> FPE1_W<8> {
         FPE1_W::new(self)
     }
     #[doc = "Bits 16:23 - Fault Protection Enable for channel 2 (fault input bit varies from 0 to 5)"]
     #[inline(always)]
+    #[must_use]
     pub fn fpe2(&mut self) -> FPE2_W<16> {
         FPE2_W::new(self)
     }
     #[doc = "Bits 24:31 - Fault Protection Enable for channel 3 (fault input bit varies from 0 to 5)"]
     #[inline(always)]
+    #[must_use]
     pub fn fpe3(&mut self) -> FPE3_W<24> {
         FPE3_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for FPE1_SPEC {
 #[doc = "`write(|w| ..)` method takes [fpe1::W](W) writer structure"]
 impl crate::Writable for FPE1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets FPE1 to value 0"]
 impl crate::Resettable for FPE1_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

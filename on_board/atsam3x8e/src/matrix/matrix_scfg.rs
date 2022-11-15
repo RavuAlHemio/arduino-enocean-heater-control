@@ -78,21 +78,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - Maximum Number of Allowed Cycles for a Burst"]
     #[inline(always)]
+    #[must_use]
     pub fn slot_cycle(&mut self) -> SLOT_CYCLE_W<0> {
         SLOT_CYCLE_W::new(self)
     }
     #[doc = "Bits 16:17 - Default Master Type"]
     #[inline(always)]
+    #[must_use]
     pub fn defmstr_type(&mut self) -> DEFMSTR_TYPE_W<16> {
         DEFMSTR_TYPE_W::new(self)
     }
     #[doc = "Bits 18:20 - Fixed Default Master"]
     #[inline(always)]
+    #[must_use]
     pub fn fixed_defmstr(&mut self) -> FIXED_DEFMSTR_W<18> {
         FIXED_DEFMSTR_W::new(self)
     }
     #[doc = "Bits 24:25 - Arbitration Type"]
     #[inline(always)]
+    #[must_use]
     pub fn arbt(&mut self) -> ARBT_W<24> {
         ARBT_W::new(self)
     }
@@ -115,4 +119,6 @@ impl crate::Readable for MATRIX_SCFG_SPEC {
 #[doc = "`write(|w| ..)` method takes [matrix_scfg::W](W) writer structure"]
 impl crate::Writable for MATRIX_SCFG_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

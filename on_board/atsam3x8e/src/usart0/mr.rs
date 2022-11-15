@@ -37,7 +37,7 @@ impl From<crate::W<MR_SPEC>> for W {
 #[doc = "Field `USART_MODE` reader - USART Mode of Operation"]
 pub type USART_MODE_R = crate::FieldReader<u8, USART_MODE_A>;
 #[doc = "USART Mode of Operation"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum USART_MODE_A {
     #[doc = "0: Normal mode"]
@@ -194,7 +194,7 @@ impl<'a, const O: u8> USART_MODE_W<'a, O> {
 #[doc = "Field `USCLKS` reader - Clock Selection"]
 pub type USCLKS_R = crate::FieldReader<u8, USCLKS_A>;
 #[doc = "Clock Selection"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum USCLKS_A {
     #[doc = "0: master Clock MCK is selected"]
@@ -259,7 +259,7 @@ impl<'a, const O: u8> USCLKS_W<'a, O> {
 #[doc = "Field `CHRL` reader - Character Length"]
 pub type CHRL_R = crate::FieldReader<u8, CHRL_A>;
 #[doc = "Character Length"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CHRL_A {
     #[doc = "0: Character length is 5 bits"]
@@ -341,7 +341,7 @@ pub type SYNC_W<'a, const O: u8> = crate::BitWriter<'a, u32, MR_SPEC, bool, O>;
 #[doc = "Field `PAR` reader - Parity Type"]
 pub type PAR_R = crate::FieldReader<u8, PAR_A>;
 #[doc = "Parity Type"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PAR_A {
     #[doc = "0: Even parity"]
@@ -445,7 +445,7 @@ impl<'a, const O: u8> PAR_W<'a, O> {
 #[doc = "Field `NBSTOP` reader - Number of Stop Bits"]
 pub type NBSTOP_R = crate::FieldReader<u8, NBSTOP_A>;
 #[doc = "Number of Stop Bits"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum NBSTOP_A {
     #[doc = "0: 1 stop bit"]
@@ -510,7 +510,7 @@ impl<'a, const O: u8> NBSTOP_W<'a, O> {
 #[doc = "Field `CHMODE` reader - Channel Mode"]
 pub type CHMODE_R = crate::FieldReader<u8, CHMODE_A>;
 #[doc = "Channel Mode"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CHMODE_A {
     #[doc = "0: Normal mode"]
@@ -742,101 +742,121 @@ impl R {
 impl W {
     #[doc = "Bits 0:3 - USART Mode of Operation"]
     #[inline(always)]
+    #[must_use]
     pub fn usart_mode(&mut self) -> USART_MODE_W<0> {
         USART_MODE_W::new(self)
     }
     #[doc = "Bits 4:5 - Clock Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn usclks(&mut self) -> USCLKS_W<4> {
         USCLKS_W::new(self)
     }
     #[doc = "Bits 6:7 - Character Length"]
     #[inline(always)]
+    #[must_use]
     pub fn chrl(&mut self) -> CHRL_W<6> {
         CHRL_W::new(self)
     }
     #[doc = "Bit 8 - Synchronous Mode Select"]
     #[inline(always)]
+    #[must_use]
     pub fn sync(&mut self) -> SYNC_W<8> {
         SYNC_W::new(self)
     }
     #[doc = "Bits 9:11 - Parity Type"]
     #[inline(always)]
+    #[must_use]
     pub fn par(&mut self) -> PAR_W<9> {
         PAR_W::new(self)
     }
     #[doc = "Bits 12:13 - Number of Stop Bits"]
     #[inline(always)]
+    #[must_use]
     pub fn nbstop(&mut self) -> NBSTOP_W<12> {
         NBSTOP_W::new(self)
     }
     #[doc = "Bits 14:15 - Channel Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn chmode(&mut self) -> CHMODE_W<14> {
         CHMODE_W::new(self)
     }
     #[doc = "Bit 16 - Bit Order"]
     #[inline(always)]
+    #[must_use]
     pub fn msbf(&mut self) -> MSBF_W<16> {
         MSBF_W::new(self)
     }
     #[doc = "Bit 17 - 9-bit Character Length"]
     #[inline(always)]
+    #[must_use]
     pub fn mode9(&mut self) -> MODE9_W<17> {
         MODE9_W::new(self)
     }
     #[doc = "Bit 18 - Clock Output Select"]
     #[inline(always)]
+    #[must_use]
     pub fn clko(&mut self) -> CLKO_W<18> {
         CLKO_W::new(self)
     }
     #[doc = "Bit 19 - Oversampling Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn over(&mut self) -> OVER_W<19> {
         OVER_W::new(self)
     }
     #[doc = "Bit 20 - Inhibit Non Acknowledge"]
     #[inline(always)]
+    #[must_use]
     pub fn inack(&mut self) -> INACK_W<20> {
         INACK_W::new(self)
     }
     #[doc = "Bit 21 - Disable Successive NACK"]
     #[inline(always)]
+    #[must_use]
     pub fn dsnack(&mut self) -> DSNACK_W<21> {
         DSNACK_W::new(self)
     }
     #[doc = "Bit 22 - Variable Synchronization of Command/Data Sync Start Frame Delimiter"]
     #[inline(always)]
+    #[must_use]
     pub fn var_sync(&mut self) -> VAR_SYNC_W<22> {
         VAR_SYNC_W::new(self)
     }
     #[doc = "Bit 23 - Inverted Data"]
     #[inline(always)]
+    #[must_use]
     pub fn invdata(&mut self) -> INVDATA_W<23> {
         INVDATA_W::new(self)
     }
     #[doc = "Bits 24:26 - Maximum Number of Automatic Iteration"]
     #[inline(always)]
+    #[must_use]
     pub fn max_iteration(&mut self) -> MAX_ITERATION_W<24> {
         MAX_ITERATION_W::new(self)
     }
     #[doc = "Bit 28 - Infrared Receive Line Filter"]
     #[inline(always)]
+    #[must_use]
     pub fn filter(&mut self) -> FILTER_W<28> {
         FILTER_W::new(self)
     }
     #[doc = "Bit 29 - Manchester Encoder/Decoder Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn man(&mut self) -> MAN_W<29> {
         MAN_W::new(self)
     }
     #[doc = "Bit 30 - Manchester Synchronization Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn modsync(&mut self) -> MODSYNC_W<30> {
         MODSYNC_W::new(self)
     }
     #[doc = "Bit 31 - Start Frame Delimiter Selector"]
     #[inline(always)]
+    #[must_use]
     pub fn onebit(&mut self) -> ONEBIT_W<31> {
         ONEBIT_W::new(self)
     }
@@ -859,4 +879,6 @@ impl crate::Readable for MR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mr::W](W) writer structure"]
 impl crate::Writable for MR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

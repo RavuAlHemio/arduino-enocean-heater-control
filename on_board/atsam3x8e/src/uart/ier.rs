@@ -42,51 +42,61 @@ pub type RXBUFF_W<'a, const O: u8> = crate::BitWriter<'a, u32, IER_SPEC, bool, O
 impl W {
     #[doc = "Bit 0 - Enable RXRDY Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn rxrdy(&mut self) -> RXRDY_W<0> {
         RXRDY_W::new(self)
     }
     #[doc = "Bit 1 - Enable TXRDY Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn txrdy(&mut self) -> TXRDY_W<1> {
         TXRDY_W::new(self)
     }
     #[doc = "Bit 3 - Enable End of Receive Transfer Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn endrx(&mut self) -> ENDRX_W<3> {
         ENDRX_W::new(self)
     }
     #[doc = "Bit 4 - Enable End of Transmit Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn endtx(&mut self) -> ENDTX_W<4> {
         ENDTX_W::new(self)
     }
     #[doc = "Bit 5 - Enable Overrun Error Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn ovre(&mut self) -> OVRE_W<5> {
         OVRE_W::new(self)
     }
     #[doc = "Bit 6 - Enable Framing Error Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn frame(&mut self) -> FRAME_W<6> {
         FRAME_W::new(self)
     }
     #[doc = "Bit 7 - Enable Parity Error Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn pare(&mut self) -> PARE_W<7> {
         PARE_W::new(self)
     }
     #[doc = "Bit 9 - Enable TXEMPTY Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn txempty(&mut self) -> TXEMPTY_W<9> {
         TXEMPTY_W::new(self)
     }
     #[doc = "Bit 11 - Enable Buffer Empty Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn txbufe(&mut self) -> TXBUFE_W<11> {
         TXBUFE_W::new(self)
     }
     #[doc = "Bit 12 - Enable Buffer Full Interrupt"]
     #[inline(always)]
+    #[must_use]
     pub fn rxbuff(&mut self) -> RXBUFF_W<12> {
         RXBUFF_W::new(self)
     }
@@ -105,4 +115,6 @@ impl crate::RegisterSpec for IER_SPEC {
 #[doc = "`write(|w| ..)` method takes [ier::W](W) writer structure"]
 impl crate::Writable for IER_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

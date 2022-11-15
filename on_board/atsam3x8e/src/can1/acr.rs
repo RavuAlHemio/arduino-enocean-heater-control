@@ -38,41 +38,49 @@ pub type MB7_W<'a, const O: u8> = crate::BitWriter<'a, u32, ACR_SPEC, bool, O>;
 impl W {
     #[doc = "Bit 0 - Abort Request for Mailbox 0"]
     #[inline(always)]
+    #[must_use]
     pub fn mb0(&mut self) -> MB0_W<0> {
         MB0_W::new(self)
     }
     #[doc = "Bit 1 - Abort Request for Mailbox 1"]
     #[inline(always)]
+    #[must_use]
     pub fn mb1(&mut self) -> MB1_W<1> {
         MB1_W::new(self)
     }
     #[doc = "Bit 2 - Abort Request for Mailbox 2"]
     #[inline(always)]
+    #[must_use]
     pub fn mb2(&mut self) -> MB2_W<2> {
         MB2_W::new(self)
     }
     #[doc = "Bit 3 - Abort Request for Mailbox 3"]
     #[inline(always)]
+    #[must_use]
     pub fn mb3(&mut self) -> MB3_W<3> {
         MB3_W::new(self)
     }
     #[doc = "Bit 4 - Abort Request for Mailbox 4"]
     #[inline(always)]
+    #[must_use]
     pub fn mb4(&mut self) -> MB4_W<4> {
         MB4_W::new(self)
     }
     #[doc = "Bit 5 - Abort Request for Mailbox 5"]
     #[inline(always)]
+    #[must_use]
     pub fn mb5(&mut self) -> MB5_W<5> {
         MB5_W::new(self)
     }
     #[doc = "Bit 6 - Abort Request for Mailbox 6"]
     #[inline(always)]
+    #[must_use]
     pub fn mb6(&mut self) -> MB6_W<6> {
         MB6_W::new(self)
     }
     #[doc = "Bit 7 - Abort Request for Mailbox 7"]
     #[inline(always)]
+    #[must_use]
     pub fn mb7(&mut self) -> MB7_W<7> {
         MB7_W::new(self)
     }
@@ -91,4 +99,6 @@ impl crate::RegisterSpec for ACR_SPEC {
 #[doc = "`write(|w| ..)` method takes [acr::W](W) writer structure"]
 impl crate::Writable for ACR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

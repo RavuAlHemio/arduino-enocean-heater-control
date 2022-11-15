@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:31 - Message Data High Value"]
     #[inline(always)]
+    #[must_use]
     pub fn mdh(&mut self) -> MDH_W<0> {
         MDH_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for MDH7_SPEC {
 #[doc = "`write(|w| ..)` method takes [mdh7::W](W) writer structure"]
 impl crate::Writable for MDH7_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MDH7 to value 0"]
 impl crate::Resettable for MDH7_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -49,7 +49,7 @@ pub type ERSTL_W<'a, const O: u8> = crate::FieldWriter<'a, u32, MR_SPEC, u8, u8,
 #[doc = "Field `KEY` reader - Write Access Password"]
 pub type KEY_R = crate::FieldReader<u8, KEY_A>;
 #[doc = "Write Access Password\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum KEY_A {
     #[doc = "165: Writing any other value in this field aborts the write operation.Always reads as 0."]
@@ -110,21 +110,25 @@ impl R {
 impl W {
     #[doc = "Bit 0 - User Reset Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn ursten(&mut self) -> URSTEN_W<0> {
         URSTEN_W::new(self)
     }
     #[doc = "Bit 4 - User Reset Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn urstien(&mut self) -> URSTIEN_W<4> {
         URSTIEN_W::new(self)
     }
     #[doc = "Bits 8:11 - External Reset Length"]
     #[inline(always)]
+    #[must_use]
     pub fn erstl(&mut self) -> ERSTL_W<8> {
         ERSTL_W::new(self)
     }
     #[doc = "Bits 24:31 - Write Access Password"]
     #[inline(always)]
+    #[must_use]
     pub fn key(&mut self) -> KEY_W<24> {
         KEY_W::new(self)
     }
@@ -147,11 +151,10 @@ impl crate::Readable for MR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mr::W](W) writer structure"]
 impl crate::Writable for MR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MR to value 0x01"]
 impl crate::Resettable for MR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x01
-    }
+    const RESET_VALUE: Self::Ux = 0x01;
 }

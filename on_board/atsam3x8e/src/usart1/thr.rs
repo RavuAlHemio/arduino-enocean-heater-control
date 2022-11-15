@@ -26,11 +26,13 @@ pub type TXSYNH_W<'a, const O: u8> = crate::BitWriter<'a, u32, THR_SPEC, bool, O
 impl W {
     #[doc = "Bits 0:8 - Character to be Transmitted"]
     #[inline(always)]
+    #[must_use]
     pub fn txchr(&mut self) -> TXCHR_W<0> {
         TXCHR_W::new(self)
     }
     #[doc = "Bit 15 - Sync Field to be Transmitted"]
     #[inline(always)]
+    #[must_use]
     pub fn txsynh(&mut self) -> TXSYNH_W<15> {
         TXSYNH_W::new(self)
     }
@@ -49,4 +51,6 @@ impl crate::RegisterSpec for THR_SPEC {
 #[doc = "`write(|w| ..)` method takes [thr::W](W) writer structure"]
 impl crate::Writable for THR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

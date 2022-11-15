@@ -41,7 +41,7 @@ pub type WPEN_W<'a, const O: u8> = crate::BitWriter<'a, u32, WPMR_SPEC, bool, O>
 #[doc = "Field `WPKEY` reader - Write Protect KEY"]
 pub type WPKEY_R = crate::FieldReader<u32, WPKEY_A>;
 #[doc = "Write Protect KEY\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u32)]
 pub enum WPKEY_A {
     #[doc = "5395523: Writing any other value in this field aborts the write operation of the WPEN bit.Always reads as 0."]
@@ -86,17 +86,19 @@ impl R {
     #[doc = "Bits 8:31 - Write Protect KEY"]
     #[inline(always)]
     pub fn wpkey(&self) -> WPKEY_R {
-        WPKEY_R::new(((self.bits >> 8) & 0x00ff_ffff) as u32)
+        WPKEY_R::new((self.bits >> 8) & 0x00ff_ffff)
     }
 }
 impl W {
     #[doc = "Bit 0 - Write Protect Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn wpen(&mut self) -> WPEN_W<0> {
         WPEN_W::new(self)
     }
     #[doc = "Bits 8:31 - Write Protect KEY"]
     #[inline(always)]
+    #[must_use]
     pub fn wpkey(&mut self) -> WPKEY_W<8> {
         WPKEY_W::new(self)
     }
@@ -119,11 +121,10 @@ impl crate::Readable for WPMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [wpmr::W](W) writer structure"]
 impl crate::Writable for WPMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets WPMR to value 0"]
 impl crate::Resettable for WPMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

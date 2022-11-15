@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - Undersize frames"]
     #[inline(always)]
+    #[must_use]
     pub fn usf(&mut self) -> USF_W<0> {
         USF_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for USF_SPEC {
 #[doc = "`write(|w| ..)` method takes [usf::W](W) writer structure"]
 impl crate::Writable for USF_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets USF to value 0"]
 impl crate::Resettable for USF_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

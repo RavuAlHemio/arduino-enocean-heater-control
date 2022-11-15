@@ -24,6 +24,7 @@ pub type FCLR_W<'a, const O: u8> = crate::FieldWriter<'a, u32, FCR_SPEC, u8, u8,
 impl W {
     #[doc = "Bits 0:7 - Fault Clear (fault input bit varies from 0 to 5)"]
     #[inline(always)]
+    #[must_use]
     pub fn fclr(&mut self) -> FCLR_W<0> {
         FCLR_W::new(self)
     }
@@ -42,4 +43,6 @@ impl crate::RegisterSpec for FCR_SPEC {
 #[doc = "`write(|w| ..)` method takes [fcr::W](W) writer structure"]
 impl crate::Writable for FCR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

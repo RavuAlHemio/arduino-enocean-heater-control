@@ -24,6 +24,7 @@ pub type FOCLR_W<'a, const O: u8> = crate::BitWriter<'a, u32, PMC_FOCR_SPEC, boo
 impl W {
     #[doc = "Bit 0 - Fault Output Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn foclr(&mut self) -> FOCLR_W<0> {
         FOCLR_W::new(self)
     }
@@ -42,4 +43,6 @@ impl crate::RegisterSpec for PMC_FOCR_SPEC {
 #[doc = "`write(|w| ..)` method takes [pmc_focr::W](W) writer structure"]
 impl crate::Writable for PMC_FOCR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:10 - FI Over DI Ratio Value"]
     #[inline(always)]
+    #[must_use]
     pub fn fi_di_ratio(&mut self) -> FI_DI_RATIO_W<0> {
         FI_DI_RATIO_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for FIDI_SPEC {
 #[doc = "`write(|w| ..)` method takes [fidi::W](W) writer structure"]
 impl crate::Writable for FIDI_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets FIDI to value 0x0174"]
 impl crate::Resettable for FIDI_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0174
-    }
+    const RESET_VALUE: Self::Ux = 0x0174;
 }

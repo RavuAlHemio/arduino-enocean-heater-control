@@ -187,8 +187,5 @@ impl crate::Readable for DEVISR_SPEC {
 }
 #[doc = "`reset()` method sets DEVISR to value 0"]
 impl crate::Resettable for DEVISR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

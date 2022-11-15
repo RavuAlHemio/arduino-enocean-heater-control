@@ -66,16 +66,19 @@ impl R {
 impl W {
     #[doc = "Bits 0:2 - Micro Frame Number"]
     #[inline(always)]
+    #[must_use]
     pub fn mfnum(&mut self) -> MFNUM_W<0> {
         MFNUM_W::new(self)
     }
     #[doc = "Bits 3:13 - Frame Number"]
     #[inline(always)]
+    #[must_use]
     pub fn fnum(&mut self) -> FNUM_W<3> {
         FNUM_W::new(self)
     }
     #[doc = "Bits 16:23 - Frame Length"]
     #[inline(always)]
+    #[must_use]
     pub fn flenhigh(&mut self) -> FLENHIGH_W<16> {
         FLENHIGH_W::new(self)
     }
@@ -98,11 +101,10 @@ impl crate::Readable for HSTFNUM_SPEC {
 #[doc = "`write(|w| ..)` method takes [hstfnum::W](W) writer structure"]
 impl crate::Writable for HSTFNUM_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets HSTFNUM to value 0"]
 impl crate::Resettable for HSTFNUM_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

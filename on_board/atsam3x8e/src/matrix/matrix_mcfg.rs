@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:2 - Undefined Length Burst Type"]
     #[inline(always)]
+    #[must_use]
     pub fn ulbt(&mut self) -> ULBT_W<0> {
         ULBT_W::new(self)
     }
@@ -70,4 +71,6 @@ impl crate::Readable for MATRIX_MCFG_SPEC {
 #[doc = "`write(|w| ..)` method takes [matrix_mcfg::W](W) writer structure"]
 impl crate::Writable for MATRIX_MCFG_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

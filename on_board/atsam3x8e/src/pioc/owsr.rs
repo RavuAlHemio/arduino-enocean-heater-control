@@ -250,8 +250,5 @@ impl crate::Readable for OWSR_SPEC {
 }
 #[doc = "`reset()` method sets OWSR to value 0"]
 impl crate::Resettable for OWSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

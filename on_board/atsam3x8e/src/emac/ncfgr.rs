@@ -69,7 +69,7 @@ pub type BIG_W<'a, const O: u8> = crate::BitWriter<'a, u32, NCFGR_SPEC, bool, O>
 #[doc = "Field `CLK` reader - MDC clock divider"]
 pub type CLK_R = crate::FieldReader<u8, CLK_A>;
 #[doc = "MDC clock divider\n\nValue on reset: 2"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CLK_A {
     #[doc = "0: MCK divided by 8 (MCK up to 20 MHz)."]
@@ -155,7 +155,7 @@ pub type PAE_W<'a, const O: u8> = crate::BitWriter<'a, u32, NCFGR_SPEC, bool, O>
 #[doc = "Field `RBOF` reader - Receive Buffer Offset"]
 pub type RBOF_R = crate::FieldReader<u8, RBOF_A>;
 #[doc = "Receive Buffer Offset\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum RBOF_A {
     #[doc = "0: No offset from start of receive buffer."]
@@ -331,81 +331,97 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Speed"]
     #[inline(always)]
+    #[must_use]
     pub fn spd(&mut self) -> SPD_W<0> {
         SPD_W::new(self)
     }
     #[doc = "Bit 1 - Full Duplex"]
     #[inline(always)]
+    #[must_use]
     pub fn fd(&mut self) -> FD_W<1> {
         FD_W::new(self)
     }
     #[doc = "Bit 3 - Jumbo Frames"]
     #[inline(always)]
+    #[must_use]
     pub fn jframe(&mut self) -> JFRAME_W<3> {
         JFRAME_W::new(self)
     }
     #[doc = "Bit 4 - Copy All Frames"]
     #[inline(always)]
+    #[must_use]
     pub fn caf(&mut self) -> CAF_W<4> {
         CAF_W::new(self)
     }
     #[doc = "Bit 5 - No Broadcast"]
     #[inline(always)]
+    #[must_use]
     pub fn nbc(&mut self) -> NBC_W<5> {
         NBC_W::new(self)
     }
     #[doc = "Bit 6 - Multicast Hash Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn mti(&mut self) -> MTI_W<6> {
         MTI_W::new(self)
     }
     #[doc = "Bit 7 - Unicast Hash Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn uni(&mut self) -> UNI_W<7> {
         UNI_W::new(self)
     }
     #[doc = "Bit 8 - Receive 1536 bytes frames"]
     #[inline(always)]
+    #[must_use]
     pub fn big(&mut self) -> BIG_W<8> {
         BIG_W::new(self)
     }
     #[doc = "Bits 10:11 - MDC clock divider"]
     #[inline(always)]
+    #[must_use]
     pub fn clk(&mut self) -> CLK_W<10> {
         CLK_W::new(self)
     }
     #[doc = "Bit 12 - Retry test"]
     #[inline(always)]
+    #[must_use]
     pub fn rty(&mut self) -> RTY_W<12> {
         RTY_W::new(self)
     }
     #[doc = "Bit 13 - Pause Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pae(&mut self) -> PAE_W<13> {
         PAE_W::new(self)
     }
     #[doc = "Bits 14:15 - Receive Buffer Offset"]
     #[inline(always)]
+    #[must_use]
     pub fn rbof(&mut self) -> RBOF_W<14> {
         RBOF_W::new(self)
     }
     #[doc = "Bit 16 - Receive Length field Checking Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn rlce(&mut self) -> RLCE_W<16> {
         RLCE_W::new(self)
     }
     #[doc = "Bit 17 - Discard Receive FCS"]
     #[inline(always)]
+    #[must_use]
     pub fn drfcs(&mut self) -> DRFCS_W<17> {
         DRFCS_W::new(self)
     }
     #[doc = "Bit 18"]
     #[inline(always)]
+    #[must_use]
     pub fn efrhd(&mut self) -> EFRHD_W<18> {
         EFRHD_W::new(self)
     }
     #[doc = "Bit 19 - Ignore RX FCS"]
     #[inline(always)]
+    #[must_use]
     pub fn irxfcs(&mut self) -> IRXFCS_W<19> {
         IRXFCS_W::new(self)
     }
@@ -428,11 +444,10 @@ impl crate::Readable for NCFGR_SPEC {
 #[doc = "`write(|w| ..)` method takes [ncfgr::W](W) writer structure"]
 impl crate::Writable for NCFGR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets NCFGR to value 0x0800"]
 impl crate::Resettable for NCFGR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0800
-    }
+    const RESET_VALUE: Self::Ux = 0x0800;
 }

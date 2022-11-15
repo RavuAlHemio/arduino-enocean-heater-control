@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - SQE test errors"]
     #[inline(always)]
+    #[must_use]
     pub fn sqer(&mut self) -> SQER_W<0> {
         SQER_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for STE_SPEC {
 #[doc = "`write(|w| ..)` method takes [ste::W](W) writer structure"]
 impl crate::Writable for STE_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets STE to value 0"]
 impl crate::Resettable for STE_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

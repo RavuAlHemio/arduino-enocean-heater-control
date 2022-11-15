@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bit 0 - General Enable of DMA"]
     #[inline(always)]
+    #[must_use]
     pub fn enable(&mut self) -> ENABLE_W<0> {
         ENABLE_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for EN_SPEC {
 #[doc = "`write(|w| ..)` method takes [en::W](W) writer structure"]
 impl crate::Writable for EN_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets EN to value 0"]
 impl crate::Resettable for EN_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

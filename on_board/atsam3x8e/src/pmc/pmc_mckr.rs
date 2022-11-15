@@ -37,7 +37,7 @@ impl From<crate::W<PMC_MCKR_SPEC>> for W {
 #[doc = "Field `CSS` reader - Master Clock Source Selection"]
 pub type CSS_R = crate::FieldReader<u8, CSS_A>;
 #[doc = "Master Clock Source Selection\n\nValue on reset: 1"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CSS_A {
     #[doc = "0: Slow Clock is selected"]
@@ -115,7 +115,7 @@ impl<'a, const O: u8> CSS_W<'a, O> {
 #[doc = "Field `PRES` reader - Processor Clock Prescaler"]
 pub type PRES_R = crate::FieldReader<u8, PRES_A>;
 #[doc = "Processor Clock Prescaler\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PRES_A {
     #[doc = "0: Selected clock"]
@@ -275,21 +275,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:1 - Master Clock Source Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn css(&mut self) -> CSS_W<0> {
         CSS_W::new(self)
     }
     #[doc = "Bits 4:6 - Processor Clock Prescaler"]
     #[inline(always)]
+    #[must_use]
     pub fn pres(&mut self) -> PRES_W<4> {
         PRES_W::new(self)
     }
     #[doc = "Bit 12 - PLLA Divisor by 2"]
     #[inline(always)]
+    #[must_use]
     pub fn plladiv2(&mut self) -> PLLADIV2_W<12> {
         PLLADIV2_W::new(self)
     }
     #[doc = "Bit 13"]
     #[inline(always)]
+    #[must_use]
     pub fn uplldiv2(&mut self) -> UPLLDIV2_W<13> {
         UPLLDIV2_W::new(self)
     }
@@ -312,11 +316,10 @@ impl crate::Readable for PMC_MCKR_SPEC {
 #[doc = "`write(|w| ..)` method takes [pmc_mckr::W](W) writer structure"]
 impl crate::Writable for PMC_MCKR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets PMC_MCKR to value 0x01"]
 impl crate::Resettable for PMC_MCKR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x01
-    }
+    const RESET_VALUE: Self::Ux = 0x01;
 }

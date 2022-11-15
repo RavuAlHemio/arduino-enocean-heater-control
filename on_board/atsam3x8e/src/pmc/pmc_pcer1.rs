@@ -48,66 +48,79 @@ pub type PID44_W<'a, const O: u8> = crate::BitWriter<'a, u32, PMC_PCER1_SPEC, bo
 impl W {
     #[doc = "Bit 0 - Peripheral Clock 32 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid32(&mut self) -> PID32_W<0> {
         PID32_W::new(self)
     }
     #[doc = "Bit 1 - Peripheral Clock 33 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid33(&mut self) -> PID33_W<1> {
         PID33_W::new(self)
     }
     #[doc = "Bit 2 - Peripheral Clock 34 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid34(&mut self) -> PID34_W<2> {
         PID34_W::new(self)
     }
     #[doc = "Bit 3 - Peripheral Clock 35 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid35(&mut self) -> PID35_W<3> {
         PID35_W::new(self)
     }
     #[doc = "Bit 4 - Peripheral Clock 36 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid36(&mut self) -> PID36_W<4> {
         PID36_W::new(self)
     }
     #[doc = "Bit 5 - Peripheral Clock 37 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid37(&mut self) -> PID37_W<5> {
         PID37_W::new(self)
     }
     #[doc = "Bit 6 - Peripheral Clock 38 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid38(&mut self) -> PID38_W<6> {
         PID38_W::new(self)
     }
     #[doc = "Bit 7 - Peripheral Clock 39 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid39(&mut self) -> PID39_W<7> {
         PID39_W::new(self)
     }
     #[doc = "Bit 8 - Peripheral Clock 40 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid40(&mut self) -> PID40_W<8> {
         PID40_W::new(self)
     }
     #[doc = "Bit 9 - Peripheral Clock 41 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid41(&mut self) -> PID41_W<9> {
         PID41_W::new(self)
     }
     #[doc = "Bit 10 - Peripheral Clock 42 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid42(&mut self) -> PID42_W<10> {
         PID42_W::new(self)
     }
     #[doc = "Bit 11 - Peripheral Clock 43 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid43(&mut self) -> PID43_W<11> {
         PID43_W::new(self)
     }
     #[doc = "Bit 12 - Peripheral Clock 44 Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pid44(&mut self) -> PID44_W<12> {
         PID44_W::new(self)
     }
@@ -126,4 +139,6 @@ impl crate::RegisterSpec for PMC_PCER1_SPEC {
 #[doc = "`write(|w| ..)` method takes [pmc_pcer1::W](W) writer structure"]
 impl crate::Writable for PMC_PCER1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

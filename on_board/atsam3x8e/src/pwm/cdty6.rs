@@ -42,12 +42,13 @@ impl R {
     #[doc = "Bits 0:23 - Channel Duty-Cycle"]
     #[inline(always)]
     pub fn cdty(&self) -> CDTY_R {
-        CDTY_R::new((self.bits & 0x00ff_ffff) as u32)
+        CDTY_R::new(self.bits & 0x00ff_ffff)
     }
 }
 impl W {
     #[doc = "Bits 0:23 - Channel Duty-Cycle"]
     #[inline(always)]
+    #[must_use]
     pub fn cdty(&mut self) -> CDTY_W<0> {
         CDTY_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for CDTY6_SPEC {
 #[doc = "`write(|w| ..)` method takes [cdty6::W](W) writer structure"]
 impl crate::Writable for CDTY6_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CDTY6 to value 0"]
 impl crate::Resettable for CDTY6_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

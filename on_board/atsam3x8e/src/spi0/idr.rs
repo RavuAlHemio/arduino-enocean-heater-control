@@ -36,36 +36,43 @@ pub type UNDES_W<'a, const O: u8> = crate::BitWriter<'a, u32, IDR_SPEC, bool, O>
 impl W {
     #[doc = "Bit 0 - Receive Data Register Full Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn rdrf(&mut self) -> RDRF_W<0> {
         RDRF_W::new(self)
     }
     #[doc = "Bit 1 - SPI Transmit Data Register Empty Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn tdre(&mut self) -> TDRE_W<1> {
         TDRE_W::new(self)
     }
     #[doc = "Bit 2 - Mode Fault Error Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn modf(&mut self) -> MODF_W<2> {
         MODF_W::new(self)
     }
     #[doc = "Bit 3 - Overrun Error Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn ovres(&mut self) -> OVRES_W<3> {
         OVRES_W::new(self)
     }
     #[doc = "Bit 8 - NSS Rising Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn nssr(&mut self) -> NSSR_W<8> {
         NSSR_W::new(self)
     }
     #[doc = "Bit 9 - Transmission Registers Empty Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn txempty(&mut self) -> TXEMPTY_W<9> {
         TXEMPTY_W::new(self)
     }
     #[doc = "Bit 10 - Underrun Error Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn undes(&mut self) -> UNDES_W<10> {
         UNDES_W::new(self)
     }
@@ -84,4 +91,6 @@ impl crate::RegisterSpec for IDR_SPEC {
 #[doc = "`write(|w| ..)` method takes [idr::W](W) writer structure"]
 impl crate::Writable for IDR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

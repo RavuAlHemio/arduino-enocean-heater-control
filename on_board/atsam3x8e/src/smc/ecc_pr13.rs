@@ -47,8 +47,5 @@ impl crate::Readable for ECC_PR13_SPEC {
 }
 #[doc = "`reset()` method sets ECC_PR13 to value 0"]
 impl crate::Resettable for ECC_PR13_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

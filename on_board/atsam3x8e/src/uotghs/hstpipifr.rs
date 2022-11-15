@@ -40,46 +40,55 @@ pub type NBUSYBKS_W<'a, const O: u8> = crate::BitWriter<'a, u32, HSTPIPIFR_SPEC,
 impl W {
     #[doc = "Bit 0 - Received IN Data Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn rxinis(&mut self) -> RXINIS_W<0> {
         RXINIS_W::new(self)
     }
     #[doc = "Bit 1 - Transmitted OUT Data Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn txoutis(&mut self) -> TXOUTIS_W<1> {
         TXOUTIS_W::new(self)
     }
     #[doc = "Bit 2 - Transmitted SETUP Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn txstpis(&mut self) -> TXSTPIS_W<2> {
         TXSTPIS_W::new(self)
     }
     #[doc = "Bit 3 - Pipe Error Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn perris(&mut self) -> PERRIS_W<3> {
         PERRIS_W::new(self)
     }
     #[doc = "Bit 4 - NAKed Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn nakedis(&mut self) -> NAKEDIS_W<4> {
         NAKEDIS_W::new(self)
     }
     #[doc = "Bit 5 - Overflow Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn overfis(&mut self) -> OVERFIS_W<5> {
         OVERFIS_W::new(self)
     }
     #[doc = "Bit 6 - Received STALLed Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn rxstalldis(&mut self) -> RXSTALLDIS_W<6> {
         RXSTALLDIS_W::new(self)
     }
     #[doc = "Bit 7 - Short Packet Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn shortpacketis(&mut self) -> SHORTPACKETIS_W<7> {
         SHORTPACKETIS_W::new(self)
     }
     #[doc = "Bit 12 - Number of Busy Banks Set"]
     #[inline(always)]
+    #[must_use]
     pub fn nbusybks(&mut self) -> NBUSYBKS_W<12> {
         NBUSYBKS_W::new(self)
     }
@@ -98,4 +107,6 @@ impl crate::RegisterSpec for HSTPIPIFR_SPEC {
 #[doc = "`write(|w| ..)` method takes [hstpipifr::W](W) writer structure"]
 impl crate::Writable for HSTPIPIFR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

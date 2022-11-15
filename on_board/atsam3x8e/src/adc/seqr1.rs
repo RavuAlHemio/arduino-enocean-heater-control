@@ -111,41 +111,49 @@ impl R {
 impl W {
     #[doc = "Bits 0:3 - User Sequence Number 1"]
     #[inline(always)]
+    #[must_use]
     pub fn usch1(&mut self) -> USCH1_W<0> {
         USCH1_W::new(self)
     }
     #[doc = "Bits 4:7 - User Sequence Number 2"]
     #[inline(always)]
+    #[must_use]
     pub fn usch2(&mut self) -> USCH2_W<4> {
         USCH2_W::new(self)
     }
     #[doc = "Bits 8:11 - User Sequence Number 3"]
     #[inline(always)]
+    #[must_use]
     pub fn usch3(&mut self) -> USCH3_W<8> {
         USCH3_W::new(self)
     }
     #[doc = "Bits 12:15 - User Sequence Number 4"]
     #[inline(always)]
+    #[must_use]
     pub fn usch4(&mut self) -> USCH4_W<12> {
         USCH4_W::new(self)
     }
     #[doc = "Bits 16:19 - User Sequence Number 5"]
     #[inline(always)]
+    #[must_use]
     pub fn usch5(&mut self) -> USCH5_W<16> {
         USCH5_W::new(self)
     }
     #[doc = "Bits 20:23 - User Sequence Number 6"]
     #[inline(always)]
+    #[must_use]
     pub fn usch6(&mut self) -> USCH6_W<20> {
         USCH6_W::new(self)
     }
     #[doc = "Bits 24:27 - User Sequence Number 7"]
     #[inline(always)]
+    #[must_use]
     pub fn usch7(&mut self) -> USCH7_W<24> {
         USCH7_W::new(self)
     }
     #[doc = "Bits 28:31 - User Sequence Number 8"]
     #[inline(always)]
+    #[must_use]
     pub fn usch8(&mut self) -> USCH8_W<28> {
         USCH8_W::new(self)
     }
@@ -168,11 +176,10 @@ impl crate::Readable for SEQR1_SPEC {
 #[doc = "`write(|w| ..)` method takes [seqr1::W](W) writer structure"]
 impl crate::Writable for SEQR1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SEQR1 to value 0"]
 impl crate::Resettable for SEQR1_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -89,8 +89,5 @@ impl crate::Readable for SPI_MODE_IMR_SPI_MODE_SPEC {
 }
 #[doc = "`reset()` method sets IMR_SPI_MODE to value 0"]
 impl crate::Resettable for SPI_MODE_IMR_SPI_MODE_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

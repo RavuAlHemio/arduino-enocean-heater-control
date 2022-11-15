@@ -40,8 +40,5 @@ impl crate::Readable for CHSR_SPEC {
 }
 #[doc = "`reset()` method sets CHSR to value 0"]
 impl crate::Resettable for CHSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -54,8 +54,5 @@ impl crate::Readable for PMC_SCSR_SPEC {
 }
 #[doc = "`reset()` method sets PMC_SCSR to value 0x01"]
 impl crate::Resettable for PMC_SCSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x01
-    }
+    const RESET_VALUE: Self::Ux = 0x01;
 }

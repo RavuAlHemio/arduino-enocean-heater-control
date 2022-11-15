@@ -32,26 +32,31 @@ pub type CALDIS_W<'a, const O: u8> = crate::BitWriter<'a, u32, IDR_SPEC, bool, O
 impl W {
     #[doc = "Bit 0 - Acknowledge Update Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn ackdis(&mut self) -> ACKDIS_W<0> {
         ACKDIS_W::new(self)
     }
     #[doc = "Bit 1 - Alarm Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn alrdis(&mut self) -> ALRDIS_W<1> {
         ALRDIS_W::new(self)
     }
     #[doc = "Bit 2 - Second Event Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn secdis(&mut self) -> SECDIS_W<2> {
         SECDIS_W::new(self)
     }
     #[doc = "Bit 3 - Time Event Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn timdis(&mut self) -> TIMDIS_W<3> {
         TIMDIS_W::new(self)
     }
     #[doc = "Bit 4 - Calendar Event Interrupt Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn caldis(&mut self) -> CALDIS_W<4> {
         CALDIS_W::new(self)
     }
@@ -70,4 +75,6 @@ impl crate::RegisterSpec for IDR_SPEC {
 #[doc = "`write(|w| ..)` method takes [idr::W](W) writer structure"]
 impl crate::Writable for IDR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

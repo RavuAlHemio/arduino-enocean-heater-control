@@ -66,16 +66,19 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Buffer Not Available"]
     #[inline(always)]
+    #[must_use]
     pub fn bna(&mut self) -> BNA_W<0> {
         BNA_W::new(self)
     }
     #[doc = "Bit 1 - Frame Received"]
     #[inline(always)]
+    #[must_use]
     pub fn rec(&mut self) -> REC_W<1> {
         REC_W::new(self)
     }
     #[doc = "Bit 2 - Receive Overrun"]
     #[inline(always)]
+    #[must_use]
     pub fn ovr(&mut self) -> OVR_W<2> {
         OVR_W::new(self)
     }
@@ -98,11 +101,10 @@ impl crate::Readable for RSR_SPEC {
 #[doc = "`write(|w| ..)` method takes [rsr::W](W) writer structure"]
 impl crate::Writable for RSR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets RSR to value 0"]
 impl crate::Resettable for RSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

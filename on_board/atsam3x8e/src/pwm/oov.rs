@@ -183,81 +183,97 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Output Override Value for PWMH output of the channel 0"]
     #[inline(always)]
+    #[must_use]
     pub fn oovh0(&mut self) -> OOVH0_W<0> {
         OOVH0_W::new(self)
     }
     #[doc = "Bit 1 - Output Override Value for PWMH output of the channel 1"]
     #[inline(always)]
+    #[must_use]
     pub fn oovh1(&mut self) -> OOVH1_W<1> {
         OOVH1_W::new(self)
     }
     #[doc = "Bit 2 - Output Override Value for PWMH output of the channel 2"]
     #[inline(always)]
+    #[must_use]
     pub fn oovh2(&mut self) -> OOVH2_W<2> {
         OOVH2_W::new(self)
     }
     #[doc = "Bit 3 - Output Override Value for PWMH output of the channel 3"]
     #[inline(always)]
+    #[must_use]
     pub fn oovh3(&mut self) -> OOVH3_W<3> {
         OOVH3_W::new(self)
     }
     #[doc = "Bit 4 - Output Override Value for PWMH output of the channel 4"]
     #[inline(always)]
+    #[must_use]
     pub fn oovh4(&mut self) -> OOVH4_W<4> {
         OOVH4_W::new(self)
     }
     #[doc = "Bit 5 - Output Override Value for PWMH output of the channel 5"]
     #[inline(always)]
+    #[must_use]
     pub fn oovh5(&mut self) -> OOVH5_W<5> {
         OOVH5_W::new(self)
     }
     #[doc = "Bit 6 - Output Override Value for PWMH output of the channel 6"]
     #[inline(always)]
+    #[must_use]
     pub fn oovh6(&mut self) -> OOVH6_W<6> {
         OOVH6_W::new(self)
     }
     #[doc = "Bit 7 - Output Override Value for PWMH output of the channel 7"]
     #[inline(always)]
+    #[must_use]
     pub fn oovh7(&mut self) -> OOVH7_W<7> {
         OOVH7_W::new(self)
     }
     #[doc = "Bit 16 - Output Override Value for PWML output of the channel 0"]
     #[inline(always)]
+    #[must_use]
     pub fn oovl0(&mut self) -> OOVL0_W<16> {
         OOVL0_W::new(self)
     }
     #[doc = "Bit 17 - Output Override Value for PWML output of the channel 1"]
     #[inline(always)]
+    #[must_use]
     pub fn oovl1(&mut self) -> OOVL1_W<17> {
         OOVL1_W::new(self)
     }
     #[doc = "Bit 18 - Output Override Value for PWML output of the channel 2"]
     #[inline(always)]
+    #[must_use]
     pub fn oovl2(&mut self) -> OOVL2_W<18> {
         OOVL2_W::new(self)
     }
     #[doc = "Bit 19 - Output Override Value for PWML output of the channel 3"]
     #[inline(always)]
+    #[must_use]
     pub fn oovl3(&mut self) -> OOVL3_W<19> {
         OOVL3_W::new(self)
     }
     #[doc = "Bit 20 - Output Override Value for PWML output of the channel 4"]
     #[inline(always)]
+    #[must_use]
     pub fn oovl4(&mut self) -> OOVL4_W<20> {
         OOVL4_W::new(self)
     }
     #[doc = "Bit 21 - Output Override Value for PWML output of the channel 5"]
     #[inline(always)]
+    #[must_use]
     pub fn oovl5(&mut self) -> OOVL5_W<21> {
         OOVL5_W::new(self)
     }
     #[doc = "Bit 22 - Output Override Value for PWML output of the channel 6"]
     #[inline(always)]
+    #[must_use]
     pub fn oovl6(&mut self) -> OOVL6_W<22> {
         OOVL6_W::new(self)
     }
     #[doc = "Bit 23 - Output Override Value for PWML output of the channel 7"]
     #[inline(always)]
+    #[must_use]
     pub fn oovl7(&mut self) -> OOVL7_W<23> {
         OOVL7_W::new(self)
     }
@@ -280,11 +296,10 @@ impl crate::Readable for OOV_SPEC {
 #[doc = "`write(|w| ..)` method takes [oov::W](W) writer structure"]
 impl crate::Writable for OOV_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets OOV to value 0"]
 impl crate::Resettable for OOV_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -37,7 +37,7 @@ impl From<crate::W<CMR6_SPEC>> for W {
 #[doc = "Field `CPRE` reader - Channel Pre-scaler"]
 pub type CPRE_R = crate::FieldReader<u8, CPRE_A>;
 #[doc = "Channel Pre-scaler\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CPRE_A {
     #[doc = "0: Master clock"]
@@ -293,36 +293,43 @@ impl R {
 impl W {
     #[doc = "Bits 0:3 - Channel Pre-scaler"]
     #[inline(always)]
+    #[must_use]
     pub fn cpre(&mut self) -> CPRE_W<0> {
         CPRE_W::new(self)
     }
     #[doc = "Bit 8 - Channel Alignment"]
     #[inline(always)]
+    #[must_use]
     pub fn calg(&mut self) -> CALG_W<8> {
         CALG_W::new(self)
     }
     #[doc = "Bit 9 - Channel Polarity"]
     #[inline(always)]
+    #[must_use]
     pub fn cpol(&mut self) -> CPOL_W<9> {
         CPOL_W::new(self)
     }
     #[doc = "Bit 10 - Counter Event Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn ces(&mut self) -> CES_W<10> {
         CES_W::new(self)
     }
     #[doc = "Bit 16 - Dead-Time Generator Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn dte(&mut self) -> DTE_W<16> {
         DTE_W::new(self)
     }
     #[doc = "Bit 17 - Dead-Time PWMHx Output Inverted"]
     #[inline(always)]
+    #[must_use]
     pub fn dthi(&mut self) -> DTHI_W<17> {
         DTHI_W::new(self)
     }
     #[doc = "Bit 18 - Dead-Time PWMLx Output Inverted"]
     #[inline(always)]
+    #[must_use]
     pub fn dtli(&mut self) -> DTLI_W<18> {
         DTLI_W::new(self)
     }
@@ -345,11 +352,10 @@ impl crate::Readable for CMR6_SPEC {
 #[doc = "`write(|w| ..)` method takes [cmr6::W](W) writer structure"]
 impl crate::Writable for CMR6_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CMR6 to value 0"]
 impl crate::Resettable for CMR6_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

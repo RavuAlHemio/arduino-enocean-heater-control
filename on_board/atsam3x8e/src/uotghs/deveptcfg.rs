@@ -41,7 +41,7 @@ pub type ALLOC_W<'a, const O: u8> = crate::BitWriter<'a, u32, DEVEPTCFG_SPEC, bo
 #[doc = "Field `EPBK` reader - Endpoint Banks"]
 pub type EPBK_R = crate::FieldReader<u8, EPBK_A>;
 #[doc = "Endpoint Banks"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum EPBK_A {
     #[doc = "0: Single-bank endpoint"]
@@ -106,7 +106,7 @@ impl<'a, const O: u8> EPBK_W<'a, O> {
 #[doc = "Field `EPSIZE` reader - Endpoint Size"]
 pub type EPSIZE_R = crate::FieldReader<u8, EPSIZE_A>;
 #[doc = "Endpoint Size"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum EPSIZE_A {
     #[doc = "0: 8 bytes"]
@@ -237,7 +237,7 @@ impl<'a, const O: u8> EPSIZE_W<'a, O> {
 #[doc = "Field `EPDIR` reader - Endpoint Direction"]
 pub type EPDIR_R = crate::BitReader<EPDIR_A>;
 #[doc = "Endpoint Direction"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EPDIR_A {
     #[doc = "0: The endpoint direction is OUT."]
     OUT = 0,
@@ -291,7 +291,7 @@ pub type AUTOSW_W<'a, const O: u8> = crate::BitWriter<'a, u32, DEVEPTCFG_SPEC, b
 #[doc = "Field `EPTYPE` reader - Endpoint Type"]
 pub type EPTYPE_R = crate::FieldReader<u8, EPTYPE_A>;
 #[doc = "Endpoint Type"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum EPTYPE_A {
     #[doc = "0: Control"]
@@ -370,7 +370,7 @@ impl<'a, const O: u8> EPTYPE_W<'a, O> {
 #[doc = "Field `NBTRANS` reader - Number of transaction per microframe for isochronous endpoint"]
 pub type NBTRANS_R = crate::FieldReader<u8, NBTRANS_A>;
 #[doc = "Number of transaction per microframe for isochronous endpoint"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum NBTRANS_A {
     #[doc = "0: reserved to endpoint that does not have the high-bandwidth isochronous capability."]
@@ -486,36 +486,43 @@ impl R {
 impl W {
     #[doc = "Bit 1 - Endpoint Memory Allocate"]
     #[inline(always)]
+    #[must_use]
     pub fn alloc(&mut self) -> ALLOC_W<1> {
         ALLOC_W::new(self)
     }
     #[doc = "Bits 2:3 - Endpoint Banks"]
     #[inline(always)]
+    #[must_use]
     pub fn epbk(&mut self) -> EPBK_W<2> {
         EPBK_W::new(self)
     }
     #[doc = "Bits 4:6 - Endpoint Size"]
     #[inline(always)]
+    #[must_use]
     pub fn epsize(&mut self) -> EPSIZE_W<4> {
         EPSIZE_W::new(self)
     }
     #[doc = "Bit 8 - Endpoint Direction"]
     #[inline(always)]
+    #[must_use]
     pub fn epdir(&mut self) -> EPDIR_W<8> {
         EPDIR_W::new(self)
     }
     #[doc = "Bit 9 - Automatic Switch"]
     #[inline(always)]
+    #[must_use]
     pub fn autosw(&mut self) -> AUTOSW_W<9> {
         AUTOSW_W::new(self)
     }
     #[doc = "Bits 11:12 - Endpoint Type"]
     #[inline(always)]
+    #[must_use]
     pub fn eptype(&mut self) -> EPTYPE_W<11> {
         EPTYPE_W::new(self)
     }
     #[doc = "Bits 13:14 - Number of transaction per microframe for isochronous endpoint"]
     #[inline(always)]
+    #[must_use]
     pub fn nbtrans(&mut self) -> NBTRANS_W<13> {
         NBTRANS_W::new(self)
     }
@@ -538,4 +545,6 @@ impl crate::Readable for DEVEPTCFG_SPEC {
 #[doc = "`write(|w| ..)` method takes [deveptcfg::W](W) writer structure"]
 impl crate::Writable for DEVEPTCFG_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

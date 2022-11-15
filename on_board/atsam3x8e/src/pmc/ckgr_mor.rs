@@ -49,7 +49,7 @@ pub type MOSCRCEN_W<'a, const O: u8> = crate::BitWriter<'a, u32, CKGR_MOR_SPEC, 
 #[doc = "Field `MOSCRCF` reader - Main On-Chip RC Oscillator Frequency Selection"]
 pub type MOSCRCF_R = crate::FieldReader<u8, MOSCRCF_A>;
 #[doc = "Main On-Chip RC Oscillator Frequency Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum MOSCRCF_A {
     #[doc = "0: The Fast RC Oscillator Frequency is at 4 MHz (default)"]
@@ -119,7 +119,7 @@ pub type MOSCXTST_W<'a, const O: u8> = crate::FieldWriter<'a, u32, CKGR_MOR_SPEC
 #[doc = "Field `KEY` reader - Write Access Password"]
 pub type KEY_R = crate::FieldReader<u8, KEY_A>;
 #[doc = "Write Access Password\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum KEY_A {
     #[doc = "55: Writing any other value in this field aborts the write operation.Always reads as 0."]
@@ -208,41 +208,49 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Main Crystal Oscillator Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn moscxten(&mut self) -> MOSCXTEN_W<0> {
         MOSCXTEN_W::new(self)
     }
     #[doc = "Bit 1 - Main Crystal Oscillator Bypass"]
     #[inline(always)]
+    #[must_use]
     pub fn moscxtby(&mut self) -> MOSCXTBY_W<1> {
         MOSCXTBY_W::new(self)
     }
     #[doc = "Bit 3 - Main On-Chip RC Oscillator Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn moscrcen(&mut self) -> MOSCRCEN_W<3> {
         MOSCRCEN_W::new(self)
     }
     #[doc = "Bits 4:6 - Main On-Chip RC Oscillator Frequency Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn moscrcf(&mut self) -> MOSCRCF_W<4> {
         MOSCRCF_W::new(self)
     }
     #[doc = "Bits 8:15 - Main Crystal Oscillator Start-up Time"]
     #[inline(always)]
+    #[must_use]
     pub fn moscxtst(&mut self) -> MOSCXTST_W<8> {
         MOSCXTST_W::new(self)
     }
     #[doc = "Bits 16:23 - Write Access Password"]
     #[inline(always)]
+    #[must_use]
     pub fn key(&mut self) -> KEY_W<16> {
         KEY_W::new(self)
     }
     #[doc = "Bit 24 - Main Oscillator Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn moscsel(&mut self) -> MOSCSEL_W<24> {
         MOSCSEL_W::new(self)
     }
     #[doc = "Bit 25 - Clock Failure Detector Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn cfden(&mut self) -> CFDEN_W<25> {
         CFDEN_W::new(self)
     }
@@ -265,11 +273,10 @@ impl crate::Readable for CKGR_MOR_SPEC {
 #[doc = "`write(|w| ..)` method takes [ckgr_mor::W](W) writer structure"]
 impl crate::Writable for CKGR_MOR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CKGR_MOR to value 0x08"]
 impl crate::Resettable for CKGR_MOR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x08
-    }
+    const RESET_VALUE: Self::Ux = 0x08;
 }

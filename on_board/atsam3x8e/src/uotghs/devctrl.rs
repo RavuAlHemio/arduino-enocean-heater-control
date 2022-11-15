@@ -53,7 +53,7 @@ pub type RMWKUP_W<'a, const O: u8> = crate::BitWriter<'a, u32, DEVCTRL_SPEC, boo
 #[doc = "Field `SPDCONF` reader - Mode Configuration"]
 pub type SPDCONF_R = crate::FieldReader<u8, SPDCONF_A>;
 #[doc = "Mode Configuration\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SPDCONF_A {
     #[doc = "0: The peripheral starts in full-speed mode and performs a high-speed reset to switch to the high-speed mode if the host is high-speed capable."]
@@ -204,51 +204,61 @@ impl R {
 impl W {
     #[doc = "Bits 0:6 - USB Address"]
     #[inline(always)]
+    #[must_use]
     pub fn uadd(&mut self) -> UADD_W<0> {
         UADD_W::new(self)
     }
     #[doc = "Bit 7 - Address Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn adden(&mut self) -> ADDEN_W<7> {
         ADDEN_W::new(self)
     }
     #[doc = "Bit 8 - Detach"]
     #[inline(always)]
+    #[must_use]
     pub fn detach(&mut self) -> DETACH_W<8> {
         DETACH_W::new(self)
     }
     #[doc = "Bit 9 - Remote Wake-Up"]
     #[inline(always)]
+    #[must_use]
     pub fn rmwkup(&mut self) -> RMWKUP_W<9> {
         RMWKUP_W::new(self)
     }
     #[doc = "Bits 10:11 - Mode Configuration"]
     #[inline(always)]
+    #[must_use]
     pub fn spdconf(&mut self) -> SPDCONF_W<10> {
         SPDCONF_W::new(self)
     }
     #[doc = "Bit 12 - Low-Speed Mode Force"]
     #[inline(always)]
+    #[must_use]
     pub fn ls(&mut self) -> LS_W<12> {
         LS_W::new(self)
     }
     #[doc = "Bit 13 - Test mode J"]
     #[inline(always)]
+    #[must_use]
     pub fn tstj(&mut self) -> TSTJ_W<13> {
         TSTJ_W::new(self)
     }
     #[doc = "Bit 14 - Test mode K"]
     #[inline(always)]
+    #[must_use]
     pub fn tstk(&mut self) -> TSTK_W<14> {
         TSTK_W::new(self)
     }
     #[doc = "Bit 15 - Test packet mode"]
     #[inline(always)]
+    #[must_use]
     pub fn tstpckt(&mut self) -> TSTPCKT_W<15> {
         TSTPCKT_W::new(self)
     }
     #[doc = "Bit 16 - Specific Operational mode"]
     #[inline(always)]
+    #[must_use]
     pub fn opmode2(&mut self) -> OPMODE2_W<16> {
         OPMODE2_W::new(self)
     }
@@ -271,11 +281,10 @@ impl crate::Readable for DEVCTRL_SPEC {
 #[doc = "`write(|w| ..)` method takes [devctrl::W](W) writer structure"]
 impl crate::Writable for DEVCTRL_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets DEVCTRL to value 0x0100"]
 impl crate::Resettable for DEVCTRL_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0100
-    }
+    const RESET_VALUE: Self::Ux = 0x0100;
 }

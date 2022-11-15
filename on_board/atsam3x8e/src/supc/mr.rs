@@ -37,7 +37,7 @@ impl From<crate::W<MR_SPEC>> for W {
 #[doc = "Field `BODRSTEN` reader - Brownout Detector Reset Enable"]
 pub type BODRSTEN_R = crate::BitReader<BODRSTEN_A>;
 #[doc = "Brownout Detector Reset Enable\n\nValue on reset: 1"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BODRSTEN_A {
     #[doc = "0: the core reset signal \"vddcore_nreset\" is not affected when a brownout detection occurs."]
     NOT_ENABLE = 0,
@@ -87,7 +87,7 @@ impl<'a, const O: u8> BODRSTEN_W<'a, O> {
 #[doc = "Field `BODDIS` reader - Brownout Detector Disable"]
 pub type BODDIS_R = crate::BitReader<BODDIS_A>;
 #[doc = "Brownout Detector Disable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BODDIS_A {
     #[doc = "0: the core brownout detector is enabled."]
     ENABLE = 0,
@@ -137,7 +137,7 @@ impl<'a, const O: u8> BODDIS_W<'a, O> {
 #[doc = "Field `VDDIORDY` reader - VDDIO Ready"]
 pub type VDDIORDY_R = crate::BitReader<VDDIORDY_A>;
 #[doc = "VDDIO Ready\n\nValue on reset: 1"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum VDDIORDY_A {
     #[doc = "0: VDDIO is removed (used before going to backup mode when backup batteries are used)"]
     VDDIO_REMOVED = 0,
@@ -187,7 +187,7 @@ impl<'a, const O: u8> VDDIORDY_W<'a, O> {
 #[doc = "Field `OSCBYPASS` reader - Oscillator Bypass"]
 pub type OSCBYPASS_R = crate::BitReader<OSCBYPASS_A>;
 #[doc = "Oscillator Bypass\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OSCBYPASS_A {
     #[doc = "0: no effect. Clock selection depends on XTALSEL value."]
     NO_EFFECT = 0,
@@ -237,7 +237,7 @@ impl<'a, const O: u8> OSCBYPASS_W<'a, O> {
 #[doc = "Field `KEY` reader - Password Key"]
 pub type KEY_R = crate::FieldReader<u8, KEY_A>;
 #[doc = "Password Key\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum KEY_A {
     #[doc = "165: Writing any other value in this field aborts the write operation."]
@@ -303,26 +303,31 @@ impl R {
 impl W {
     #[doc = "Bit 12 - Brownout Detector Reset Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn bodrsten(&mut self) -> BODRSTEN_W<12> {
         BODRSTEN_W::new(self)
     }
     #[doc = "Bit 13 - Brownout Detector Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn boddis(&mut self) -> BODDIS_W<13> {
         BODDIS_W::new(self)
     }
     #[doc = "Bit 14 - VDDIO Ready"]
     #[inline(always)]
+    #[must_use]
     pub fn vddiordy(&mut self) -> VDDIORDY_W<14> {
         VDDIORDY_W::new(self)
     }
     #[doc = "Bit 20 - Oscillator Bypass"]
     #[inline(always)]
+    #[must_use]
     pub fn oscbypass(&mut self) -> OSCBYPASS_W<20> {
         OSCBYPASS_W::new(self)
     }
     #[doc = "Bits 24:31 - Password Key"]
     #[inline(always)]
+    #[must_use]
     pub fn key(&mut self) -> KEY_W<24> {
         KEY_W::new(self)
     }
@@ -345,11 +350,10 @@ impl crate::Readable for MR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mr::W](W) writer structure"]
 impl crate::Writable for MR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MR to value 0x5a00"]
 impl crate::Resettable for MR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x5a00
-    }
+    const RESET_VALUE: Self::Ux = 0x5a00;
 }

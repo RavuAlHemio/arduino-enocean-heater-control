@@ -20,7 +20,7 @@ impl From<crate::W<FCR_SPEC>> for W {
     }
 }
 #[doc = "Flash Command"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum FCMD_AW {
     #[doc = "0: Get Flash Descriptor"]
@@ -142,7 +142,7 @@ impl<'a, const O: u8> FCMD_W<'a, O> {
 #[doc = "Field `FARG` writer - Flash Command Argument"]
 pub type FARG_W<'a, const O: u8> = crate::FieldWriter<'a, u32, FCR_SPEC, u16, u16, 16, O>;
 #[doc = "Flash Writing Protection Key"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum FKEY_AW {
     #[doc = "90: The 0x5A value enables the command defined by the bits of the register. If the field is written with a different value, the write is not performed and no action is started."]
@@ -166,16 +166,19 @@ impl<'a, const O: u8> FKEY_W<'a, O> {
 impl W {
     #[doc = "Bits 0:7 - Flash Command"]
     #[inline(always)]
+    #[must_use]
     pub fn fcmd(&mut self) -> FCMD_W<0> {
         FCMD_W::new(self)
     }
     #[doc = "Bits 8:23 - Flash Command Argument"]
     #[inline(always)]
+    #[must_use]
     pub fn farg(&mut self) -> FARG_W<8> {
         FARG_W::new(self)
     }
     #[doc = "Bits 24:31 - Flash Writing Protection Key"]
     #[inline(always)]
+    #[must_use]
     pub fn fkey(&mut self) -> FKEY_W<24> {
         FKEY_W::new(self)
     }
@@ -194,4 +197,6 @@ impl crate::RegisterSpec for FCR_SPEC {
 #[doc = "`write(|w| ..)` method takes [fcr::W](W) writer structure"]
 impl crate::Writable for FCR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

@@ -38,7 +38,7 @@ pub type VBUS_R = crate::BitReader<bool>;
 #[doc = "Field `SPEED` reader - Speed Status"]
 pub type SPEED_R = crate::FieldReader<u8, SPEED_A>;
 #[doc = "Speed Status\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SPEED_A {
     #[doc = "0: Full-Speed mode"]
@@ -161,8 +161,5 @@ impl crate::Readable for SR_SPEC {
 }
 #[doc = "`reset()` method sets SR to value 0x0400"]
 impl crate::Resettable for SR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0400
-    }
+    const RESET_VALUE: Self::Ux = 0x0400;
 }

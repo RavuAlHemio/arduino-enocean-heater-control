@@ -20,7 +20,7 @@ impl From<crate::W<CR_SPEC>> for W {
     }
 }
 #[doc = "Voltage Regulator Off"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum VROFF_AW {
     #[doc = "0: no effect."]
     NO_EFFECT = 0,
@@ -48,7 +48,7 @@ impl<'a, const O: u8> VROFF_W<'a, O> {
     }
 }
 #[doc = "Crystal Oscillator Select"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum XTALSEL_AW {
     #[doc = "0: no effect."]
     NO_EFFECT = 0,
@@ -76,7 +76,7 @@ impl<'a, const O: u8> XTALSEL_W<'a, O> {
     }
 }
 #[doc = "Password"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum KEY_AW {
     #[doc = "165: Writing any other value in this field aborts the write operation."]
@@ -100,16 +100,19 @@ impl<'a, const O: u8> KEY_W<'a, O> {
 impl W {
     #[doc = "Bit 2 - Voltage Regulator Off"]
     #[inline(always)]
+    #[must_use]
     pub fn vroff(&mut self) -> VROFF_W<2> {
         VROFF_W::new(self)
     }
     #[doc = "Bit 3 - Crystal Oscillator Select"]
     #[inline(always)]
+    #[must_use]
     pub fn xtalsel(&mut self) -> XTALSEL_W<3> {
         XTALSEL_W::new(self)
     }
     #[doc = "Bits 24:31 - Password"]
     #[inline(always)]
+    #[must_use]
     pub fn key(&mut self) -> KEY_W<24> {
         KEY_W::new(self)
     }
@@ -128,4 +131,6 @@ impl crate::RegisterSpec for CR_SPEC {
 #[doc = "`write(|w| ..)` method takes [cr::W](W) writer structure"]
 impl crate::Writable for CR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

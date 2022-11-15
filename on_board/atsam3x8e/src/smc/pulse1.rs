@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:6 - NWE Pulse Length"]
     #[inline(always)]
+    #[must_use]
     pub fn nwe_pulse(&mut self) -> NWE_PULSE_W<0> {
         NWE_PULSE_W::new(self)
     }
     #[doc = "Bits 8:14 - NCS Pulse Length in WRITE Access"]
     #[inline(always)]
+    #[must_use]
     pub fn ncs_wr_pulse(&mut self) -> NCS_WR_PULSE_W<8> {
         NCS_WR_PULSE_W::new(self)
     }
     #[doc = "Bits 16:22 - NRD Pulse Length"]
     #[inline(always)]
+    #[must_use]
     pub fn nrd_pulse(&mut self) -> NRD_PULSE_W<16> {
         NRD_PULSE_W::new(self)
     }
     #[doc = "Bits 24:30 - NCS Pulse Length in READ Access"]
     #[inline(always)]
+    #[must_use]
     pub fn ncs_rd_pulse(&mut self) -> NCS_RD_PULSE_W<24> {
         NCS_RD_PULSE_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for PULSE1_SPEC {
 #[doc = "`write(|w| ..)` method takes [pulse1::W](W) writer structure"]
 impl crate::Writable for PULSE1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets PULSE1 to value 0x0101_0101"]
 impl crate::Resettable for PULSE1_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0101_0101
-    }
+    const RESET_VALUE: Self::Ux = 0x0101_0101;
 }

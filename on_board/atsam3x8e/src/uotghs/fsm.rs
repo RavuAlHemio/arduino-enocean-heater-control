@@ -16,7 +16,7 @@ impl From<crate::R<FSM_SPEC>> for R {
 #[doc = "Field `DRDSTATE` reader - Dual Role Device State"]
 pub type DRDSTATE_R = crate::FieldReader<u8, DRDSTATE_A>;
 #[doc = "Dual Role Device State\n\nValue on reset: 9"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum DRDSTATE_A {
     #[doc = "0: This is the start state for A-devices (when the ID pin is 0)"]
@@ -181,8 +181,5 @@ impl crate::Readable for FSM_SPEC {
 }
 #[doc = "`reset()` method sets FSM to value 0x09"]
 impl crate::Resettable for FSM_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x09
-    }
+    const RESET_VALUE: Self::Ux = 0x09;
 }

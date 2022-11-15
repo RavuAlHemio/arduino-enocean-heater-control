@@ -57,7 +57,7 @@ pub type BRP_W<'a, const O: u8> = crate::FieldWriter<'a, u32, BR_SPEC, u8, u8, 7
 #[doc = "Field `SMP` reader - Sampling Mode"]
 pub type SMP_R = crate::BitReader<SMP_A>;
 #[doc = "Sampling Mode\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SMP_A {
     #[doc = "0: The incoming bit stream is sampled once at sample point."]
     ONCE = 0,
@@ -139,31 +139,37 @@ impl R {
 impl W {
     #[doc = "Bits 0:2 - Phase 2 segment"]
     #[inline(always)]
+    #[must_use]
     pub fn phase2(&mut self) -> PHASE2_W<0> {
         PHASE2_W::new(self)
     }
     #[doc = "Bits 4:6 - Phase 1 segment"]
     #[inline(always)]
+    #[must_use]
     pub fn phase1(&mut self) -> PHASE1_W<4> {
         PHASE1_W::new(self)
     }
     #[doc = "Bits 8:10 - Programming time segment"]
     #[inline(always)]
+    #[must_use]
     pub fn propag(&mut self) -> PROPAG_W<8> {
         PROPAG_W::new(self)
     }
     #[doc = "Bits 12:13 - Re-synchronization jump width"]
     #[inline(always)]
+    #[must_use]
     pub fn sjw(&mut self) -> SJW_W<12> {
         SJW_W::new(self)
     }
     #[doc = "Bits 16:22 - Baudrate Prescaler."]
     #[inline(always)]
+    #[must_use]
     pub fn brp(&mut self) -> BRP_W<16> {
         BRP_W::new(self)
     }
     #[doc = "Bit 24 - Sampling Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn smp(&mut self) -> SMP_W<24> {
         SMP_W::new(self)
     }
@@ -186,11 +192,10 @@ impl crate::Readable for BR_SPEC {
 #[doc = "`write(|w| ..)` method takes [br::W](W) writer structure"]
 impl crate::Writable for BR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets BR to value 0"]
 impl crate::Resettable for BR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

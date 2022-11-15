@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Gray Count Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn gcen(&mut self) -> GCEN_W<0> {
         GCEN_W::new(self)
     }
     #[doc = "Bit 1 - DOWN Count"]
     #[inline(always)]
+    #[must_use]
     pub fn down(&mut self) -> DOWN_W<1> {
         DOWN_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for SMMR2_SPEC {
 #[doc = "`write(|w| ..)` method takes [smmr2::W](W) writer structure"]
 impl crate::Writable for SMMR2_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SMMR2 to value 0"]
 impl crate::Resettable for SMMR2_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

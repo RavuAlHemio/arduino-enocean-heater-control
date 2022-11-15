@@ -32,7 +32,7 @@ pub type SHORTPACKETI_R = crate::BitReader<bool>;
 #[doc = "Field `DTSEQ` reader - Data Toggle Sequence"]
 pub type DTSEQ_R = crate::FieldReader<u8, DTSEQ_A>;
 #[doc = "Data Toggle Sequence"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum DTSEQ_A {
     #[doc = "0: Data0 toggle sequence"]
@@ -70,7 +70,7 @@ impl DTSEQ_R {
 #[doc = "Field `NBUSYBK` reader - Number of Busy Banks"]
 pub type NBUSYBK_R = crate::FieldReader<u8, NBUSYBK_A>;
 #[doc = "Number of Busy Banks"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum NBUSYBK_A {
     #[doc = "0: 0 busy bank (all banks free)"]
@@ -124,7 +124,7 @@ impl NBUSYBK_R {
 #[doc = "Field `CURRBK` reader - Current Bank"]
 pub type CURRBK_R = crate::FieldReader<u8, CURRBK_A>;
 #[doc = "Current Bank"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CURRBK_A {
     #[doc = "0: Current bank is bank0"]

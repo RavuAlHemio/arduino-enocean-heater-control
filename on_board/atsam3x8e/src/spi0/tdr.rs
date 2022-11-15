@@ -28,16 +28,19 @@ pub type LASTXFER_W<'a, const O: u8> = crate::BitWriter<'a, u32, TDR_SPEC, bool,
 impl W {
     #[doc = "Bits 0:15 - Transmit Data"]
     #[inline(always)]
+    #[must_use]
     pub fn td(&mut self) -> TD_W<0> {
         TD_W::new(self)
     }
     #[doc = "Bits 16:19 - Peripheral Chip Select"]
     #[inline(always)]
+    #[must_use]
     pub fn pcs(&mut self) -> PCS_W<16> {
         PCS_W::new(self)
     }
     #[doc = "Bit 24 - Last Transfer"]
     #[inline(always)]
+    #[must_use]
     pub fn lastxfer(&mut self) -> LASTXFER_W<24> {
         LASTXFER_W::new(self)
     }
@@ -56,4 +59,6 @@ impl crate::RegisterSpec for TDR_SPEC {
 #[doc = "`write(|w| ..)` method takes [tdr::W](W) writer structure"]
 impl crate::Writable for TDR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

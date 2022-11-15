@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bit 0 - ENable Compare Fault Channel 0"]
     #[inline(always)]
+    #[must_use]
     pub fn encf0(&mut self) -> ENCF0_W<0> {
         ENCF0_W::new(self)
     }
     #[doc = "Bit 1 - ENable Compare Fault Channel 1"]
     #[inline(always)]
+    #[must_use]
     pub fn encf1(&mut self) -> ENCF1_W<1> {
         ENCF1_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for FMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [fmr::W](W) writer structure"]
 impl crate::Writable for FMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets FMR to value 0"]
 impl crate::Resettable for FMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

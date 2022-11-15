@@ -66,16 +66,19 @@ impl R {
 impl W {
     #[doc = "Bits 0:1 - Analog Output Current Control"]
     #[inline(always)]
+    #[must_use]
     pub fn ibctlch0(&mut self) -> IBCTLCH0_W<0> {
         IBCTLCH0_W::new(self)
     }
     #[doc = "Bits 2:3 - Analog Output Current Control"]
     #[inline(always)]
+    #[must_use]
     pub fn ibctlch1(&mut self) -> IBCTLCH1_W<2> {
         IBCTLCH1_W::new(self)
     }
     #[doc = "Bits 8:9 - Bias Current Control for DAC Core"]
     #[inline(always)]
+    #[must_use]
     pub fn ibctldaccore(&mut self) -> IBCTLDACCORE_W<8> {
         IBCTLDACCORE_W::new(self)
     }
@@ -98,11 +101,10 @@ impl crate::Readable for ACR_SPEC {
 #[doc = "`write(|w| ..)` method takes [acr::W](W) writer structure"]
 impl crate::Writable for ACR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets ACR to value 0"]
 impl crate::Resettable for ACR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

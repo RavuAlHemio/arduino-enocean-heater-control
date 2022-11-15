@@ -42,12 +42,13 @@ impl R {
     #[doc = "Bits 0:23 - Frames Transmitted OK"]
     #[inline(always)]
     pub fn ftok(&self) -> FTOK_R {
-        FTOK_R::new((self.bits & 0x00ff_ffff) as u32)
+        FTOK_R::new(self.bits & 0x00ff_ffff)
     }
 }
 impl W {
     #[doc = "Bits 0:23 - Frames Transmitted OK"]
     #[inline(always)]
+    #[must_use]
     pub fn ftok(&mut self) -> FTOK_W<0> {
         FTOK_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for FTO_SPEC {
 #[doc = "`write(|w| ..)` method takes [fto::W](W) writer structure"]
 impl crate::Writable for FTO_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets FTO to value 0"]
 impl crate::Resettable for FTO_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

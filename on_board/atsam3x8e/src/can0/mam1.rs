@@ -50,7 +50,7 @@ impl R {
     #[doc = "Bits 0:17 - Complementary bits for identifier in extended frame mode"]
     #[inline(always)]
     pub fn midv_b(&self) -> MIDV_B_R {
-        MIDV_B_R::new((self.bits & 0x0003_ffff) as u32)
+        MIDV_B_R::new(self.bits & 0x0003_ffff)
     }
     #[doc = "Bits 18:28 - Identifier for standard frame mode"]
     #[inline(always)]
@@ -66,16 +66,19 @@ impl R {
 impl W {
     #[doc = "Bits 0:17 - Complementary bits for identifier in extended frame mode"]
     #[inline(always)]
+    #[must_use]
     pub fn midv_b(&mut self) -> MIDV_B_W<0> {
         MIDV_B_W::new(self)
     }
     #[doc = "Bits 18:28 - Identifier for standard frame mode"]
     #[inline(always)]
+    #[must_use]
     pub fn midv_a(&mut self) -> MIDV_A_W<18> {
         MIDV_A_W::new(self)
     }
     #[doc = "Bit 29 - Identifier Version"]
     #[inline(always)]
+    #[must_use]
     pub fn mide(&mut self) -> MIDE_W<29> {
         MIDE_W::new(self)
     }
@@ -98,11 +101,10 @@ impl crate::Readable for MAM1_SPEC {
 #[doc = "`write(|w| ..)` method takes [mam1::W](W) writer structure"]
 impl crate::Writable for MAM1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MAM1 to value 0"]
 impl crate::Resettable for MAM1_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

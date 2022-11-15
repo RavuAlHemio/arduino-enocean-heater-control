@@ -96,8 +96,5 @@ impl crate::Readable for PMC_IMR_SPEC {
 }
 #[doc = "`reset()` method sets PMC_IMR to value 0"]
 impl crate::Resettable for PMC_IMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

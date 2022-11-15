@@ -28,16 +28,19 @@ pub type QERR_W<'a, const O: u8> = crate::BitWriter<'a, u32, QIER_SPEC, bool, O>
 impl W {
     #[doc = "Bit 0 - InDeX"]
     #[inline(always)]
+    #[must_use]
     pub fn idx(&mut self) -> IDX_W<0> {
         IDX_W::new(self)
     }
     #[doc = "Bit 1 - DIRection CHanGe"]
     #[inline(always)]
+    #[must_use]
     pub fn dirchg(&mut self) -> DIRCHG_W<1> {
         DIRCHG_W::new(self)
     }
     #[doc = "Bit 2 - Quadrature ERRor"]
     #[inline(always)]
+    #[must_use]
     pub fn qerr(&mut self) -> QERR_W<2> {
         QERR_W::new(self)
     }
@@ -56,4 +59,6 @@ impl crate::RegisterSpec for QIER_SPEC {
 #[doc = "`write(|w| ..)` method takes [qier::W](W) writer structure"]
 impl crate::Writable for QIER_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:15 - Real-time Timer Prescaler Value"]
     #[inline(always)]
+    #[must_use]
     pub fn rtpres(&mut self) -> RTPRES_W<0> {
         RTPRES_W::new(self)
     }
     #[doc = "Bit 16 - Alarm Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn almien(&mut self) -> ALMIEN_W<16> {
         ALMIEN_W::new(self)
     }
     #[doc = "Bit 17 - Real-time Timer Increment Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn rttincien(&mut self) -> RTTINCIEN_W<17> {
         RTTINCIEN_W::new(self)
     }
     #[doc = "Bit 18 - Real-time Timer Restart"]
     #[inline(always)]
+    #[must_use]
     pub fn rttrst(&mut self) -> RTTRST_W<18> {
         RTTRST_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for MR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mr::W](W) writer structure"]
 impl crate::Writable for MR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MR to value 0x8000"]
 impl crate::Resettable for MR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x8000
-    }
+    const RESET_VALUE: Self::Ux = 0x8000;
 }

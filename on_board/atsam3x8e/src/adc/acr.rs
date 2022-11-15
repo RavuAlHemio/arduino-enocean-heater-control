@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bit 4 - Temperature Sensor On"]
     #[inline(always)]
+    #[must_use]
     pub fn tson(&mut self) -> TSON_W<4> {
         TSON_W::new(self)
     }
     #[doc = "Bits 8:9 - ADC Bias Current Control"]
     #[inline(always)]
+    #[must_use]
     pub fn ibctl(&mut self) -> IBCTL_W<8> {
         IBCTL_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for ACR_SPEC {
 #[doc = "`write(|w| ..)` method takes [acr::W](W) writer structure"]
 impl crate::Writable for ACR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets ACR to value 0x0100"]
 impl crate::Resettable for ACR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0100
-    }
+    const RESET_VALUE: Self::Ux = 0x0100;
 }

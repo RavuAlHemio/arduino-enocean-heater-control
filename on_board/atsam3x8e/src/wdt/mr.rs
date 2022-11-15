@@ -111,41 +111,49 @@ impl R {
 impl W {
     #[doc = "Bits 0:11 - Watchdog Counter Value"]
     #[inline(always)]
+    #[must_use]
     pub fn wdv(&mut self) -> WDV_W<0> {
         WDV_W::new(self)
     }
     #[doc = "Bit 12 - Watchdog Fault Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn wdfien(&mut self) -> WDFIEN_W<12> {
         WDFIEN_W::new(self)
     }
     #[doc = "Bit 13 - Watchdog Reset Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn wdrsten(&mut self) -> WDRSTEN_W<13> {
         WDRSTEN_W::new(self)
     }
     #[doc = "Bit 14 - Watchdog Reset Processor"]
     #[inline(always)]
+    #[must_use]
     pub fn wdrproc(&mut self) -> WDRPROC_W<14> {
         WDRPROC_W::new(self)
     }
     #[doc = "Bit 15 - Watchdog Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn wddis(&mut self) -> WDDIS_W<15> {
         WDDIS_W::new(self)
     }
     #[doc = "Bits 16:27 - Watchdog Delta Value"]
     #[inline(always)]
+    #[must_use]
     pub fn wdd(&mut self) -> WDD_W<16> {
         WDD_W::new(self)
     }
     #[doc = "Bit 28 - Watchdog Debug Halt"]
     #[inline(always)]
+    #[must_use]
     pub fn wddbghlt(&mut self) -> WDDBGHLT_W<28> {
         WDDBGHLT_W::new(self)
     }
     #[doc = "Bit 29 - Watchdog Idle Halt"]
     #[inline(always)]
+    #[must_use]
     pub fn wdidlehlt(&mut self) -> WDIDLEHLT_W<29> {
         WDIDLEHLT_W::new(self)
     }
@@ -168,11 +176,10 @@ impl crate::Readable for MR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mr::W](W) writer structure"]
 impl crate::Writable for MR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MR to value 0x3fff_2fff"]
 impl crate::Resettable for MR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x3fff_2fff
-    }
+    const RESET_VALUE: Self::Ux = 0x3fff_2fff;
 }

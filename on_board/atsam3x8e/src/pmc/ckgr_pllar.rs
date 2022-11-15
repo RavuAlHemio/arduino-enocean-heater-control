@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - Divider"]
     #[inline(always)]
+    #[must_use]
     pub fn diva(&mut self) -> DIVA_W<0> {
         DIVA_W::new(self)
     }
     #[doc = "Bits 8:13 - PLLA Counter"]
     #[inline(always)]
+    #[must_use]
     pub fn pllacount(&mut self) -> PLLACOUNT_W<8> {
         PLLACOUNT_W::new(self)
     }
     #[doc = "Bits 16:26 - PLLA Multiplier"]
     #[inline(always)]
+    #[must_use]
     pub fn mula(&mut self) -> MULA_W<16> {
         MULA_W::new(self)
     }
     #[doc = "Bit 29 - Must Be Set to 1"]
     #[inline(always)]
+    #[must_use]
     pub fn one(&mut self) -> ONE_W<29> {
         ONE_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for CKGR_PLLAR_SPEC {
 #[doc = "`write(|w| ..)` method takes [ckgr_pllar::W](W) writer structure"]
 impl crate::Writable for CKGR_PLLAR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CKGR_PLLAR to value 0x3f00"]
 impl crate::Resettable for CKGR_PLLAR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x3f00
-    }
+    const RESET_VALUE: Self::Ux = 0x3f00;
 }

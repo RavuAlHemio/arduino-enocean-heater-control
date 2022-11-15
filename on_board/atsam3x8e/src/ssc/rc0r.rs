@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:15 - Receive Compare Data 0"]
     #[inline(always)]
+    #[must_use]
     pub fn cp0(&mut self) -> CP0_W<0> {
         CP0_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for RC0R_SPEC {
 #[doc = "`write(|w| ..)` method takes [rc0r::W](W) writer structure"]
 impl crate::Writable for RC0R_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets RC0R to value 0"]
 impl crate::Resettable for RC0R_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

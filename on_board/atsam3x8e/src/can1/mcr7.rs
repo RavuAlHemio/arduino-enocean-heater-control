@@ -30,21 +30,25 @@ pub type MTCR_W<'a, const O: u8> = crate::BitWriter<'a, u32, MCR7_SPEC, bool, O>
 impl W {
     #[doc = "Bits 16:19 - Mailbox Data Length Code"]
     #[inline(always)]
+    #[must_use]
     pub fn mdlc(&mut self) -> MDLC_W<16> {
         MDLC_W::new(self)
     }
     #[doc = "Bit 20 - Mailbox Remote Transmission Request"]
     #[inline(always)]
+    #[must_use]
     pub fn mrtr(&mut self) -> MRTR_W<20> {
         MRTR_W::new(self)
     }
     #[doc = "Bit 22 - Abort Request for Mailbox x"]
     #[inline(always)]
+    #[must_use]
     pub fn macr(&mut self) -> MACR_W<22> {
         MACR_W::new(self)
     }
     #[doc = "Bit 23 - Mailbox Transfer Command"]
     #[inline(always)]
+    #[must_use]
     pub fn mtcr(&mut self) -> MTCR_W<23> {
         MTCR_W::new(self)
     }
@@ -63,4 +67,6 @@ impl crate::RegisterSpec for MCR7_SPEC {
 #[doc = "`write(|w| ..)` method takes [mcr7::W](W) writer structure"]
 impl crate::Writable for MCR7_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

@@ -33,8 +33,5 @@ impl crate::Readable for FRR_SPEC {
 }
 #[doc = "`reset()` method sets FRR to value 0"]
 impl crate::Resettable for FRR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

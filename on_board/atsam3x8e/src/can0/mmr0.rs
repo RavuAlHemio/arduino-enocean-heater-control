@@ -45,7 +45,7 @@ pub type PRIOR_W<'a, const O: u8> = crate::FieldWriter<'a, u32, MMR0_SPEC, u8, u
 #[doc = "Field `MOT` reader - Mailbox Object Type"]
 pub type MOT_R = crate::FieldReader<u8, MOT_A>;
 #[doc = "Mailbox Object Type\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum MOT_A {
     #[doc = "0: Mailbox is disabled. This prevents receiving or transmitting any messages with this mailbox."]
@@ -166,16 +166,19 @@ impl R {
 impl W {
     #[doc = "Bits 0:15 - Mailbox Timemark"]
     #[inline(always)]
+    #[must_use]
     pub fn mtimemark(&mut self) -> MTIMEMARK_W<0> {
         MTIMEMARK_W::new(self)
     }
     #[doc = "Bits 16:19 - Mailbox Priority"]
     #[inline(always)]
+    #[must_use]
     pub fn prior(&mut self) -> PRIOR_W<16> {
         PRIOR_W::new(self)
     }
     #[doc = "Bits 24:26 - Mailbox Object Type"]
     #[inline(always)]
+    #[must_use]
     pub fn mot(&mut self) -> MOT_W<24> {
         MOT_W::new(self)
     }
@@ -198,11 +201,10 @@ impl crate::Readable for MMR0_SPEC {
 #[doc = "`write(|w| ..)` method takes [mmr0::W](W) writer structure"]
 impl crate::Writable for MMR0_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MMR0 to value 0"]
 impl crate::Resettable for MMR0_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

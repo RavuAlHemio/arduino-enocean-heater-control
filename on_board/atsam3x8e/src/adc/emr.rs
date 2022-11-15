@@ -37,7 +37,7 @@ impl From<crate::W<EMR_SPEC>> for W {
 #[doc = "Field `CMPMODE` reader - Comparison Mode"]
 pub type CMPMODE_R = crate::FieldReader<u8, CMPMODE_A>;
 #[doc = "Comparison Mode\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CMPMODE_A {
     #[doc = "0: Generates an event when the converted data is lower than the low threshold of the window."]
@@ -159,26 +159,31 @@ impl R {
 impl W {
     #[doc = "Bits 0:1 - Comparison Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn cmpmode(&mut self) -> CMPMODE_W<0> {
         CMPMODE_W::new(self)
     }
     #[doc = "Bits 4:7 - Comparison Selected Channel"]
     #[inline(always)]
+    #[must_use]
     pub fn cmpsel(&mut self) -> CMPSEL_W<4> {
         CMPSEL_W::new(self)
     }
     #[doc = "Bit 9 - Compare All Channels"]
     #[inline(always)]
+    #[must_use]
     pub fn cmpall(&mut self) -> CMPALL_W<9> {
         CMPALL_W::new(self)
     }
     #[doc = "Bits 12:13 - Compare Event Filtering"]
     #[inline(always)]
+    #[must_use]
     pub fn cmpfilter(&mut self) -> CMPFILTER_W<12> {
         CMPFILTER_W::new(self)
     }
     #[doc = "Bit 24 - TAG of the ADC_LDCR register"]
     #[inline(always)]
+    #[must_use]
     pub fn tag(&mut self) -> TAG_W<24> {
         TAG_W::new(self)
     }
@@ -201,11 +206,10 @@ impl crate::Readable for EMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [emr::W](W) writer structure"]
 impl crate::Writable for EMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets EMR to value 0"]
 impl crate::Resettable for EMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

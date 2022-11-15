@@ -18,7 +18,7 @@ pub type VERSION_R = crate::FieldReader<u8, u8>;
 #[doc = "Field `EPROC` reader - Embedded Processor"]
 pub type EPROC_R = crate::FieldReader<u8, EPROC_A>;
 #[doc = "Embedded Processor"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum EPROC_A {
     #[doc = "1: ARM946ES"]
@@ -96,7 +96,7 @@ impl EPROC_R {
 #[doc = "Field `NVPSIZ` reader - Nonvolatile Program Memory Size"]
 pub type NVPSIZ_R = crate::FieldReader<u8, NVPSIZ_A>;
 #[doc = "Nonvolatile Program Memory Size"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum NVPSIZ_A {
     #[doc = "0: None"]
@@ -198,7 +198,7 @@ impl NVPSIZ_R {
 #[doc = "Field `NVPSIZ2` reader - Second Nonvolatile Program Memory Size"]
 pub type NVPSIZ2_R = crate::FieldReader<u8, NVPSIZ2_A>;
 #[doc = "Second Nonvolatile Program Memory Size"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum NVPSIZ2_A {
     #[doc = "0: None"]
@@ -300,7 +300,7 @@ impl NVPSIZ2_R {
 #[doc = "Field `SRAMSIZ` reader - Internal SRAM Size"]
 pub type SRAMSIZ_R = crate::FieldReader<u8, SRAMSIZ_A>;
 #[doc = "Internal SRAM Size"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SRAMSIZ_A {
     #[doc = "0: 48 Kbytes"]
@@ -450,7 +450,7 @@ impl SRAMSIZ_R {
 #[doc = "Field `ARCH` reader - Architecture Identifier"]
 pub type ARCH_R = crate::FieldReader<u8, ARCH_A>;
 #[doc = "Architecture Identifier"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum ARCH_A {
     #[doc = "131: SAM3AxC (100-pin version)"]
@@ -504,7 +504,7 @@ impl ARCH_R {
 #[doc = "Field `NVPTYP` reader - Nonvolatile Program Memory Type"]
 pub type NVPTYP_R = crate::FieldReader<u8, NVPTYP_A>;
 #[doc = "Nonvolatile Program Memory Type"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum NVPTYP_A {
     #[doc = "0: ROM"]

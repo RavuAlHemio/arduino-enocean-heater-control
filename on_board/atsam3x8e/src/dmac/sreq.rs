@@ -147,61 +147,73 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Source Request"]
     #[inline(always)]
+    #[must_use]
     pub fn ssreq0(&mut self) -> SSREQ0_W<0> {
         SSREQ0_W::new(self)
     }
     #[doc = "Bit 1 - Destination Request"]
     #[inline(always)]
+    #[must_use]
     pub fn dsreq0(&mut self) -> DSREQ0_W<1> {
         DSREQ0_W::new(self)
     }
     #[doc = "Bit 2 - Source Request"]
     #[inline(always)]
+    #[must_use]
     pub fn ssreq1(&mut self) -> SSREQ1_W<2> {
         SSREQ1_W::new(self)
     }
     #[doc = "Bit 3 - Destination Request"]
     #[inline(always)]
+    #[must_use]
     pub fn dsreq1(&mut self) -> DSREQ1_W<3> {
         DSREQ1_W::new(self)
     }
     #[doc = "Bit 4 - Source Request"]
     #[inline(always)]
+    #[must_use]
     pub fn ssreq2(&mut self) -> SSREQ2_W<4> {
         SSREQ2_W::new(self)
     }
     #[doc = "Bit 5 - Destination Request"]
     #[inline(always)]
+    #[must_use]
     pub fn dsreq2(&mut self) -> DSREQ2_W<5> {
         DSREQ2_W::new(self)
     }
     #[doc = "Bit 6 - Source Request"]
     #[inline(always)]
+    #[must_use]
     pub fn ssreq3(&mut self) -> SSREQ3_W<6> {
         SSREQ3_W::new(self)
     }
     #[doc = "Bit 7 - Destination Request"]
     #[inline(always)]
+    #[must_use]
     pub fn dsreq3(&mut self) -> DSREQ3_W<7> {
         DSREQ3_W::new(self)
     }
     #[doc = "Bit 8 - Source Request"]
     #[inline(always)]
+    #[must_use]
     pub fn ssreq4(&mut self) -> SSREQ4_W<8> {
         SSREQ4_W::new(self)
     }
     #[doc = "Bit 9 - Destination Request"]
     #[inline(always)]
+    #[must_use]
     pub fn dsreq4(&mut self) -> DSREQ4_W<9> {
         DSREQ4_W::new(self)
     }
     #[doc = "Bit 10 - Source Request"]
     #[inline(always)]
+    #[must_use]
     pub fn ssreq5(&mut self) -> SSREQ5_W<10> {
         SSREQ5_W::new(self)
     }
     #[doc = "Bit 11 - Destination Request"]
     #[inline(always)]
+    #[must_use]
     pub fn dsreq5(&mut self) -> DSREQ5_W<11> {
         DSREQ5_W::new(self)
     }
@@ -224,11 +236,10 @@ impl crate::Readable for SREQ_SPEC {
 #[doc = "`write(|w| ..)` method takes [sreq::W](W) writer structure"]
 impl crate::Writable for SREQ_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SREQ to value 0"]
 impl crate::Resettable for SREQ_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

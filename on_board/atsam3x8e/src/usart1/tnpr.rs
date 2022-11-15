@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:31 - Transmit Next Pointer"]
     #[inline(always)]
+    #[must_use]
     pub fn txnptr(&mut self) -> TXNPTR_W<0> {
         TXNPTR_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for TNPR_SPEC {
 #[doc = "`write(|w| ..)` method takes [tnpr::W](W) writer structure"]
 impl crate::Writable for TNPR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets TNPR to value 0"]
 impl crate::Resettable for TNPR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

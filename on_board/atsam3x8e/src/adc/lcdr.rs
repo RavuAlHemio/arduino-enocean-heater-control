@@ -40,8 +40,5 @@ impl crate::Readable for LCDR_SPEC {
 }
 #[doc = "`reset()` method sets LCDR to value 0"]
 impl crate::Resettable for LCDR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

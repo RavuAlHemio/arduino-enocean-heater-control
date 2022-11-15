@@ -48,66 +48,79 @@ pub type STALLRQC_W<'a, const O: u8> = crate::BitWriter<'a, u32, DEVEPTIDR_SPEC,
 impl W {
     #[doc = "Bit 0 - Transmitted IN Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn txinec(&mut self) -> TXINEC_W<0> {
         TXINEC_W::new(self)
     }
     #[doc = "Bit 1 - Received OUT Data Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn rxoutec(&mut self) -> RXOUTEC_W<1> {
         RXOUTEC_W::new(self)
     }
     #[doc = "Bit 2 - Received SETUP Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn rxstpec(&mut self) -> RXSTPEC_W<2> {
         RXSTPEC_W::new(self)
     }
     #[doc = "Bit 3 - NAKed OUT Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn nakoutec(&mut self) -> NAKOUTEC_W<3> {
         NAKOUTEC_W::new(self)
     }
     #[doc = "Bit 4 - NAKed IN Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn nakinec(&mut self) -> NAKINEC_W<4> {
         NAKINEC_W::new(self)
     }
     #[doc = "Bit 5 - Overflow Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn overfec(&mut self) -> OVERFEC_W<5> {
         OVERFEC_W::new(self)
     }
     #[doc = "Bit 6 - STALLed Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn stalledec(&mut self) -> STALLEDEC_W<6> {
         STALLEDEC_W::new(self)
     }
     #[doc = "Bit 7 - Shortpacket Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn shortpacketec(&mut self) -> SHORTPACKETEC_W<7> {
         SHORTPACKETEC_W::new(self)
     }
     #[doc = "Bit 12 - Number of Busy Banks Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn nbusybkec(&mut self) -> NBUSYBKEC_W<12> {
         NBUSYBKEC_W::new(self)
     }
     #[doc = "Bit 14 - FIFO Control Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn fifoconc(&mut self) -> FIFOCONC_W<14> {
         FIFOCONC_W::new(self)
     }
     #[doc = "Bit 16 - Endpoint Interrupts Disable HDMA Request Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn epdishdmac(&mut self) -> EPDISHDMAC_W<16> {
         EPDISHDMAC_W::new(self)
     }
     #[doc = "Bit 17 - NYET Token Disable Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn nyetdisc(&mut self) -> NYETDISC_W<17> {
         NYETDISC_W::new(self)
     }
     #[doc = "Bit 19 - STALL Request Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn stallrqc(&mut self) -> STALLRQC_W<19> {
         STALLRQC_W::new(self)
     }
@@ -126,4 +139,6 @@ impl crate::RegisterSpec for DEVEPTIDR_SPEC {
 #[doc = "`write(|w| ..)` method takes [deveptidr::W](W) writer structure"]
 impl crate::Writable for DEVEPTIDR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

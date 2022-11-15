@@ -82,8 +82,5 @@ impl crate::Readable for IMR2_SPEC {
 }
 #[doc = "`reset()` method sets IMR2 to value 0"]
 impl crate::Resettable for IMR2_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

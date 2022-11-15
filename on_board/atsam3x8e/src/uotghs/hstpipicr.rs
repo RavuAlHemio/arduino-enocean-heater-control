@@ -36,36 +36,43 @@ pub type SHORTPACKETIC_W<'a, const O: u8> = crate::BitWriter<'a, u32, HSTPIPICR_
 impl W {
     #[doc = "Bit 0 - Received IN Data Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn rxinic(&mut self) -> RXINIC_W<0> {
         RXINIC_W::new(self)
     }
     #[doc = "Bit 1 - Transmitted OUT Data Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn txoutic(&mut self) -> TXOUTIC_W<1> {
         TXOUTIC_W::new(self)
     }
     #[doc = "Bit 2 - Transmitted SETUP Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn txstpic(&mut self) -> TXSTPIC_W<2> {
         TXSTPIC_W::new(self)
     }
     #[doc = "Bit 4 - NAKed Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn nakedic(&mut self) -> NAKEDIC_W<4> {
         NAKEDIC_W::new(self)
     }
     #[doc = "Bit 5 - Overflow Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn overfic(&mut self) -> OVERFIC_W<5> {
         OVERFIC_W::new(self)
     }
     #[doc = "Bit 6 - Received STALLed Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn rxstalldic(&mut self) -> RXSTALLDIC_W<6> {
         RXSTALLDIC_W::new(self)
     }
     #[doc = "Bit 7 - Short Packet Interrupt Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn shortpacketic(&mut self) -> SHORTPACKETIC_W<7> {
         SHORTPACKETIC_W::new(self)
     }
@@ -84,4 +91,6 @@ impl crate::RegisterSpec for HSTPIPICR_SPEC {
 #[doc = "`write(|w| ..)` method takes [hstpipicr::W](W) writer structure"]
 impl crate::Writable for HSTPIPICR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

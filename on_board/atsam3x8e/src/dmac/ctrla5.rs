@@ -41,7 +41,7 @@ pub type BTSIZE_W<'a, const O: u8> = crate::FieldWriter<'a, u32, CTRLA5_SPEC, u1
 #[doc = "Field `SCSIZE` reader - Source Chunk Transfer Size."]
 pub type SCSIZE_R = crate::FieldReader<u8, SCSIZE_A>;
 #[doc = "Source Chunk Transfer Size.\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SCSIZE_A {
     #[doc = "0: 1 data transferred"]
@@ -119,7 +119,7 @@ impl<'a, const O: u8> SCSIZE_W<'a, O> {
 #[doc = "Field `DCSIZE` reader - Destination Chunk Transfer Size"]
 pub type DCSIZE_R = crate::FieldReader<u8, DCSIZE_A>;
 #[doc = "Destination Chunk Transfer Size\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum DCSIZE_A {
     #[doc = "0: 1 data transferred"]
@@ -197,7 +197,7 @@ impl<'a, const O: u8> DCSIZE_W<'a, O> {
 #[doc = "Field `SRC_WIDTH` reader - Transfer Width for the Source"]
 pub type SRC_WIDTH_R = crate::FieldReader<u8, SRC_WIDTH_A>;
 #[doc = "Transfer Width for the Source\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SRC_WIDTH_A {
     #[doc = "0: the transfer size is set to 8-bit width"]
@@ -263,7 +263,7 @@ impl<'a, const O: u8> SRC_WIDTH_W<'a, O> {
 #[doc = "Field `DST_WIDTH` reader - Transfer Width for the Destination"]
 pub type DST_WIDTH_R = crate::FieldReader<u8, DST_WIDTH_A>;
 #[doc = "Transfer Width for the Destination\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum DST_WIDTH_A {
     #[doc = "0: the transfer size is set to 8-bit width"]
@@ -365,31 +365,37 @@ impl R {
 impl W {
     #[doc = "Bits 0:15 - Buffer Transfer Size"]
     #[inline(always)]
+    #[must_use]
     pub fn btsize(&mut self) -> BTSIZE_W<0> {
         BTSIZE_W::new(self)
     }
     #[doc = "Bits 16:18 - Source Chunk Transfer Size."]
     #[inline(always)]
+    #[must_use]
     pub fn scsize(&mut self) -> SCSIZE_W<16> {
         SCSIZE_W::new(self)
     }
     #[doc = "Bits 20:22 - Destination Chunk Transfer Size"]
     #[inline(always)]
+    #[must_use]
     pub fn dcsize(&mut self) -> DCSIZE_W<20> {
         DCSIZE_W::new(self)
     }
     #[doc = "Bits 24:25 - Transfer Width for the Source"]
     #[inline(always)]
+    #[must_use]
     pub fn src_width(&mut self) -> SRC_WIDTH_W<24> {
         SRC_WIDTH_W::new(self)
     }
     #[doc = "Bits 28:29 - Transfer Width for the Destination"]
     #[inline(always)]
+    #[must_use]
     pub fn dst_width(&mut self) -> DST_WIDTH_W<28> {
         DST_WIDTH_W::new(self)
     }
     #[doc = "Bit 31 - Current Descriptor Stop Command and Transfer Completed Memory Indicator"]
     #[inline(always)]
+    #[must_use]
     pub fn done(&mut self) -> DONE_W<31> {
         DONE_W::new(self)
     }
@@ -412,11 +418,10 @@ impl crate::Readable for CTRLA5_SPEC {
 #[doc = "`write(|w| ..)` method takes [ctrla5::W](W) writer structure"]
 impl crate::Writable for CTRLA5_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CTRLA5 to value 0"]
 impl crate::Resettable for CTRLA5_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

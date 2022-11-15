@@ -250,8 +250,5 @@ impl crate::Readable for IFDGSR_SPEC {
 }
 #[doc = "`reset()` method sets IFDGSR to value 0"]
 impl crate::Resettable for IFDGSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

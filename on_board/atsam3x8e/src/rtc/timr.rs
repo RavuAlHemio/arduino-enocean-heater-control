@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:6 - Current Second"]
     #[inline(always)]
+    #[must_use]
     pub fn sec(&mut self) -> SEC_W<0> {
         SEC_W::new(self)
     }
     #[doc = "Bits 8:14 - Current Minute"]
     #[inline(always)]
+    #[must_use]
     pub fn min(&mut self) -> MIN_W<8> {
         MIN_W::new(self)
     }
     #[doc = "Bits 16:21 - Current Hour"]
     #[inline(always)]
+    #[must_use]
     pub fn hour(&mut self) -> HOUR_W<16> {
         HOUR_W::new(self)
     }
     #[doc = "Bit 22 - Ante Meridiem Post Meridiem Indicator"]
     #[inline(always)]
+    #[must_use]
     pub fn ampm(&mut self) -> AMPM_W<22> {
         AMPM_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for TIMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [timr::W](W) writer structure"]
 impl crate::Writable for TIMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets TIMR to value 0"]
 impl crate::Resettable for TIMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

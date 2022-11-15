@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - IrDA Filter"]
     #[inline(always)]
+    #[must_use]
     pub fn irda_filter(&mut self) -> IRDA_FILTER_W<0> {
         IRDA_FILTER_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for IF_SPEC {
 #[doc = "`write(|w| ..)` method takes [if_::W](W) writer structure"]
 impl crate::Writable for IF_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets IF to value 0"]
 impl crate::Resettable for IF_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

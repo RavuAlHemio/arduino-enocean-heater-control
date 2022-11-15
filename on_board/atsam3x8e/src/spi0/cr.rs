@@ -30,21 +30,25 @@ pub type LASTXFER_W<'a, const O: u8> = crate::BitWriter<'a, u32, CR_SPEC, bool, 
 impl W {
     #[doc = "Bit 0 - SPI Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn spien(&mut self) -> SPIEN_W<0> {
         SPIEN_W::new(self)
     }
     #[doc = "Bit 1 - SPI Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn spidis(&mut self) -> SPIDIS_W<1> {
         SPIDIS_W::new(self)
     }
     #[doc = "Bit 7 - SPI Software Reset"]
     #[inline(always)]
+    #[must_use]
     pub fn swrst(&mut self) -> SWRST_W<7> {
         SWRST_W::new(self)
     }
     #[doc = "Bit 24 - Last Transfer"]
     #[inline(always)]
+    #[must_use]
     pub fn lastxfer(&mut self) -> LASTXFER_W<24> {
         LASTXFER_W::new(self)
     }
@@ -63,4 +67,6 @@ impl crate::RegisterSpec for CR_SPEC {
 #[doc = "`write(|w| ..)` method takes [cr::W](W) writer structure"]
 impl crate::Writable for CR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

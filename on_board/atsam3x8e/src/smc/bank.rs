@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:2 - Bank Identifier"]
     #[inline(always)]
+    #[must_use]
     pub fn bank(&mut self) -> BANK_W<0> {
         BANK_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for BANK_SPEC {
 #[doc = "`write(|w| ..)` method takes [bank::W](W) writer structure"]
 impl crate::Writable for BANK_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets BANK to value 0"]
 impl crate::Resettable for BANK_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

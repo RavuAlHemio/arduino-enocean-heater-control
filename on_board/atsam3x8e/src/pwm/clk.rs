@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - CLKA, CLKB Divide Factor"]
     #[inline(always)]
+    #[must_use]
     pub fn diva(&mut self) -> DIVA_W<0> {
         DIVA_W::new(self)
     }
     #[doc = "Bits 8:11 - CLKA, CLKB Source Clock Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn prea(&mut self) -> PREA_W<8> {
         PREA_W::new(self)
     }
     #[doc = "Bits 16:23 - CLKA, CLKB Divide Factor"]
     #[inline(always)]
+    #[must_use]
     pub fn divb(&mut self) -> DIVB_W<16> {
         DIVB_W::new(self)
     }
     #[doc = "Bits 24:27 - CLKA, CLKB Source Clock Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn preb(&mut self) -> PREB_W<24> {
         PREB_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for CLK_SPEC {
 #[doc = "`write(|w| ..)` method takes [clk::W](W) writer structure"]
 impl crate::Writable for CLK_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CLK to value 0"]
 impl crate::Resettable for CLK_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

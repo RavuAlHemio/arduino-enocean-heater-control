@@ -28,16 +28,19 @@ pub type SWTRG_W<'a, const O: u8> = crate::BitWriter<'a, u32, CCR2_SPEC, bool, O
 impl W {
     #[doc = "Bit 0 - Counter Clock Enable Command"]
     #[inline(always)]
+    #[must_use]
     pub fn clken(&mut self) -> CLKEN_W<0> {
         CLKEN_W::new(self)
     }
     #[doc = "Bit 1 - Counter Clock Disable Command"]
     #[inline(always)]
+    #[must_use]
     pub fn clkdis(&mut self) -> CLKDIS_W<1> {
         CLKDIS_W::new(self)
     }
     #[doc = "Bit 2 - Software Trigger Command"]
     #[inline(always)]
+    #[must_use]
     pub fn swtrg(&mut self) -> SWTRG_W<2> {
         SWTRG_W::new(self)
     }
@@ -56,4 +59,6 @@ impl crate::RegisterSpec for CCR2_SPEC {
 #[doc = "`write(|w| ..)` method takes [ccr2::W](W) writer structure"]
 impl crate::Writable for CCR2_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

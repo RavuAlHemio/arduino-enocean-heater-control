@@ -45,7 +45,7 @@ pub type CMD_W<'a, const O: u8> = crate::BitWriter<'a, u32, PMC_PCR_SPEC, bool, 
 #[doc = "Field `DIV` reader - Divisor Value"]
 pub type DIV_R = crate::FieldReader<u8, DIV_A>;
 #[doc = "Divisor Value\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum DIV_A {
     #[doc = "0: Peripheral clock is MCK"]
@@ -136,21 +136,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:5 - Peripheral ID"]
     #[inline(always)]
+    #[must_use]
     pub fn pid(&mut self) -> PID_W<0> {
         PID_W::new(self)
     }
     #[doc = "Bit 12 - Command"]
     #[inline(always)]
+    #[must_use]
     pub fn cmd(&mut self) -> CMD_W<12> {
         CMD_W::new(self)
     }
     #[doc = "Bits 16:17 - Divisor Value"]
     #[inline(always)]
+    #[must_use]
     pub fn div(&mut self) -> DIV_W<16> {
         DIV_W::new(self)
     }
     #[doc = "Bit 28 - Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn en(&mut self) -> EN_W<28> {
         EN_W::new(self)
     }
@@ -173,11 +177,10 @@ impl crate::Readable for PMC_PCR_SPEC {
 #[doc = "`write(|w| ..)` method takes [pmc_pcr::W](W) writer structure"]
 impl crate::Writable for PMC_PCR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets PMC_PCR to value 0"]
 impl crate::Resettable for PMC_PCR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

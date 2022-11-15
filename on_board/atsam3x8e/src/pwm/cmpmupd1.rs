@@ -30,21 +30,25 @@ pub type CUPRUPD_W<'a, const O: u8> = crate::FieldWriter<'a, u32, CMPMUPD1_SPEC,
 impl W {
     #[doc = "Bit 0 - Comparison x Enable Update"]
     #[inline(always)]
+    #[must_use]
     pub fn cenupd(&mut self) -> CENUPD_W<0> {
         CENUPD_W::new(self)
     }
     #[doc = "Bits 4:7 - Comparison x Trigger Update"]
     #[inline(always)]
+    #[must_use]
     pub fn ctrupd(&mut self) -> CTRUPD_W<4> {
         CTRUPD_W::new(self)
     }
     #[doc = "Bits 8:11 - Comparison x Period Update"]
     #[inline(always)]
+    #[must_use]
     pub fn cprupd(&mut self) -> CPRUPD_W<8> {
         CPRUPD_W::new(self)
     }
     #[doc = "Bits 16:19 - Comparison x Update Period Update"]
     #[inline(always)]
+    #[must_use]
     pub fn cuprupd(&mut self) -> CUPRUPD_W<16> {
         CUPRUPD_W::new(self)
     }
@@ -63,4 +67,6 @@ impl crate::RegisterSpec for CMPMUPD1_SPEC {
 #[doc = "`write(|w| ..)` method takes [cmpmupd1::W](W) writer structure"]
 impl crate::Writable for CMPMUPD1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

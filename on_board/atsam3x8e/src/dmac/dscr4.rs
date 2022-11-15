@@ -42,12 +42,13 @@ impl R {
     #[doc = "Bits 2:31 - Buffer Transfer Descriptor Address"]
     #[inline(always)]
     pub fn dscr(&self) -> DSCR_R {
-        DSCR_R::new(((self.bits >> 2) & 0x3fff_ffff) as u32)
+        DSCR_R::new((self.bits >> 2) & 0x3fff_ffff)
     }
 }
 impl W {
     #[doc = "Bits 2:31 - Buffer Transfer Descriptor Address"]
     #[inline(always)]
+    #[must_use]
     pub fn dscr(&mut self) -> DSCR_W<2> {
         DSCR_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for DSCR4_SPEC {
 #[doc = "`write(|w| ..)` method takes [dscr4::W](W) writer structure"]
 impl crate::Writable for DSCR4_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets DSCR4 to value 0"]
 impl crate::Resettable for DSCR4_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

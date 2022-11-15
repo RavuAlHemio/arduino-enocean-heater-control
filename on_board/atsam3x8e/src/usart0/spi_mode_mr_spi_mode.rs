@@ -37,7 +37,7 @@ impl From<crate::W<SPI_MODE_MR_SPI_MODE_SPEC>> for W {
 #[doc = "Field `USART_MODE` reader - USART Mode of Operation"]
 pub type USART_MODE_R = crate::FieldReader<u8, USART_MODE_A>;
 #[doc = "USART Mode of Operation"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum USART_MODE_A {
     #[doc = "14: SPI master"]
@@ -90,7 +90,7 @@ impl<'a, const O: u8> USART_MODE_W<'a, O> {
 #[doc = "Field `USCLKS` reader - Clock Selection"]
 pub type USCLKS_R = crate::FieldReader<u8, USCLKS_A>;
 #[doc = "Clock Selection"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum USCLKS_A {
     #[doc = "0: master Clock MCK is selected"]
@@ -156,7 +156,7 @@ impl<'a, const O: u8> USCLKS_W<'a, O> {
 #[doc = "Field `CHRL` reader - Character Length"]
 pub type CHRL_R = crate::FieldReader<u8, CHRL_A>;
 #[doc = "Character Length"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CHRL_A {
     #[doc = "3: Character length is 8 bits"]
@@ -240,31 +240,37 @@ impl R {
 impl W {
     #[doc = "Bits 0:3 - USART Mode of Operation"]
     #[inline(always)]
+    #[must_use]
     pub fn usart_mode(&mut self) -> USART_MODE_W<0> {
         USART_MODE_W::new(self)
     }
     #[doc = "Bits 4:5 - Clock Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn usclks(&mut self) -> USCLKS_W<4> {
         USCLKS_W::new(self)
     }
     #[doc = "Bits 6:7 - Character Length"]
     #[inline(always)]
+    #[must_use]
     pub fn chrl(&mut self) -> CHRL_W<6> {
         CHRL_W::new(self)
     }
     #[doc = "Bit 8 - SPI Clock Phase"]
     #[inline(always)]
+    #[must_use]
     pub fn cpha(&mut self) -> CPHA_W<8> {
         CPHA_W::new(self)
     }
     #[doc = "Bit 16 - SPI Clock Polarity"]
     #[inline(always)]
+    #[must_use]
     pub fn cpol(&mut self) -> CPOL_W<16> {
         CPOL_W::new(self)
     }
     #[doc = "Bit 20 - Wait Read Data Before Transfer"]
     #[inline(always)]
+    #[must_use]
     pub fn wrdbt(&mut self) -> WRDBT_W<20> {
         WRDBT_W::new(self)
     }
@@ -287,4 +293,6 @@ impl crate::Readable for SPI_MODE_MR_SPI_MODE_SPEC {
 #[doc = "`write(|w| ..)` method takes [spi_mode_mr_spi_mode::W](W) writer structure"]
 impl crate::Writable for SPI_MODE_MR_SPI_MODE_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

@@ -37,7 +37,7 @@ impl From<crate::W<CTRLB4_SPEC>> for W {
 #[doc = "Field `SRC_DSCR` reader - Source Address Descriptor"]
 pub type SRC_DSCR_R = crate::BitReader<SRC_DSCR_A>;
 #[doc = "Source Address Descriptor\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SRC_DSCR_A {
     #[doc = "0: Source address is updated when the descriptor is fetched from the memory."]
     FETCH_FROM_MEM = 0,
@@ -87,7 +87,7 @@ impl<'a, const O: u8> SRC_DSCR_W<'a, O> {
 #[doc = "Field `DST_DSCR` reader - Destination Address Descriptor"]
 pub type DST_DSCR_R = crate::BitReader<DST_DSCR_A>;
 #[doc = "Destination Address Descriptor\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DST_DSCR_A {
     #[doc = "0: Destination address is updated when the descriptor is fetched from the memory."]
     FETCH_FROM_MEM = 0,
@@ -137,7 +137,7 @@ impl<'a, const O: u8> DST_DSCR_W<'a, O> {
 #[doc = "Field `FC` reader - Flow Control"]
 pub type FC_R = crate::FieldReader<u8, FC_A>;
 #[doc = "Flow Control\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum FC_A {
     #[doc = "0: Memory-to-Memory Transfer DMAC is flow controller"]
@@ -215,7 +215,7 @@ impl<'a, const O: u8> FC_W<'a, O> {
 #[doc = "Field `SRC_INCR` reader - Incrementing, Decrementing or Fixed Address for the Source"]
 pub type SRC_INCR_R = crate::FieldReader<u8, SRC_INCR_A>;
 #[doc = "Incrementing, Decrementing or Fixed Address for the Source\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SRC_INCR_A {
     #[doc = "0: The source address is incremented"]
@@ -281,7 +281,7 @@ impl<'a, const O: u8> SRC_INCR_W<'a, O> {
 #[doc = "Field `DST_INCR` reader - Incrementing, Decrementing or Fixed Address for the Destination"]
 pub type DST_INCR_R = crate::FieldReader<u8, DST_INCR_A>;
 #[doc = "Incrementing, Decrementing or Fixed Address for the Destination\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum DST_INCR_A {
     #[doc = "0: The destination address is incremented"]
@@ -383,31 +383,37 @@ impl R {
 impl W {
     #[doc = "Bit 16 - Source Address Descriptor"]
     #[inline(always)]
+    #[must_use]
     pub fn src_dscr(&mut self) -> SRC_DSCR_W<16> {
         SRC_DSCR_W::new(self)
     }
     #[doc = "Bit 20 - Destination Address Descriptor"]
     #[inline(always)]
+    #[must_use]
     pub fn dst_dscr(&mut self) -> DST_DSCR_W<20> {
         DST_DSCR_W::new(self)
     }
     #[doc = "Bits 21:22 - Flow Control"]
     #[inline(always)]
+    #[must_use]
     pub fn fc(&mut self) -> FC_W<21> {
         FC_W::new(self)
     }
     #[doc = "Bits 24:25 - Incrementing, Decrementing or Fixed Address for the Source"]
     #[inline(always)]
+    #[must_use]
     pub fn src_incr(&mut self) -> SRC_INCR_W<24> {
         SRC_INCR_W::new(self)
     }
     #[doc = "Bits 28:29 - Incrementing, Decrementing or Fixed Address for the Destination"]
     #[inline(always)]
+    #[must_use]
     pub fn dst_incr(&mut self) -> DST_INCR_W<28> {
         DST_INCR_W::new(self)
     }
     #[doc = "Bit 30 - Interrupt Enable Not"]
     #[inline(always)]
+    #[must_use]
     pub fn ien(&mut self) -> IEN_W<30> {
         IEN_W::new(self)
     }
@@ -430,11 +436,10 @@ impl crate::Readable for CTRLB4_SPEC {
 #[doc = "`write(|w| ..)` method takes [ctrlb4::W](W) writer structure"]
 impl crate::Writable for CTRLB4_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CTRLB4 to value 0"]
 impl crate::Resettable for CTRLB4_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

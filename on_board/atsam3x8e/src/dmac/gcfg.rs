@@ -37,7 +37,7 @@ impl From<crate::W<GCFG_SPEC>> for W {
 #[doc = "Field `ARB_CFG` reader - Arbiter Configuration"]
 pub type ARB_CFG_R = crate::BitReader<ARB_CFG_A>;
 #[doc = "Arbiter Configuration\n\nValue on reset: 1"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ARB_CFG_A {
     #[doc = "0: Fixed priority arbiter (see \"Basic Definitions\" )"]
     FIXED = 0,
@@ -94,6 +94,7 @@ impl R {
 impl W {
     #[doc = "Bit 4 - Arbiter Configuration"]
     #[inline(always)]
+    #[must_use]
     pub fn arb_cfg(&mut self) -> ARB_CFG_W<4> {
         ARB_CFG_W::new(self)
     }
@@ -116,11 +117,10 @@ impl crate::Readable for GCFG_SPEC {
 #[doc = "`write(|w| ..)` method takes [gcfg::W](W) writer structure"]
 impl crate::Writable for GCFG_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets GCFG to value 0x10"]
 impl crate::Resettable for GCFG_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x10
-    }
+    const RESET_VALUE: Self::Ux = 0x10;
 }

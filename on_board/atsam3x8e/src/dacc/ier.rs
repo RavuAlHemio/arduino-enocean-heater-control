@@ -30,21 +30,25 @@ pub type TXBUFE_W<'a, const O: u8> = crate::BitWriter<'a, u32, IER_SPEC, bool, O
 impl W {
     #[doc = "Bit 0 - Transmit Ready Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn txrdy(&mut self) -> TXRDY_W<0> {
         TXRDY_W::new(self)
     }
     #[doc = "Bit 1 - End of Conversion Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn eoc(&mut self) -> EOC_W<1> {
         EOC_W::new(self)
     }
     #[doc = "Bit 2 - End of Transmit Buffer Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn endtx(&mut self) -> ENDTX_W<2> {
         ENDTX_W::new(self)
     }
     #[doc = "Bit 3 - Transmit Buffer Empty Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn txbufe(&mut self) -> TXBUFE_W<3> {
         TXBUFE_W::new(self)
     }
@@ -63,4 +67,6 @@ impl crate::RegisterSpec for IER_SPEC {
 #[doc = "`write(|w| ..)` method takes [ier::W](W) writer structure"]
 impl crate::Writable for IER_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

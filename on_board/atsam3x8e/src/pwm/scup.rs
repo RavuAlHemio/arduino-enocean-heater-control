@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bits 0:3 - Update Period"]
     #[inline(always)]
+    #[must_use]
     pub fn upr(&mut self) -> UPR_W<0> {
         UPR_W::new(self)
     }
     #[doc = "Bits 4:7 - Update Period Counter"]
     #[inline(always)]
+    #[must_use]
     pub fn uprcnt(&mut self) -> UPRCNT_W<4> {
         UPRCNT_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for SCUP_SPEC {
 #[doc = "`write(|w| ..)` method takes [scup::W](W) writer structure"]
 impl crate::Writable for SCUP_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SCUP to value 0"]
 impl crate::Resettable for SCUP_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

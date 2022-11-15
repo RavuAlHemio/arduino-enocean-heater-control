@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:15 - Type ID checking"]
     #[inline(always)]
+    #[must_use]
     pub fn tid(&mut self) -> TID_W<0> {
         TID_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for TID_SPEC {
 #[doc = "`write(|w| ..)` method takes [tid::W](W) writer structure"]
 impl crate::Writable for TID_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets TID to value 0"]
 impl crate::Resettable for TID_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

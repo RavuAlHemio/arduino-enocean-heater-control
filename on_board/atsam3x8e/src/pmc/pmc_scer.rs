@@ -30,21 +30,25 @@ pub type PCK2_W<'a, const O: u8> = crate::BitWriter<'a, u32, PMC_SCER_SPEC, bool
 impl W {
     #[doc = "Bit 5 - Enable USB OTG Clock (48 MHz, USB_48M) for UTMI"]
     #[inline(always)]
+    #[must_use]
     pub fn uotgclk(&mut self) -> UOTGCLK_W<5> {
         UOTGCLK_W::new(self)
     }
     #[doc = "Bit 8 - Programmable Clock 0 Output Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pck0(&mut self) -> PCK0_W<8> {
         PCK0_W::new(self)
     }
     #[doc = "Bit 9 - Programmable Clock 1 Output Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pck1(&mut self) -> PCK1_W<9> {
         PCK1_W::new(self)
     }
     #[doc = "Bit 10 - Programmable Clock 2 Output Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pck2(&mut self) -> PCK2_W<10> {
         PCK2_W::new(self)
     }
@@ -63,4 +67,6 @@ impl crate::RegisterSpec for PMC_SCER_SPEC {
 #[doc = "`write(|w| ..)` method takes [pmc_scer::W](W) writer structure"]
 impl crate::Writable for PMC_SCER_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

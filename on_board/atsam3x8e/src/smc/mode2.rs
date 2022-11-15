@@ -37,7 +37,7 @@ impl From<crate::W<MODE2_SPEC>> for W {
 #[doc = "Field `READ_MODE` reader - Selection of the Control Signal for Read Operation"]
 pub type READ_MODE_R = crate::BitReader<READ_MODE_A>;
 #[doc = "Selection of the Control Signal for Read Operation\n\nValue on reset: 1"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum READ_MODE_A {
     #[doc = "0: The Read operation is controlled by the NCS signal."]
     NCS_CTRL = 0,
@@ -87,7 +87,7 @@ impl<'a, const O: u8> READ_MODE_W<'a, O> {
 #[doc = "Field `WRITE_MODE` reader - Selection of the Control Signal for Write Operation"]
 pub type WRITE_MODE_R = crate::BitReader<WRITE_MODE_A>;
 #[doc = "Selection of the Control Signal for Write Operation\n\nValue on reset: 1"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum WRITE_MODE_A {
     #[doc = "0: The Write operation is controller by the NCS signal."]
     NCS_CTRL = 0,
@@ -137,7 +137,7 @@ impl<'a, const O: u8> WRITE_MODE_W<'a, O> {
 #[doc = "Field `EXNW_MODE` reader - NWAIT Mode"]
 pub type EXNW_MODE_R = crate::FieldReader<u8, EXNW_MODE_A>;
 #[doc = "NWAIT Mode\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum EXNW_MODE_A {
     #[doc = "0: Disabled"]
@@ -207,7 +207,7 @@ pub type BAT_W<'a, const O: u8> = crate::BitWriter<'a, u32, MODE2_SPEC, bool, O>
 #[doc = "Field `DBW` reader - Data Bus Width"]
 pub type DBW_R = crate::BitReader<DBW_A>;
 #[doc = "Data Bus Width\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DBW_A {
     #[doc = "0: 8-bit bus"]
     BIT_8 = 0,
@@ -302,36 +302,43 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Selection of the Control Signal for Read Operation"]
     #[inline(always)]
+    #[must_use]
     pub fn read_mode(&mut self) -> READ_MODE_W<0> {
         READ_MODE_W::new(self)
     }
     #[doc = "Bit 1 - Selection of the Control Signal for Write Operation"]
     #[inline(always)]
+    #[must_use]
     pub fn write_mode(&mut self) -> WRITE_MODE_W<1> {
         WRITE_MODE_W::new(self)
     }
     #[doc = "Bits 4:5 - NWAIT Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn exnw_mode(&mut self) -> EXNW_MODE_W<4> {
         EXNW_MODE_W::new(self)
     }
     #[doc = "Bit 8 - Byte Access Type"]
     #[inline(always)]
+    #[must_use]
     pub fn bat(&mut self) -> BAT_W<8> {
         BAT_W::new(self)
     }
     #[doc = "Bit 12 - Data Bus Width"]
     #[inline(always)]
+    #[must_use]
     pub fn dbw(&mut self) -> DBW_W<12> {
         DBW_W::new(self)
     }
     #[doc = "Bits 16:19 - Data Float Time"]
     #[inline(always)]
+    #[must_use]
     pub fn tdf_cycles(&mut self) -> TDF_CYCLES_W<16> {
         TDF_CYCLES_W::new(self)
     }
     #[doc = "Bit 20 - TDF Optimization"]
     #[inline(always)]
+    #[must_use]
     pub fn tdf_mode(&mut self) -> TDF_MODE_W<20> {
         TDF_MODE_W::new(self)
     }
@@ -354,11 +361,10 @@ impl crate::Readable for MODE2_SPEC {
 #[doc = "`write(|w| ..)` method takes [mode2::W](W) writer structure"]
 impl crate::Writable for MODE2_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MODE2 to value 0x1000_0003"]
 impl crate::Resettable for MODE2_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x1000_0003
-    }
+    const RESET_VALUE: Self::Ux = 0x1000_0003;
 }

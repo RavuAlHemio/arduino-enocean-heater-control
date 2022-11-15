@@ -41,7 +41,7 @@ pub type DTOCYC_W<'a, const O: u8> = crate::FieldWriter<'a, u32, DTOR_SPEC, u8, 
 #[doc = "Field `DTOMUL` reader - Data Timeout Multiplier"]
 pub type DTOMUL_R = crate::FieldReader<u8, DTOMUL_A>;
 #[doc = "Data Timeout Multiplier\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum DTOMUL_A {
     #[doc = "0: DTOCYC"]
@@ -183,11 +183,13 @@ impl R {
 impl W {
     #[doc = "Bits 0:3 - Data Timeout Cycle Number"]
     #[inline(always)]
+    #[must_use]
     pub fn dtocyc(&mut self) -> DTOCYC_W<0> {
         DTOCYC_W::new(self)
     }
     #[doc = "Bits 4:6 - Data Timeout Multiplier"]
     #[inline(always)]
+    #[must_use]
     pub fn dtomul(&mut self) -> DTOMUL_W<4> {
         DTOMUL_W::new(self)
     }
@@ -210,11 +212,10 @@ impl crate::Readable for DTOR_SPEC {
 #[doc = "`write(|w| ..)` method takes [dtor::W](W) writer structure"]
 impl crate::Writable for DTOR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets DTOR to value 0"]
 impl crate::Resettable for DTOR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -194,8 +194,5 @@ impl crate::Readable for ECC_SR2_SPEC {
 }
 #[doc = "`reset()` method sets ECC_SR2 to value 0"]
 impl crate::Resettable for ECC_SR2_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -68,8 +68,5 @@ impl crate::Readable for MSR2_SPEC {
 }
 #[doc = "`reset()` method sets MSR2 to value 0"]
 impl crate::Resettable for MSR2_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -37,7 +37,7 @@ impl From<crate::W<WUMR_SPEC>> for W {
 #[doc = "Field `FWUPEN` reader - Force Wake-up Enable"]
 pub type FWUPEN_R = crate::BitReader<FWUPEN_A>;
 #[doc = "Force Wake-up Enable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FWUPEN_A {
     #[doc = "0: the Force Wake-up pin has no wake-up effect."]
     NOT_ENABLE = 0,
@@ -87,7 +87,7 @@ impl<'a, const O: u8> FWUPEN_W<'a, O> {
 #[doc = "Field `SMEN` reader - Supply Monitor Wake-up Enable"]
 pub type SMEN_R = crate::BitReader<SMEN_A>;
 #[doc = "Supply Monitor Wake-up Enable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SMEN_A {
     #[doc = "0: the supply monitor detection has no wake-up effect."]
     NOT_ENABLE = 0,
@@ -137,7 +137,7 @@ impl<'a, const O: u8> SMEN_W<'a, O> {
 #[doc = "Field `RTTEN` reader - Real Time Timer Wake-up Enable"]
 pub type RTTEN_R = crate::BitReader<RTTEN_A>;
 #[doc = "Real Time Timer Wake-up Enable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RTTEN_A {
     #[doc = "0: the RTT alarm signal has no wake-up effect."]
     NOT_ENABLE = 0,
@@ -187,7 +187,7 @@ impl<'a, const O: u8> RTTEN_W<'a, O> {
 #[doc = "Field `RTCEN` reader - Real Time Clock Wake-up Enable"]
 pub type RTCEN_R = crate::BitReader<RTCEN_A>;
 #[doc = "Real Time Clock Wake-up Enable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RTCEN_A {
     #[doc = "0: the RTC alarm signal has no wake-up effect."]
     NOT_ENABLE = 0,
@@ -237,7 +237,7 @@ impl<'a, const O: u8> RTCEN_W<'a, O> {
 #[doc = "Field `FWUPDBC` reader - Force Wake-up Debouncer Period"]
 pub type FWUPDBC_R = crate::FieldReader<u8, FWUPDBC_A>;
 #[doc = "Force Wake-up Debouncer Period\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum FWUPDBC_A {
     #[doc = "0: Immediate, no debouncing, detected active at least on one Slow Clock edge."]
@@ -341,7 +341,7 @@ impl<'a, const O: u8> FWUPDBC_W<'a, O> {
 #[doc = "Field `WKUPDBC` reader - Wake-up Inputs Debouncer Period"]
 pub type WKUPDBC_R = crate::FieldReader<u8, WKUPDBC_A>;
 #[doc = "Wake-up Inputs Debouncer Period\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum WKUPDBC_A {
     #[doc = "0: Immediate, no debouncing, detected active at least on one Slow Clock edge."]
@@ -477,31 +477,37 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Force Wake-up Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn fwupen(&mut self) -> FWUPEN_W<0> {
         FWUPEN_W::new(self)
     }
     #[doc = "Bit 1 - Supply Monitor Wake-up Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn smen(&mut self) -> SMEN_W<1> {
         SMEN_W::new(self)
     }
     #[doc = "Bit 2 - Real Time Timer Wake-up Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn rtten(&mut self) -> RTTEN_W<2> {
         RTTEN_W::new(self)
     }
     #[doc = "Bit 3 - Real Time Clock Wake-up Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn rtcen(&mut self) -> RTCEN_W<3> {
         RTCEN_W::new(self)
     }
     #[doc = "Bits 8:10 - Force Wake-up Debouncer Period"]
     #[inline(always)]
+    #[must_use]
     pub fn fwupdbc(&mut self) -> FWUPDBC_W<8> {
         FWUPDBC_W::new(self)
     }
     #[doc = "Bits 12:14 - Wake-up Inputs Debouncer Period"]
     #[inline(always)]
+    #[must_use]
     pub fn wkupdbc(&mut self) -> WKUPDBC_W<12> {
         WKUPDBC_W::new(self)
     }
@@ -524,11 +530,10 @@ impl crate::Readable for WUMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [wumr::W](W) writer structure"]
 impl crate::Writable for WUMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets WUMR to value 0"]
 impl crate::Resettable for WUMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

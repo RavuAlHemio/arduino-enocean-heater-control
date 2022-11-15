@@ -49,7 +49,7 @@ pub type RESUME_W<'a, const O: u8> = crate::BitWriter<'a, u32, HSTCTRL_SPEC, boo
 #[doc = "Field `SPDCONF` reader - Mode Configuration"]
 pub type SPDCONF_R = crate::FieldReader<u8, SPDCONF_A>;
 #[doc = "Mode Configuration\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SPDCONF_A {
     #[doc = "0: The host starts in full-speed mode and performs a high-speed reset to switch to the high-speed mode if the downstream peripheral is high-speed capable."]
@@ -150,21 +150,25 @@ impl R {
 impl W {
     #[doc = "Bit 8 - Start of Frame Generation Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn sofe(&mut self) -> SOFE_W<8> {
         SOFE_W::new(self)
     }
     #[doc = "Bit 9 - Send USB Reset"]
     #[inline(always)]
+    #[must_use]
     pub fn reset(&mut self) -> RESET_W<9> {
         RESET_W::new(self)
     }
     #[doc = "Bit 10 - Send USB Resume"]
     #[inline(always)]
+    #[must_use]
     pub fn resume(&mut self) -> RESUME_W<10> {
         RESUME_W::new(self)
     }
     #[doc = "Bits 12:13 - Mode Configuration"]
     #[inline(always)]
+    #[must_use]
     pub fn spdconf(&mut self) -> SPDCONF_W<12> {
         SPDCONF_W::new(self)
     }
@@ -187,11 +191,10 @@ impl crate::Readable for HSTCTRL_SPEC {
 #[doc = "`write(|w| ..)` method takes [hstctrl::W](W) writer structure"]
 impl crate::Writable for HSTCTRL_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets HSTCTRL to value 0"]
 impl crate::Resettable for HSTCTRL_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

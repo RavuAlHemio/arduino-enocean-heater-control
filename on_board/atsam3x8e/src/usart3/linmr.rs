@@ -37,7 +37,7 @@ impl From<crate::W<LINMR_SPEC>> for W {
 #[doc = "Field `NACT` reader - LIN Node Action"]
 pub type NACT_R = crate::FieldReader<u8, NACT_A>;
 #[doc = "LIN Node Action\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum NACT_A {
     #[doc = "0: The USART transmits the response."]
@@ -181,46 +181,55 @@ impl R {
 impl W {
     #[doc = "Bits 0:1 - LIN Node Action"]
     #[inline(always)]
+    #[must_use]
     pub fn nact(&mut self) -> NACT_W<0> {
         NACT_W::new(self)
     }
     #[doc = "Bit 2 - Parity Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn pardis(&mut self) -> PARDIS_W<2> {
         PARDIS_W::new(self)
     }
     #[doc = "Bit 3 - Checksum Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn chkdis(&mut self) -> CHKDIS_W<3> {
         CHKDIS_W::new(self)
     }
     #[doc = "Bit 4 - Checksum Type"]
     #[inline(always)]
+    #[must_use]
     pub fn chktyp(&mut self) -> CHKTYP_W<4> {
         CHKTYP_W::new(self)
     }
     #[doc = "Bit 5 - Data Length Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn dlm(&mut self) -> DLM_W<5> {
         DLM_W::new(self)
     }
     #[doc = "Bit 6 - Frame Slot Mode Disable"]
     #[inline(always)]
+    #[must_use]
     pub fn fsdis(&mut self) -> FSDIS_W<6> {
         FSDIS_W::new(self)
     }
     #[doc = "Bit 7 - Wakeup Signal Type"]
     #[inline(always)]
+    #[must_use]
     pub fn wkuptyp(&mut self) -> WKUPTYP_W<7> {
         WKUPTYP_W::new(self)
     }
     #[doc = "Bits 8:15 - Data Length Control"]
     #[inline(always)]
+    #[must_use]
     pub fn dlc(&mut self) -> DLC_W<8> {
         DLC_W::new(self)
     }
     #[doc = "Bit 16 - PDC Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn pdcm(&mut self) -> PDCM_W<16> {
         PDCM_W::new(self)
     }
@@ -243,11 +252,10 @@ impl crate::Readable for LINMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [linmr::W](W) writer structure"]
 impl crate::Writable for LINMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets LINMR to value 0"]
 impl crate::Resettable for LINMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

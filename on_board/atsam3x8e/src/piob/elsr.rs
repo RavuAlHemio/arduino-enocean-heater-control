@@ -250,8 +250,5 @@ impl crate::Readable for ELSR_SPEC {
 }
 #[doc = "`reset()` method sets ELSR to value 0"]
 impl crate::Resettable for ELSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

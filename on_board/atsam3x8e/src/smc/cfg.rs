@@ -37,7 +37,7 @@ impl From<crate::W<CFG_SPEC>> for W {
 #[doc = "Field `PAGESIZE` reader - Page Size of the NAND Flash Device"]
 pub type PAGESIZE_R = crate::FieldReader<u8, PAGESIZE_A>;
 #[doc = "Page Size of the NAND Flash Device\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PAGESIZE_A {
     #[doc = "0: Main area 512 Bytes"]
@@ -136,7 +136,7 @@ pub type DTOCYC_W<'a, const O: u8> = crate::FieldWriter<'a, u32, CFG_SPEC, u8, u
 #[doc = "Field `DTOMUL` reader - Data Timeout Multiplier"]
 pub type DTOMUL_R = crate::FieldReader<u8, DTOMUL_A>;
 #[doc = "Data Timeout Multiplier\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum DTOMUL_A {
     #[doc = "0: DTOCYC"]
@@ -303,36 +303,43 @@ impl R {
 impl W {
     #[doc = "Bits 0:1 - Page Size of the NAND Flash Device"]
     #[inline(always)]
+    #[must_use]
     pub fn pagesize(&mut self) -> PAGESIZE_W<0> {
         PAGESIZE_W::new(self)
     }
     #[doc = "Bit 8 - Write Spare Area"]
     #[inline(always)]
+    #[must_use]
     pub fn wspare(&mut self) -> WSPARE_W<8> {
         WSPARE_W::new(self)
     }
     #[doc = "Bit 9 - Read Spare Area"]
     #[inline(always)]
+    #[must_use]
     pub fn rspare(&mut self) -> RSPARE_W<9> {
         RSPARE_W::new(self)
     }
     #[doc = "Bit 12 - Rising/Falling Edge Detection Control"]
     #[inline(always)]
+    #[must_use]
     pub fn edgectrl(&mut self) -> EDGECTRL_W<12> {
         EDGECTRL_W::new(self)
     }
     #[doc = "Bit 13 - Ready/Busy Signal Edge Detection"]
     #[inline(always)]
+    #[must_use]
     pub fn rbedge(&mut self) -> RBEDGE_W<13> {
         RBEDGE_W::new(self)
     }
     #[doc = "Bits 16:19 - Data Timeout Cycle Number"]
     #[inline(always)]
+    #[must_use]
     pub fn dtocyc(&mut self) -> DTOCYC_W<16> {
         DTOCYC_W::new(self)
     }
     #[doc = "Bits 20:22 - Data Timeout Multiplier"]
     #[inline(always)]
+    #[must_use]
     pub fn dtomul(&mut self) -> DTOMUL_W<20> {
         DTOMUL_W::new(self)
     }
@@ -355,11 +362,10 @@ impl crate::Readable for CFG_SPEC {
 #[doc = "`write(|w| ..)` method takes [cfg::W](W) writer structure"]
 impl crate::Writable for CFG_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CFG to value 0"]
 impl crate::Resettable for CFG_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

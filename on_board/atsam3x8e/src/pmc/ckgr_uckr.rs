@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bit 16 - UTMI PLL Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn upllen(&mut self) -> UPLLEN_W<16> {
         UPLLEN_W::new(self)
     }
     #[doc = "Bits 20:23 - UTMI PLL Start-up Time"]
     #[inline(always)]
+    #[must_use]
     pub fn upllcount(&mut self) -> UPLLCOUNT_W<20> {
         UPLLCOUNT_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for CKGR_UCKR_SPEC {
 #[doc = "`write(|w| ..)` method takes [ckgr_uckr::W](W) writer structure"]
 impl crate::Writable for CKGR_UCKR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CKGR_UCKR to value 0x1020_0800"]
 impl crate::Resettable for CKGR_UCKR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x1020_0800
-    }
+    const RESET_VALUE: Self::Ux = 0x1020_0800;
 }

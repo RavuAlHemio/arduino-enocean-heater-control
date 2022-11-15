@@ -37,7 +37,7 @@ impl From<crate::W<BMR_SPEC>> for W {
 #[doc = "Field `TC0XC0S` reader - External Clock Signal 0 Selection"]
 pub type TC0XC0S_R = crate::FieldReader<u8, TC0XC0S_A>;
 #[doc = "External Clock Signal 0 Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TC0XC0S_A {
     #[doc = "0: Signal connected to XC0: TCLK0"]
@@ -102,7 +102,7 @@ impl<'a, const O: u8> TC0XC0S_W<'a, O> {
 #[doc = "Field `TC1XC1S` reader - External Clock Signal 1 Selection"]
 pub type TC1XC1S_R = crate::FieldReader<u8, TC1XC1S_A>;
 #[doc = "External Clock Signal 1 Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TC1XC1S_A {
     #[doc = "0: Signal connected to XC1: TCLK1"]
@@ -167,7 +167,7 @@ impl<'a, const O: u8> TC1XC1S_W<'a, O> {
 #[doc = "Field `TC2XC2S` reader - External Clock Signal 2 Selection"]
 pub type TC2XC2S_R = crate::FieldReader<u8, TC2XC2S_A>;
 #[doc = "External Clock Signal 2 Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TC2XC2S_A {
     #[doc = "0: Signal connected to XC2: TCLK2"]
@@ -357,76 +357,91 @@ impl R {
 impl W {
     #[doc = "Bits 0:1 - External Clock Signal 0 Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn tc0xc0s(&mut self) -> TC0XC0S_W<0> {
         TC0XC0S_W::new(self)
     }
     #[doc = "Bits 2:3 - External Clock Signal 1 Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn tc1xc1s(&mut self) -> TC1XC1S_W<2> {
         TC1XC1S_W::new(self)
     }
     #[doc = "Bits 4:5 - External Clock Signal 2 Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn tc2xc2s(&mut self) -> TC2XC2S_W<4> {
         TC2XC2S_W::new(self)
     }
     #[doc = "Bit 8 - Quadrature Decoder ENabled"]
     #[inline(always)]
+    #[must_use]
     pub fn qden(&mut self) -> QDEN_W<8> {
         QDEN_W::new(self)
     }
     #[doc = "Bit 9 - POSition ENabled"]
     #[inline(always)]
+    #[must_use]
     pub fn posen(&mut self) -> POSEN_W<9> {
         POSEN_W::new(self)
     }
     #[doc = "Bit 10 - SPEED ENabled"]
     #[inline(always)]
+    #[must_use]
     pub fn speeden(&mut self) -> SPEEDEN_W<10> {
         SPEEDEN_W::new(self)
     }
     #[doc = "Bit 11 - Quadrature Decoding TRANSparent"]
     #[inline(always)]
+    #[must_use]
     pub fn qdtrans(&mut self) -> QDTRANS_W<11> {
         QDTRANS_W::new(self)
     }
     #[doc = "Bit 12 - EDGe on PHA count mode"]
     #[inline(always)]
+    #[must_use]
     pub fn edgpha(&mut self) -> EDGPHA_W<12> {
         EDGPHA_W::new(self)
     }
     #[doc = "Bit 13 - INVerted phA"]
     #[inline(always)]
+    #[must_use]
     pub fn inva(&mut self) -> INVA_W<13> {
         INVA_W::new(self)
     }
     #[doc = "Bit 14 - INVerted phB"]
     #[inline(always)]
+    #[must_use]
     pub fn invb(&mut self) -> INVB_W<14> {
         INVB_W::new(self)
     }
     #[doc = "Bit 15 - INVerted InDeX"]
     #[inline(always)]
+    #[must_use]
     pub fn invidx(&mut self) -> INVIDX_W<15> {
         INVIDX_W::new(self)
     }
     #[doc = "Bit 16 - SWAP PHA and PHB"]
     #[inline(always)]
+    #[must_use]
     pub fn swap(&mut self) -> SWAP_W<16> {
         SWAP_W::new(self)
     }
     #[doc = "Bit 17 - InDeX pin is PHB pin"]
     #[inline(always)]
+    #[must_use]
     pub fn idxphb(&mut self) -> IDXPHB_W<17> {
         IDXPHB_W::new(self)
     }
     #[doc = "Bit 19"]
     #[inline(always)]
+    #[must_use]
     pub fn filter(&mut self) -> FILTER_W<19> {
         FILTER_W::new(self)
     }
     #[doc = "Bits 20:25 - MAXimum FILTer"]
     #[inline(always)]
+    #[must_use]
     pub fn maxfilt(&mut self) -> MAXFILT_W<20> {
         MAXFILT_W::new(self)
     }
@@ -449,11 +464,10 @@ impl crate::Readable for BMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [bmr::W](W) writer structure"]
 impl crate::Writable for BMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets BMR to value 0"]
 impl crate::Resettable for BMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

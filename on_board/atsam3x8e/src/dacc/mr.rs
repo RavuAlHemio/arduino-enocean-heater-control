@@ -37,7 +37,7 @@ impl From<crate::W<MR_SPEC>> for W {
 #[doc = "Field `TRGEN` reader - Trigger Enable"]
 pub type TRGEN_R = crate::BitReader<TRGEN_A>;
 #[doc = "Trigger Enable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TRGEN_A {
     #[doc = "0: External trigger mode disabled. DACC in free running mode."]
     DIS = 0,
@@ -91,7 +91,7 @@ pub type TRGSEL_W<'a, const O: u8> = crate::FieldWriter<'a, u32, MR_SPEC, u8, u8
 #[doc = "Field `WORD` reader - Word Transfer"]
 pub type WORD_R = crate::BitReader<WORD_A>;
 #[doc = "Word Transfer\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum WORD_A {
     #[doc = "0: Half-Word transfer"]
     HALF = 0,
@@ -153,7 +153,7 @@ pub type REFRESH_W<'a, const O: u8> = crate::FieldWriter<'a, u32, MR_SPEC, u8, u
 #[doc = "Field `USER_SEL` reader - User Channel Selection"]
 pub type USER_SEL_R = crate::FieldReader<u8, USER_SEL_A>;
 #[doc = "User Channel Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum USER_SEL_A {
     #[doc = "0: Channel 0"]
@@ -205,7 +205,7 @@ impl<'a, const O: u8> USER_SEL_W<'a, O> {
 #[doc = "Field `TAG` reader - Tag Selection Mode"]
 pub type TAG_R = crate::BitReader<TAG_A>;
 #[doc = "Tag Selection Mode\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TAG_A {
     #[doc = "0: Tag selection mode disabled. Using USER_SEL to select the channel for the conversion."]
     DIS = 0,
@@ -255,7 +255,7 @@ impl<'a, const O: u8> TAG_W<'a, O> {
 #[doc = "Field `MAXS` reader - Max Speed Mode"]
 pub type MAXS_R = crate::BitReader<MAXS_A>;
 #[doc = "Max Speed Mode\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MAXS_A {
     #[doc = "0: Normal Mode"]
     NORMAL = 0,
@@ -305,7 +305,7 @@ impl<'a, const O: u8> MAXS_W<'a, O> {
 #[doc = "Field `STARTUP` reader - Startup Time Selection"]
 pub type STARTUP_R = crate::FieldReader<u8, STARTUP_A>;
 #[doc = "Startup Time Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum STARTUP_A {
     #[doc = "0: 0 periods of DACClock"]
@@ -799,51 +799,61 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Trigger Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn trgen(&mut self) -> TRGEN_W<0> {
         TRGEN_W::new(self)
     }
     #[doc = "Bits 1:3 - Trigger Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn trgsel(&mut self) -> TRGSEL_W<1> {
         TRGSEL_W::new(self)
     }
     #[doc = "Bit 4 - Word Transfer"]
     #[inline(always)]
+    #[must_use]
     pub fn word(&mut self) -> WORD_W<4> {
         WORD_W::new(self)
     }
     #[doc = "Bit 5 - Sleep Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn sleep(&mut self) -> SLEEP_W<5> {
         SLEEP_W::new(self)
     }
     #[doc = "Bit 6 - Fast Wake up Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn fastwkup(&mut self) -> FASTWKUP_W<6> {
         FASTWKUP_W::new(self)
     }
     #[doc = "Bits 8:15 - Refresh Period"]
     #[inline(always)]
+    #[must_use]
     pub fn refresh(&mut self) -> REFRESH_W<8> {
         REFRESH_W::new(self)
     }
     #[doc = "Bits 16:17 - User Channel Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn user_sel(&mut self) -> USER_SEL_W<16> {
         USER_SEL_W::new(self)
     }
     #[doc = "Bit 20 - Tag Selection Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn tag(&mut self) -> TAG_W<20> {
         TAG_W::new(self)
     }
     #[doc = "Bit 21 - Max Speed Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn maxs(&mut self) -> MAXS_W<21> {
         MAXS_W::new(self)
     }
     #[doc = "Bits 24:29 - Startup Time Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn startup(&mut self) -> STARTUP_W<24> {
         STARTUP_W::new(self)
     }
@@ -866,11 +876,10 @@ impl crate::Readable for MR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mr::W](W) writer structure"]
 impl crate::Writable for MR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MR to value 0"]
 impl crate::Resettable for MR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

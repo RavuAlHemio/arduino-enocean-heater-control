@@ -37,7 +37,7 @@ impl From<crate::W<CMR2_SPEC>> for W {
 #[doc = "Field `TCCLKS` reader - Clock Selection"]
 pub type TCCLKS_R = crate::FieldReader<u8, TCCLKS_A>;
 #[doc = "Clock Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TCCLKS_A {
     #[doc = "0: Clock selected: TCLK1"]
@@ -171,7 +171,7 @@ pub type CLKI_W<'a, const O: u8> = crate::BitWriter<'a, u32, CMR2_SPEC, bool, O>
 #[doc = "Field `BURST` reader - Burst Signal Selection"]
 pub type BURST_R = crate::FieldReader<u8, BURST_A>;
 #[doc = "Burst Signal Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum BURST_A {
     #[doc = "0: The clock is not gated by an external signal."]
@@ -257,7 +257,7 @@ pub type LDBDIS_W<'a, const O: u8> = crate::BitWriter<'a, u32, CMR2_SPEC, bool, 
 #[doc = "Field `ETRGEDG` reader - External Trigger Edge Selection"]
 pub type ETRGEDG_R = crate::FieldReader<u8, ETRGEDG_A>;
 #[doc = "External Trigger Edge Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum ETRGEDG_A {
     #[doc = "0: The clock is not gated by an external signal."]
@@ -348,7 +348,7 @@ pub type WAVE_W<'a, const O: u8> = crate::BitWriter<'a, u32, CMR2_SPEC, bool, O>
 #[doc = "Field `LDRA` reader - RA Loading Edge Selection"]
 pub type LDRA_R = crate::FieldReader<u8, LDRA_A>;
 #[doc = "RA Loading Edge Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum LDRA_A {
     #[doc = "0: None"]
@@ -426,7 +426,7 @@ impl<'a, const O: u8> LDRA_W<'a, O> {
 #[doc = "Field `LDRB` reader - RB Loading Edge Selection"]
 pub type LDRB_R = crate::FieldReader<u8, LDRB_A>;
 #[doc = "RB Loading Edge Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum LDRB_A {
     #[doc = "0: None"]
@@ -561,56 +561,67 @@ impl R {
 impl W {
     #[doc = "Bits 0:2 - Clock Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn tcclks(&mut self) -> TCCLKS_W<0> {
         TCCLKS_W::new(self)
     }
     #[doc = "Bit 3 - Clock Invert"]
     #[inline(always)]
+    #[must_use]
     pub fn clki(&mut self) -> CLKI_W<3> {
         CLKI_W::new(self)
     }
     #[doc = "Bits 4:5 - Burst Signal Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn burst(&mut self) -> BURST_W<4> {
         BURST_W::new(self)
     }
     #[doc = "Bit 6 - Counter Clock Stopped with RB Loading"]
     #[inline(always)]
+    #[must_use]
     pub fn ldbstop(&mut self) -> LDBSTOP_W<6> {
         LDBSTOP_W::new(self)
     }
     #[doc = "Bit 7 - Counter Clock Disable with RB Loading"]
     #[inline(always)]
+    #[must_use]
     pub fn ldbdis(&mut self) -> LDBDIS_W<7> {
         LDBDIS_W::new(self)
     }
     #[doc = "Bits 8:9 - External Trigger Edge Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn etrgedg(&mut self) -> ETRGEDG_W<8> {
         ETRGEDG_W::new(self)
     }
     #[doc = "Bit 10 - TIOA or TIOB External Trigger Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn abetrg(&mut self) -> ABETRG_W<10> {
         ABETRG_W::new(self)
     }
     #[doc = "Bit 14 - RC Compare Trigger Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn cpctrg(&mut self) -> CPCTRG_W<14> {
         CPCTRG_W::new(self)
     }
     #[doc = "Bit 15 - Waveform Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn wave(&mut self) -> WAVE_W<15> {
         WAVE_W::new(self)
     }
     #[doc = "Bits 16:17 - RA Loading Edge Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn ldra(&mut self) -> LDRA_W<16> {
         LDRA_W::new(self)
     }
     #[doc = "Bits 18:19 - RB Loading Edge Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn ldrb(&mut self) -> LDRB_W<18> {
         LDRB_W::new(self)
     }
@@ -633,11 +644,10 @@ impl crate::Readable for CMR2_SPEC {
 #[doc = "`write(|w| ..)` method takes [cmr2::W](W) writer structure"]
 impl crate::Writable for CMR2_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CMR2 to value 0"]
 impl crate::Resettable for CMR2_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

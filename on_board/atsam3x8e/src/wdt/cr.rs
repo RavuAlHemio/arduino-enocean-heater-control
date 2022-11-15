@@ -22,7 +22,7 @@ impl From<crate::W<CR_SPEC>> for W {
 #[doc = "Field `WDRSTT` writer - Watchdog Restart"]
 pub type WDRSTT_W<'a, const O: u8> = crate::BitWriter<'a, u32, CR_SPEC, bool, O>;
 #[doc = "Password."]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum KEY_AW {
     #[doc = "165: Writing any other value in this field aborts the write operation."]
@@ -46,11 +46,13 @@ impl<'a, const O: u8> KEY_W<'a, O> {
 impl W {
     #[doc = "Bit 0 - Watchdog Restart"]
     #[inline(always)]
+    #[must_use]
     pub fn wdrstt(&mut self) -> WDRSTT_W<0> {
         WDRSTT_W::new(self)
     }
     #[doc = "Bits 24:31 - Password."]
     #[inline(always)]
+    #[must_use]
     pub fn key(&mut self) -> KEY_W<24> {
         KEY_W::new(self)
     }
@@ -69,4 +71,6 @@ impl crate::RegisterSpec for CR_SPEC {
 #[doc = "`write(|w| ..)` method takes [cr::W](W) writer structure"]
 impl crate::Writable for CR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

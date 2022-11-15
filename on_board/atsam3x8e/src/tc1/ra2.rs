@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:31 - Register A"]
     #[inline(always)]
+    #[must_use]
     pub fn ra(&mut self) -> RA_W<0> {
         RA_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for RA2_SPEC {
 #[doc = "`write(|w| ..)` method takes [ra2::W](W) writer structure"]
 impl crate::Writable for RA2_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets RA2 to value 0"]
 impl crate::Resettable for RA2_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -93,31 +93,37 @@ impl R {
 impl W {
     #[doc = "Bits 0:1 - Master 0 Priority"]
     #[inline(always)]
+    #[must_use]
     pub fn m0pr(&mut self) -> M0PR_W<0> {
         M0PR_W::new(self)
     }
     #[doc = "Bits 4:5 - Master 1 Priority"]
     #[inline(always)]
+    #[must_use]
     pub fn m1pr(&mut self) -> M1PR_W<4> {
         M1PR_W::new(self)
     }
     #[doc = "Bits 8:9 - Master 2 Priority"]
     #[inline(always)]
+    #[must_use]
     pub fn m2pr(&mut self) -> M2PR_W<8> {
         M2PR_W::new(self)
     }
     #[doc = "Bits 12:13 - Master 3 Priority"]
     #[inline(always)]
+    #[must_use]
     pub fn m3pr(&mut self) -> M3PR_W<12> {
         M3PR_W::new(self)
     }
     #[doc = "Bits 16:17 - Master 4 Priority"]
     #[inline(always)]
+    #[must_use]
     pub fn m4pr(&mut self) -> M4PR_W<16> {
         M4PR_W::new(self)
     }
     #[doc = "Bits 20:21 - Master 5 Priority"]
     #[inline(always)]
+    #[must_use]
     pub fn m5pr(&mut self) -> M5PR_W<20> {
         M5PR_W::new(self)
     }
@@ -140,11 +146,10 @@ impl crate::Readable for MATRIX_PRAS5_SPEC {
 #[doc = "`write(|w| ..)` method takes [matrix_pras5::W](W) writer structure"]
 impl crate::Writable for MATRIX_PRAS5_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MATRIX_PRAS5 to value 0"]
 impl crate::Resettable for MATRIX_PRAS5_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

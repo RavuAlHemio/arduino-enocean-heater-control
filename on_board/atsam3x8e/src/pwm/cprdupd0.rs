@@ -24,6 +24,7 @@ pub type CPRDUPD_W<'a, const O: u8> = crate::FieldWriter<'a, u32, CPRDUPD0_SPEC,
 impl W {
     #[doc = "Bits 0:23 - Channel Period Update"]
     #[inline(always)]
+    #[must_use]
     pub fn cprdupd(&mut self) -> CPRDUPD_W<0> {
         CPRDUPD_W::new(self)
     }
@@ -42,4 +43,6 @@ impl crate::RegisterSpec for CPRDUPD0_SPEC {
 #[doc = "`write(|w| ..)` method takes [cprdupd0::W](W) writer structure"]
 impl crate::Writable for CPRDUPD0_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

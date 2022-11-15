@@ -250,8 +250,5 @@ impl crate::Readable for MDSR_SPEC {
 }
 #[doc = "`reset()` method sets MDSR to value 0"]
 impl crate::Resettable for MDSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

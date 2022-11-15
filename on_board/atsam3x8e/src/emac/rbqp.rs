@@ -42,12 +42,13 @@ impl R {
     #[doc = "Bits 2:31 - Receive buffer queue pointer address"]
     #[inline(always)]
     pub fn addr(&self) -> ADDR_R {
-        ADDR_R::new(((self.bits >> 2) & 0x3fff_ffff) as u32)
+        ADDR_R::new((self.bits >> 2) & 0x3fff_ffff)
     }
 }
 impl W {
     #[doc = "Bits 2:31 - Receive buffer queue pointer address"]
     #[inline(always)]
+    #[must_use]
     pub fn addr(&mut self) -> ADDR_W<2> {
         ADDR_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for RBQP_SPEC {
 #[doc = "`write(|w| ..)` method takes [rbqp::W](W) writer structure"]
 impl crate::Writable for RBQP_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets RBQP to value 0"]
 impl crate::Resettable for RBQP_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

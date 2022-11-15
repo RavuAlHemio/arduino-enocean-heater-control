@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Synchronous Channels Update Unlock"]
     #[inline(always)]
+    #[must_use]
     pub fn updulock(&mut self) -> UPDULOCK_W<0> {
         UPDULOCK_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for SCUC_SPEC {
 #[doc = "`write(|w| ..)` method takes [scuc::W](W) writer structure"]
 impl crate::Writable for SCUC_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SCUC to value 0"]
 impl crate::Resettable for SCUC_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -32,26 +32,31 @@ pub type CALCLR_W<'a, const O: u8> = crate::BitWriter<'a, u32, SCCR_SPEC, bool, 
 impl W {
     #[doc = "Bit 0 - Acknowledge Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn ackclr(&mut self) -> ACKCLR_W<0> {
         ACKCLR_W::new(self)
     }
     #[doc = "Bit 1 - Alarm Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn alrclr(&mut self) -> ALRCLR_W<1> {
         ALRCLR_W::new(self)
     }
     #[doc = "Bit 2 - Second Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn secclr(&mut self) -> SECCLR_W<2> {
         SECCLR_W::new(self)
     }
     #[doc = "Bit 3 - Time Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn timclr(&mut self) -> TIMCLR_W<3> {
         TIMCLR_W::new(self)
     }
     #[doc = "Bit 4 - Calendar Clear"]
     #[inline(always)]
+    #[must_use]
     pub fn calclr(&mut self) -> CALCLR_W<4> {
         CALCLR_W::new(self)
     }
@@ -70,4 +75,6 @@ impl crate::RegisterSpec for SCCR_SPEC {
 #[doc = "`write(|w| ..)` method takes [sccr::W](W) writer structure"]
 impl crate::Writable for SCCR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

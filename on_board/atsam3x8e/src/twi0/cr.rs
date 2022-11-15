@@ -38,41 +38,49 @@ pub type SWRST_W<'a, const O: u8> = crate::BitWriter<'a, u32, CR_SPEC, bool, O>;
 impl W {
     #[doc = "Bit 0 - Send a START Condition"]
     #[inline(always)]
+    #[must_use]
     pub fn start(&mut self) -> START_W<0> {
         START_W::new(self)
     }
     #[doc = "Bit 1 - Send a STOP Condition"]
     #[inline(always)]
+    #[must_use]
     pub fn stop(&mut self) -> STOP_W<1> {
         STOP_W::new(self)
     }
     #[doc = "Bit 2 - TWI Master Mode Enabled"]
     #[inline(always)]
+    #[must_use]
     pub fn msen(&mut self) -> MSEN_W<2> {
         MSEN_W::new(self)
     }
     #[doc = "Bit 3 - TWI Master Mode Disabled"]
     #[inline(always)]
+    #[must_use]
     pub fn msdis(&mut self) -> MSDIS_W<3> {
         MSDIS_W::new(self)
     }
     #[doc = "Bit 4 - TWI Slave Mode Enabled"]
     #[inline(always)]
+    #[must_use]
     pub fn sven(&mut self) -> SVEN_W<4> {
         SVEN_W::new(self)
     }
     #[doc = "Bit 5 - TWI Slave Mode Disabled"]
     #[inline(always)]
+    #[must_use]
     pub fn svdis(&mut self) -> SVDIS_W<5> {
         SVDIS_W::new(self)
     }
     #[doc = "Bit 6 - SMBUS Quick Command"]
     #[inline(always)]
+    #[must_use]
     pub fn quick(&mut self) -> QUICK_W<6> {
         QUICK_W::new(self)
     }
     #[doc = "Bit 7 - Software Reset"]
     #[inline(always)]
+    #[must_use]
     pub fn swrst(&mut self) -> SWRST_W<7> {
         SWRST_W::new(self)
     }
@@ -91,4 +99,6 @@ impl crate::RegisterSpec for CR_SPEC {
 #[doc = "`write(|w| ..)` method takes [cr::W](W) writer structure"]
 impl crate::Writable for CR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

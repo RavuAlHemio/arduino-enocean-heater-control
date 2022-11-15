@@ -49,46 +49,55 @@ pub type NBUSYBKS_W<'a, const O: u8> =
 impl W {
     #[doc = "Bit 0 - Transmitted IN Data Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn txinis(&mut self) -> TXINIS_W<0> {
         TXINIS_W::new(self)
     }
     #[doc = "Bit 1 - Received OUT Data Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn rxoutis(&mut self) -> RXOUTIS_W<1> {
         RXOUTIS_W::new(self)
     }
     #[doc = "Bit 2 - Underflow Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn underfis(&mut self) -> UNDERFIS_W<2> {
         UNDERFIS_W::new(self)
     }
     #[doc = "Bit 3 - High bandwidth isochronous IN Underflow Error Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn hbisoinerris(&mut self) -> HBISOINERRIS_W<3> {
         HBISOINERRIS_W::new(self)
     }
     #[doc = "Bit 4 - High Bandwidth Isochronous IN Flush Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn hbisoflushis(&mut self) -> HBISOFLUSHIS_W<4> {
         HBISOFLUSHIS_W::new(self)
     }
     #[doc = "Bit 5 - Overflow Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn overfis(&mut self) -> OVERFIS_W<5> {
         OVERFIS_W::new(self)
     }
     #[doc = "Bit 6 - CRC Error Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn crcerris(&mut self) -> CRCERRIS_W<6> {
         CRCERRIS_W::new(self)
     }
     #[doc = "Bit 7 - Short Packet Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn shortpackets(&mut self) -> SHORTPACKETS_W<7> {
         SHORTPACKETS_W::new(self)
     }
     #[doc = "Bit 12 - Number of Busy Banks Interrupt Set"]
     #[inline(always)]
+    #[must_use]
     pub fn nbusybks(&mut self) -> NBUSYBKS_W<12> {
         NBUSYBKS_W::new(self)
     }
@@ -107,4 +116,6 @@ impl crate::RegisterSpec for ISOENPT_DEVEPTIFR0_ISOENPT_SPEC {
 #[doc = "`write(|w| ..)` method takes [isoenpt_deveptifr0_isoenpt::W](W) writer structure"]
 impl crate::Writable for ISOENPT_DEVEPTIFR0_ISOENPT_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

@@ -93,31 +93,37 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Data Toggle Error"]
     #[inline(always)]
+    #[must_use]
     pub fn datatgl(&mut self) -> DATATGL_W<0> {
         DATATGL_W::new(self)
     }
     #[doc = "Bit 1 - Data PID Error"]
     #[inline(always)]
+    #[must_use]
     pub fn datapid(&mut self) -> DATAPID_W<1> {
         DATAPID_W::new(self)
     }
     #[doc = "Bit 2 - PID Error"]
     #[inline(always)]
+    #[must_use]
     pub fn pid(&mut self) -> PID_W<2> {
         PID_W::new(self)
     }
     #[doc = "Bit 3 - Time-Out Error"]
     #[inline(always)]
+    #[must_use]
     pub fn timeout(&mut self) -> TIMEOUT_W<3> {
         TIMEOUT_W::new(self)
     }
     #[doc = "Bit 4 - CRC16 Error"]
     #[inline(always)]
+    #[must_use]
     pub fn crc16(&mut self) -> CRC16_W<4> {
         CRC16_W::new(self)
     }
     #[doc = "Bits 5:6 - Error Counter"]
     #[inline(always)]
+    #[must_use]
     pub fn counter(&mut self) -> COUNTER_W<5> {
         COUNTER_W::new(self)
     }
@@ -140,4 +146,6 @@ impl crate::Readable for HSTPIPERR_SPEC {
 #[doc = "`write(|w| ..)` method takes [hstpiperr::W](W) writer structure"]
 impl crate::Writable for HSTPIPERR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

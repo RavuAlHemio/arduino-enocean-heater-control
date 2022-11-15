@@ -37,7 +37,7 @@ impl From<crate::W<MMR_SPEC>> for W {
 #[doc = "Field `IADRSZ` reader - Internal Device Address Size"]
 pub type IADRSZ_R = crate::FieldReader<u8, IADRSZ_A>;
 #[doc = "Internal Device Address Size\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum IADRSZ_A {
     #[doc = "0: No internal device address"]
@@ -140,16 +140,19 @@ impl R {
 impl W {
     #[doc = "Bits 8:9 - Internal Device Address Size"]
     #[inline(always)]
+    #[must_use]
     pub fn iadrsz(&mut self) -> IADRSZ_W<8> {
         IADRSZ_W::new(self)
     }
     #[doc = "Bit 12 - Master Read Direction"]
     #[inline(always)]
+    #[must_use]
     pub fn mread(&mut self) -> MREAD_W<12> {
         MREAD_W::new(self)
     }
     #[doc = "Bits 16:22 - Device Address"]
     #[inline(always)]
+    #[must_use]
     pub fn dadr(&mut self) -> DADR_W<16> {
         DADR_W::new(self)
     }
@@ -172,11 +175,10 @@ impl crate::Readable for MMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mmr::W](W) writer structure"]
 impl crate::Writable for MMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MMR to value 0"]
 impl crate::Resettable for MMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

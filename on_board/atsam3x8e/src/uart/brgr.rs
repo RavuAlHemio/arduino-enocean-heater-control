@@ -48,6 +48,7 @@ impl R {
 impl W {
     #[doc = "Bits 0:15 - Clock Divisor"]
     #[inline(always)]
+    #[must_use]
     pub fn cd(&mut self) -> CD_W<0> {
         CD_W::new(self)
     }
@@ -70,11 +71,10 @@ impl crate::Readable for BRGR_SPEC {
 #[doc = "`write(|w| ..)` method takes [brgr::W](W) writer structure"]
 impl crate::Writable for BRGR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets BRGR to value 0"]
 impl crate::Resettable for BRGR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

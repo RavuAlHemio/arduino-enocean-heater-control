@@ -58,61 +58,73 @@ pub type RSTDTS_W<'a, const O: u8> =
 impl W {
     #[doc = "Bit 0 - Received IN Data Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn rxines(&mut self) -> RXINES_W<0> {
         RXINES_W::new(self)
     }
     #[doc = "Bit 1 - Transmitted OUT Data Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn txoutes(&mut self) -> TXOUTES_W<1> {
         TXOUTES_W::new(self)
     }
     #[doc = "Bit 2 - Underflow Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn underfies(&mut self) -> UNDERFIES_W<2> {
         UNDERFIES_W::new(self)
     }
     #[doc = "Bit 3 - Pipe Error Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn perres(&mut self) -> PERRES_W<3> {
         PERRES_W::new(self)
     }
     #[doc = "Bit 4 - NAKed Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn nakedes(&mut self) -> NAKEDES_W<4> {
         NAKEDES_W::new(self)
     }
     #[doc = "Bit 5 - Overflow Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn overfies(&mut self) -> OVERFIES_W<5> {
         OVERFIES_W::new(self)
     }
     #[doc = "Bit 6 - Received STALLed Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn rxstalldes(&mut self) -> RXSTALLDES_W<6> {
         RXSTALLDES_W::new(self)
     }
     #[doc = "Bit 7 - Short Packet Interrupt Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn shortpacketies(&mut self) -> SHORTPACKETIES_W<7> {
         SHORTPACKETIES_W::new(self)
     }
     #[doc = "Bit 12 - Number of Busy Banks Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn nbusybkes(&mut self) -> NBUSYBKES_W<12> {
         NBUSYBKES_W::new(self)
     }
     #[doc = "Bit 16 - Pipe Interrupts Disable HDMA Request Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pdishdmas(&mut self) -> PDISHDMAS_W<16> {
         PDISHDMAS_W::new(self)
     }
     #[doc = "Bit 17 - Pipe Freeze Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn pfreezes(&mut self) -> PFREEZES_W<17> {
         PFREEZES_W::new(self)
     }
     #[doc = "Bit 18 - Reset Data Toggle Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn rstdts(&mut self) -> RSTDTS_W<18> {
         RSTDTS_W::new(self)
     }
@@ -131,4 +143,6 @@ impl crate::RegisterSpec for INTPIPES_HSTPIPIER0_INTPIPES_SPEC {
 #[doc = "`write(|w| ..)` method takes [intpipes_hstpipier0_intpipes::W](W) writer structure"]
 impl crate::Writable for INTPIPES_HSTPIPIER0_INTPIPES_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

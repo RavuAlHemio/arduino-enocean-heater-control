@@ -41,7 +41,7 @@ pub type TX_PL_W<'a, const O: u8> = crate::FieldWriter<'a, u32, MAN_SPEC, u8, u8
 #[doc = "Field `TX_PP` reader - Transmitter Preamble Pattern"]
 pub type TX_PP_R = crate::FieldReader<u8, TX_PP_A>;
 #[doc = "Transmitter Preamble Pattern\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TX_PP_A {
     #[doc = "0: The preamble is composed of '1's"]
@@ -127,7 +127,7 @@ pub type RX_PL_W<'a, const O: u8> = crate::FieldWriter<'a, u32, MAN_SPEC, u8, u8
 #[doc = "Field `RX_PP` reader - Receiver Preamble Pattern detected"]
 pub type RX_PP_R = crate::FieldReader<u8, RX_PP_A>;
 #[doc = "Receiver Preamble Pattern detected\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum RX_PP_A {
     #[doc = "0: The preamble is composed of '1's"]
@@ -259,41 +259,49 @@ impl R {
 impl W {
     #[doc = "Bits 0:3 - Transmitter Preamble Length"]
     #[inline(always)]
+    #[must_use]
     pub fn tx_pl(&mut self) -> TX_PL_W<0> {
         TX_PL_W::new(self)
     }
     #[doc = "Bits 8:9 - Transmitter Preamble Pattern"]
     #[inline(always)]
+    #[must_use]
     pub fn tx_pp(&mut self) -> TX_PP_W<8> {
         TX_PP_W::new(self)
     }
     #[doc = "Bit 12 - Transmitter Manchester Polarity"]
     #[inline(always)]
+    #[must_use]
     pub fn tx_mpol(&mut self) -> TX_MPOL_W<12> {
         TX_MPOL_W::new(self)
     }
     #[doc = "Bits 16:19 - Receiver Preamble Length"]
     #[inline(always)]
+    #[must_use]
     pub fn rx_pl(&mut self) -> RX_PL_W<16> {
         RX_PL_W::new(self)
     }
     #[doc = "Bits 24:25 - Receiver Preamble Pattern detected"]
     #[inline(always)]
+    #[must_use]
     pub fn rx_pp(&mut self) -> RX_PP_W<24> {
         RX_PP_W::new(self)
     }
     #[doc = "Bit 28 - Receiver Manchester Polarity"]
     #[inline(always)]
+    #[must_use]
     pub fn rx_mpol(&mut self) -> RX_MPOL_W<28> {
         RX_MPOL_W::new(self)
     }
     #[doc = "Bit 29 - Must Be Set to 1"]
     #[inline(always)]
+    #[must_use]
     pub fn one(&mut self) -> ONE_W<29> {
         ONE_W::new(self)
     }
     #[doc = "Bit 30 - Drift Compensation"]
     #[inline(always)]
+    #[must_use]
     pub fn drift(&mut self) -> DRIFT_W<30> {
         DRIFT_W::new(self)
     }
@@ -316,11 +324,10 @@ impl crate::Readable for MAN_SPEC {
 #[doc = "`write(|w| ..)` method takes [man::W](W) writer structure"]
 impl crate::Writable for MAN_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MAN to value 0xb001_1004"]
 impl crate::Resettable for MAN_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0xb001_1004
-    }
+    const RESET_VALUE: Self::Ux = 0xb001_1004;
 }

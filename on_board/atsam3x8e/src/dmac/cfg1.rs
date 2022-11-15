@@ -45,7 +45,7 @@ pub type DST_PER_W<'a, const O: u8> = crate::FieldWriter<'a, u32, CFG1_SPEC, u8,
 #[doc = "Field `SRC_H2SEL` reader - Software or Hardware Selection for the Source"]
 pub type SRC_H2SEL_R = crate::BitReader<SRC_H2SEL_A>;
 #[doc = "Software or Hardware Selection for the Source\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SRC_H2SEL_A {
     #[doc = "0: Software handshaking interface is used to trigger a transfer request."]
     SW = 0,
@@ -95,7 +95,7 @@ impl<'a, const O: u8> SRC_H2SEL_W<'a, O> {
 #[doc = "Field `DST_H2SEL` reader - Software or Hardware Selection for the Destination"]
 pub type DST_H2SEL_R = crate::BitReader<DST_H2SEL_A>;
 #[doc = "Software or Hardware Selection for the Destination\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DST_H2SEL_A {
     #[doc = "0: Software handshaking interface is used to trigger a transfer request."]
     SW = 0,
@@ -145,7 +145,7 @@ impl<'a, const O: u8> DST_H2SEL_W<'a, O> {
 #[doc = "Field `SOD` reader - Stop On Done"]
 pub type SOD_R = crate::BitReader<SOD_A>;
 #[doc = "Stop On Done\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SOD_A {
     #[doc = "0: STOP ON DONE disabled, the descriptor fetch operation ignores DONE Field of CTRLA register."]
     DISABLE = 0,
@@ -195,7 +195,7 @@ impl<'a, const O: u8> SOD_W<'a, O> {
 #[doc = "Field `LOCK_IF` reader - Interface Lock"]
 pub type LOCK_IF_R = crate::BitReader<LOCK_IF_A>;
 #[doc = "Interface Lock\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LOCK_IF_A {
     #[doc = "0: Interface Lock capability is disabled"]
     DISABLE = 0,
@@ -245,7 +245,7 @@ impl<'a, const O: u8> LOCK_IF_W<'a, O> {
 #[doc = "Field `LOCK_B` reader - Bus Lock"]
 pub type LOCK_B_R = crate::BitReader<LOCK_B_A>;
 #[doc = "Bus Lock\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LOCK_B_A {
     #[doc = "0: AHB Bus Locking capability is disabled."]
     DISABLE = 0,
@@ -283,7 +283,7 @@ impl<'a, const O: u8> LOCK_B_W<'a, O> {
 #[doc = "Field `LOCK_IF_L` reader - Master Interface Arbiter Lock"]
 pub type LOCK_IF_L_R = crate::BitReader<LOCK_IF_L_A>;
 #[doc = "Master Interface Arbiter Lock\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LOCK_IF_L_A {
     #[doc = "0: The Master Interface Arbiter is locked by the channel x for a chunk transfer."]
     CHUNK = 0,
@@ -337,7 +337,7 @@ pub type AHB_PROT_W<'a, const O: u8> = crate::FieldWriter<'a, u32, CFG1_SPEC, u8
 #[doc = "Field `FIFOCFG` reader - FIFO Configuration"]
 pub type FIFOCFG_R = crate::FieldReader<u8, FIFOCFG_A>;
 #[doc = "FIFO Configuration\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum FIFOCFG_A {
     #[doc = "0: The largest defined length AHB burst is performed on the destination AHB interface."]
@@ -454,51 +454,61 @@ impl R {
 impl W {
     #[doc = "Bits 0:3 - Source with Peripheral identifier"]
     #[inline(always)]
+    #[must_use]
     pub fn src_per(&mut self) -> SRC_PER_W<0> {
         SRC_PER_W::new(self)
     }
     #[doc = "Bits 4:7 - Destination with Peripheral identifier"]
     #[inline(always)]
+    #[must_use]
     pub fn dst_per(&mut self) -> DST_PER_W<4> {
         DST_PER_W::new(self)
     }
     #[doc = "Bit 9 - Software or Hardware Selection for the Source"]
     #[inline(always)]
+    #[must_use]
     pub fn src_h2sel(&mut self) -> SRC_H2SEL_W<9> {
         SRC_H2SEL_W::new(self)
     }
     #[doc = "Bit 13 - Software or Hardware Selection for the Destination"]
     #[inline(always)]
+    #[must_use]
     pub fn dst_h2sel(&mut self) -> DST_H2SEL_W<13> {
         DST_H2SEL_W::new(self)
     }
     #[doc = "Bit 16 - Stop On Done"]
     #[inline(always)]
+    #[must_use]
     pub fn sod(&mut self) -> SOD_W<16> {
         SOD_W::new(self)
     }
     #[doc = "Bit 20 - Interface Lock"]
     #[inline(always)]
+    #[must_use]
     pub fn lock_if(&mut self) -> LOCK_IF_W<20> {
         LOCK_IF_W::new(self)
     }
     #[doc = "Bit 21 - Bus Lock"]
     #[inline(always)]
+    #[must_use]
     pub fn lock_b(&mut self) -> LOCK_B_W<21> {
         LOCK_B_W::new(self)
     }
     #[doc = "Bit 22 - Master Interface Arbiter Lock"]
     #[inline(always)]
+    #[must_use]
     pub fn lock_if_l(&mut self) -> LOCK_IF_L_W<22> {
         LOCK_IF_L_W::new(self)
     }
     #[doc = "Bits 24:26 - AHB Protection"]
     #[inline(always)]
+    #[must_use]
     pub fn ahb_prot(&mut self) -> AHB_PROT_W<24> {
         AHB_PROT_W::new(self)
     }
     #[doc = "Bits 28:29 - FIFO Configuration"]
     #[inline(always)]
+    #[must_use]
     pub fn fifocfg(&mut self) -> FIFOCFG_W<28> {
         FIFOCFG_W::new(self)
     }
@@ -521,11 +531,10 @@ impl crate::Readable for CFG1_SPEC {
 #[doc = "`write(|w| ..)` method takes [cfg1::W](W) writer structure"]
 impl crate::Writable for CFG1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CFG1 to value 0x0100_0000"]
 impl crate::Resettable for CFG1_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0100_0000
-    }
+    const RESET_VALUE: Self::Ux = 0x0100_0000;
 }

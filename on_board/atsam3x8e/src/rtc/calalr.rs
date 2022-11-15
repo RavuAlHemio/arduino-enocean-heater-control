@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bits 16:20 - Month Alarm"]
     #[inline(always)]
+    #[must_use]
     pub fn month(&mut self) -> MONTH_W<16> {
         MONTH_W::new(self)
     }
     #[doc = "Bit 23 - Month Alarm Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn mthen(&mut self) -> MTHEN_W<23> {
         MTHEN_W::new(self)
     }
     #[doc = "Bits 24:29 - Date Alarm"]
     #[inline(always)]
+    #[must_use]
     pub fn date(&mut self) -> DATE_W<24> {
         DATE_W::new(self)
     }
     #[doc = "Bit 31 - Date Alarm Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn dateen(&mut self) -> DATEEN_W<31> {
         DATEEN_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for CALALR_SPEC {
 #[doc = "`write(|w| ..)` method takes [calalr::W](W) writer structure"]
 impl crate::Writable for CALALR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CALALR to value 0x0101_0000"]
 impl crate::Resettable for CALALR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0x0101_0000
-    }
+    const RESET_VALUE: Self::Ux = 0x0101_0000;
 }

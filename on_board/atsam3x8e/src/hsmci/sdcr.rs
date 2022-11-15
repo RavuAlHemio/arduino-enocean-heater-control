@@ -37,7 +37,7 @@ impl From<crate::W<SDCR_SPEC>> for W {
 #[doc = "Field `SDCSEL` reader - SDCard/SDIO Slot"]
 pub type SDCSEL_R = crate::FieldReader<u8, SDCSEL_A>;
 #[doc = "SDCard/SDIO Slot\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SDCSEL_A {
     #[doc = "0: Slot A is selected."]
@@ -115,7 +115,7 @@ impl<'a, const O: u8> SDCSEL_W<'a, O> {
 #[doc = "Field `SDCBUS` reader - SDCard/SDIO Bus Width"]
 pub type SDCBUS_R = crate::FieldReader<u8, SDCBUS_A>;
 #[doc = "SDCard/SDIO Bus Width\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SDCBUS_A {
     #[doc = "0: 1 bit"]
@@ -192,11 +192,13 @@ impl R {
 impl W {
     #[doc = "Bits 0:1 - SDCard/SDIO Slot"]
     #[inline(always)]
+    #[must_use]
     pub fn sdcsel(&mut self) -> SDCSEL_W<0> {
         SDCSEL_W::new(self)
     }
     #[doc = "Bits 6:7 - SDCard/SDIO Bus Width"]
     #[inline(always)]
+    #[must_use]
     pub fn sdcbus(&mut self) -> SDCBUS_W<6> {
         SDCBUS_W::new(self)
     }
@@ -219,11 +221,10 @@ impl crate::Readable for SDCR_SPEC {
 #[doc = "`write(|w| ..)` method takes [sdcr::W](W) writer structure"]
 impl crate::Writable for SDCR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SDCR to value 0"]
 impl crate::Resettable for SDCR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

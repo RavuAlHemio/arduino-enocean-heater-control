@@ -22,7 +22,7 @@ impl From<crate::W<CMDR_SPEC>> for W {
 #[doc = "Field `CMDNB` writer - Command Number"]
 pub type CMDNB_W<'a, const O: u8> = crate::FieldWriter<'a, u32, CMDR_SPEC, u8, u8, 6, O>;
 #[doc = "Response Type"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum RSPTYP_AW {
     #[doc = "0: No response"]
@@ -66,7 +66,7 @@ impl<'a, const O: u8> RSPTYP_W<'a, O> {
     }
 }
 #[doc = "Special Command"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SPCMD_AW {
     #[doc = "0: Not a special CMD."]
@@ -137,7 +137,7 @@ impl<'a, const O: u8> SPCMD_W<'a, O> {
     }
 }
 #[doc = "Open Drain Command"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OPDCMD_AW {
     #[doc = "0: Push pull command."]
     PUSHPULL = 0,
@@ -165,7 +165,7 @@ impl<'a, const O: u8> OPDCMD_W<'a, O> {
     }
 }
 #[doc = "Max Latency for Command to Response"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MAXLAT_AW {
     #[doc = "0: 5-cycle max latency."]
     _5 = 0,
@@ -193,7 +193,7 @@ impl<'a, const O: u8> MAXLAT_W<'a, O> {
     }
 }
 #[doc = "Transfer Command"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TRCMD_AW {
     #[doc = "0: No data transfer"]
@@ -229,7 +229,7 @@ impl<'a, const O: u8> TRCMD_W<'a, O> {
     }
 }
 #[doc = "Transfer Direction"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TRDIR_AW {
     #[doc = "0: Write."]
     WRITE = 0,
@@ -257,7 +257,7 @@ impl<'a, const O: u8> TRDIR_W<'a, O> {
     }
 }
 #[doc = "Transfer Type"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TRTYP_AW {
     #[doc = "0: MMC/SD Card Single Block"]
@@ -307,7 +307,7 @@ impl<'a, const O: u8> TRTYP_W<'a, O> {
     }
 }
 #[doc = "SDIO Special Command"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum IOSPCMD_AW {
     #[doc = "0: Not an SDIO Special Command"]
@@ -343,7 +343,7 @@ impl<'a, const O: u8> IOSPCMD_W<'a, O> {
     }
 }
 #[doc = "ATA with Command Completion Signal"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ATACS_AW {
     #[doc = "0: Normal operation mode."]
     NORMAL = 0,
@@ -375,56 +375,67 @@ pub type BOOT_ACK_W<'a, const O: u8> = crate::BitWriter<'a, u32, CMDR_SPEC, bool
 impl W {
     #[doc = "Bits 0:5 - Command Number"]
     #[inline(always)]
+    #[must_use]
     pub fn cmdnb(&mut self) -> CMDNB_W<0> {
         CMDNB_W::new(self)
     }
     #[doc = "Bits 6:7 - Response Type"]
     #[inline(always)]
+    #[must_use]
     pub fn rsptyp(&mut self) -> RSPTYP_W<6> {
         RSPTYP_W::new(self)
     }
     #[doc = "Bits 8:10 - Special Command"]
     #[inline(always)]
+    #[must_use]
     pub fn spcmd(&mut self) -> SPCMD_W<8> {
         SPCMD_W::new(self)
     }
     #[doc = "Bit 11 - Open Drain Command"]
     #[inline(always)]
+    #[must_use]
     pub fn opdcmd(&mut self) -> OPDCMD_W<11> {
         OPDCMD_W::new(self)
     }
     #[doc = "Bit 12 - Max Latency for Command to Response"]
     #[inline(always)]
+    #[must_use]
     pub fn maxlat(&mut self) -> MAXLAT_W<12> {
         MAXLAT_W::new(self)
     }
     #[doc = "Bits 16:17 - Transfer Command"]
     #[inline(always)]
+    #[must_use]
     pub fn trcmd(&mut self) -> TRCMD_W<16> {
         TRCMD_W::new(self)
     }
     #[doc = "Bit 18 - Transfer Direction"]
     #[inline(always)]
+    #[must_use]
     pub fn trdir(&mut self) -> TRDIR_W<18> {
         TRDIR_W::new(self)
     }
     #[doc = "Bits 19:21 - Transfer Type"]
     #[inline(always)]
+    #[must_use]
     pub fn trtyp(&mut self) -> TRTYP_W<19> {
         TRTYP_W::new(self)
     }
     #[doc = "Bits 24:25 - SDIO Special Command"]
     #[inline(always)]
+    #[must_use]
     pub fn iospcmd(&mut self) -> IOSPCMD_W<24> {
         IOSPCMD_W::new(self)
     }
     #[doc = "Bit 26 - ATA with Command Completion Signal"]
     #[inline(always)]
+    #[must_use]
     pub fn atacs(&mut self) -> ATACS_W<26> {
         ATACS_W::new(self)
     }
     #[doc = "Bit 27 - Boot Operation Acknowledge"]
     #[inline(always)]
+    #[must_use]
     pub fn boot_ack(&mut self) -> BOOT_ACK_W<27> {
         BOOT_ACK_W::new(self)
     }
@@ -443,4 +454,6 @@ impl crate::RegisterSpec for CMDR_SPEC {
 #[doc = "`write(|w| ..)` method takes [cmdr::W](W) writer structure"]
 impl crate::Writable for CMDR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

@@ -159,8 +159,5 @@ impl crate::Readable for LIN_MODE_IMR_LIN_MODE_SPEC {
 }
 #[doc = "`reset()` method sets IMR_LIN_MODE to value 0"]
 impl crate::Resettable for LIN_MODE_IMR_LIN_MODE_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -37,7 +37,7 @@ impl From<crate::W<WAVE_EQ_1_CMR1_WAVE_EQ_1_SPEC>> for W {
 #[doc = "Field `TCCLKS` reader - Clock Selection"]
 pub type TCCLKS_R = crate::FieldReader<u8, TCCLKS_A>;
 #[doc = "Clock Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TCCLKS_A {
     #[doc = "0: Clock selected: TCLK1"]
@@ -173,7 +173,7 @@ pub type CLKI_W<'a, const O: u8> =
 #[doc = "Field `BURST` reader - Burst Signal Selection"]
 pub type BURST_R = crate::FieldReader<u8, BURST_A>;
 #[doc = "Burst Signal Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum BURST_A {
     #[doc = "0: The clock is not gated by an external signal."]
@@ -262,7 +262,7 @@ pub type CPCDIS_W<'a, const O: u8> =
 #[doc = "Field `EEVTEDG` reader - External Event Edge Selection"]
 pub type EEVTEDG_R = crate::FieldReader<u8, EEVTEDG_A>;
 #[doc = "External Event Edge Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum EEVTEDG_A {
     #[doc = "0: None"]
@@ -341,7 +341,7 @@ impl<'a, const O: u8> EEVTEDG_W<'a, O> {
 #[doc = "Field `EEVT` reader - External Event Selection"]
 pub type EEVT_R = crate::FieldReader<u8, EEVT_A>;
 #[doc = "External Event Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum EEVT_A {
     #[doc = "0: TIOB"]
@@ -425,7 +425,7 @@ pub type ENETRG_W<'a, const O: u8> =
 #[doc = "Field `WAVSEL` reader - Waveform Selection"]
 pub type WAVSEL_R = crate::FieldReader<u8, WAVSEL_A>;
 #[doc = "Waveform Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum WAVSEL_A {
     #[doc = "0: UP mode without automatic trigger on RC Compare"]
@@ -509,7 +509,7 @@ pub type WAVE_W<'a, const O: u8> =
 #[doc = "Field `ACPA` reader - RA Compare Effect on TIOA"]
 pub type ACPA_R = crate::FieldReader<u8, ACPA_A>;
 #[doc = "RA Compare Effect on TIOA\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum ACPA_A {
     #[doc = "0: None"]
@@ -588,7 +588,7 @@ impl<'a, const O: u8> ACPA_W<'a, O> {
 #[doc = "Field `ACPC` reader - RC Compare Effect on TIOA"]
 pub type ACPC_R = crate::FieldReader<u8, ACPC_A>;
 #[doc = "RC Compare Effect on TIOA\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum ACPC_A {
     #[doc = "0: None"]
@@ -667,7 +667,7 @@ impl<'a, const O: u8> ACPC_W<'a, O> {
 #[doc = "Field `AEEVT` reader - External Event Effect on TIOA"]
 pub type AEEVT_R = crate::FieldReader<u8, AEEVT_A>;
 #[doc = "External Event Effect on TIOA\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum AEEVT_A {
     #[doc = "0: None"]
@@ -746,7 +746,7 @@ impl<'a, const O: u8> AEEVT_W<'a, O> {
 #[doc = "Field `ASWTRG` reader - Software Trigger Effect on TIOA"]
 pub type ASWTRG_R = crate::FieldReader<u8, ASWTRG_A>;
 #[doc = "Software Trigger Effect on TIOA\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum ASWTRG_A {
     #[doc = "0: None"]
@@ -825,7 +825,7 @@ impl<'a, const O: u8> ASWTRG_W<'a, O> {
 #[doc = "Field `BCPB` reader - RB Compare Effect on TIOB"]
 pub type BCPB_R = crate::FieldReader<u8, BCPB_A>;
 #[doc = "RB Compare Effect on TIOB\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum BCPB_A {
     #[doc = "0: None"]
@@ -904,7 +904,7 @@ impl<'a, const O: u8> BCPB_W<'a, O> {
 #[doc = "Field `BCPC` reader - RC Compare Effect on TIOB"]
 pub type BCPC_R = crate::FieldReader<u8, BCPC_A>;
 #[doc = "RC Compare Effect on TIOB\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum BCPC_A {
     #[doc = "0: None"]
@@ -983,7 +983,7 @@ impl<'a, const O: u8> BCPC_W<'a, O> {
 #[doc = "Field `BEEVT` reader - External Event Effect on TIOB"]
 pub type BEEVT_R = crate::FieldReader<u8, BEEVT_A>;
 #[doc = "External Event Effect on TIOB\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum BEEVT_A {
     #[doc = "0: None"]
@@ -1062,7 +1062,7 @@ impl<'a, const O: u8> BEEVT_W<'a, O> {
 #[doc = "Field `BSWTRG` reader - Software Trigger Effect on TIOB"]
 pub type BSWTRG_R = crate::FieldReader<u8, BSWTRG_A>;
 #[doc = "Software Trigger Effect on TIOB\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum BSWTRG_A {
     #[doc = "0: None"]
@@ -1233,91 +1233,109 @@ impl R {
 impl W {
     #[doc = "Bits 0:2 - Clock Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn tcclks(&mut self) -> TCCLKS_W<0> {
         TCCLKS_W::new(self)
     }
     #[doc = "Bit 3 - Clock Invert"]
     #[inline(always)]
+    #[must_use]
     pub fn clki(&mut self) -> CLKI_W<3> {
         CLKI_W::new(self)
     }
     #[doc = "Bits 4:5 - Burst Signal Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn burst(&mut self) -> BURST_W<4> {
         BURST_W::new(self)
     }
     #[doc = "Bit 6 - Counter Clock Stopped with RC Compare"]
     #[inline(always)]
+    #[must_use]
     pub fn cpcstop(&mut self) -> CPCSTOP_W<6> {
         CPCSTOP_W::new(self)
     }
     #[doc = "Bit 7 - Counter Clock Disable with RC Compare"]
     #[inline(always)]
+    #[must_use]
     pub fn cpcdis(&mut self) -> CPCDIS_W<7> {
         CPCDIS_W::new(self)
     }
     #[doc = "Bits 8:9 - External Event Edge Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn eevtedg(&mut self) -> EEVTEDG_W<8> {
         EEVTEDG_W::new(self)
     }
     #[doc = "Bits 10:11 - External Event Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn eevt(&mut self) -> EEVT_W<10> {
         EEVT_W::new(self)
     }
     #[doc = "Bit 12 - External Event Trigger Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn enetrg(&mut self) -> ENETRG_W<12> {
         ENETRG_W::new(self)
     }
     #[doc = "Bits 13:14 - Waveform Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn wavsel(&mut self) -> WAVSEL_W<13> {
         WAVSEL_W::new(self)
     }
     #[doc = "Bit 15 - Waveform Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn wave(&mut self) -> WAVE_W<15> {
         WAVE_W::new(self)
     }
     #[doc = "Bits 16:17 - RA Compare Effect on TIOA"]
     #[inline(always)]
+    #[must_use]
     pub fn acpa(&mut self) -> ACPA_W<16> {
         ACPA_W::new(self)
     }
     #[doc = "Bits 18:19 - RC Compare Effect on TIOA"]
     #[inline(always)]
+    #[must_use]
     pub fn acpc(&mut self) -> ACPC_W<18> {
         ACPC_W::new(self)
     }
     #[doc = "Bits 20:21 - External Event Effect on TIOA"]
     #[inline(always)]
+    #[must_use]
     pub fn aeevt(&mut self) -> AEEVT_W<20> {
         AEEVT_W::new(self)
     }
     #[doc = "Bits 22:23 - Software Trigger Effect on TIOA"]
     #[inline(always)]
+    #[must_use]
     pub fn aswtrg(&mut self) -> ASWTRG_W<22> {
         ASWTRG_W::new(self)
     }
     #[doc = "Bits 24:25 - RB Compare Effect on TIOB"]
     #[inline(always)]
+    #[must_use]
     pub fn bcpb(&mut self) -> BCPB_W<24> {
         BCPB_W::new(self)
     }
     #[doc = "Bits 26:27 - RC Compare Effect on TIOB"]
     #[inline(always)]
+    #[must_use]
     pub fn bcpc(&mut self) -> BCPC_W<26> {
         BCPC_W::new(self)
     }
     #[doc = "Bits 28:29 - External Event Effect on TIOB"]
     #[inline(always)]
+    #[must_use]
     pub fn beevt(&mut self) -> BEEVT_W<28> {
         BEEVT_W::new(self)
     }
     #[doc = "Bits 30:31 - Software Trigger Effect on TIOB"]
     #[inline(always)]
+    #[must_use]
     pub fn bswtrg(&mut self) -> BSWTRG_W<30> {
         BSWTRG_W::new(self)
     }
@@ -1340,11 +1358,10 @@ impl crate::Readable for WAVE_EQ_1_CMR1_WAVE_EQ_1_SPEC {
 #[doc = "`write(|w| ..)` method takes [wave_eq_1_cmr1_wave_eq_1::W](W) writer structure"]
 impl crate::Writable for WAVE_EQ_1_CMR1_WAVE_EQ_1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CMR1_WAVE_EQ_1 to value 0"]
 impl crate::Resettable for WAVE_EQ_1_CMR1_WAVE_EQ_1_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -26,11 +26,13 @@ pub type SWRST_W<'a, const O: u8> = crate::BitWriter<'a, u32, ECC_CTRL_SPEC, boo
 impl W {
     #[doc = "Bit 0 - Reset ECC"]
     #[inline(always)]
+    #[must_use]
     pub fn rst(&mut self) -> RST_W<0> {
         RST_W::new(self)
     }
     #[doc = "Bit 1 - Software Reset"]
     #[inline(always)]
+    #[must_use]
     pub fn swrst(&mut self) -> SWRST_W<1> {
         SWRST_W::new(self)
     }
@@ -49,11 +51,10 @@ impl crate::RegisterSpec for ECC_CTRL_SPEC {
 #[doc = "`write(|w| ..)` method takes [ecc_ctrl::W](W) writer structure"]
 impl crate::Writable for ECC_CTRL_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets ECC_CTRL to value 0"]
 impl crate::Resettable for ECC_CTRL_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

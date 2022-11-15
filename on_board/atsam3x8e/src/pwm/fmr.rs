@@ -66,16 +66,19 @@ impl R {
 impl W {
     #[doc = "Bits 0:7 - Fault Polarity (fault input bit varies from 0 to 5)"]
     #[inline(always)]
+    #[must_use]
     pub fn fpol(&mut self) -> FPOL_W<0> {
         FPOL_W::new(self)
     }
     #[doc = "Bits 8:15 - Fault Activation Mode (fault input bit varies from 0 to 5)"]
     #[inline(always)]
+    #[must_use]
     pub fn fmod(&mut self) -> FMOD_W<8> {
         FMOD_W::new(self)
     }
     #[doc = "Bits 16:23 - Fault Filtering (fault input bit varies from 0 to 5)"]
     #[inline(always)]
+    #[must_use]
     pub fn ffil(&mut self) -> FFIL_W<16> {
         FFIL_W::new(self)
     }
@@ -98,11 +101,10 @@ impl crate::Readable for FMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [fmr::W](W) writer structure"]
 impl crate::Writable for FMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets FMR to value 0"]
 impl crate::Resettable for FMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

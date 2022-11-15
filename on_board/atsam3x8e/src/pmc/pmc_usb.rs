@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bit 0 - USB Input Clock Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn usbs(&mut self) -> USBS_W<0> {
         USBS_W::new(self)
     }
     #[doc = "Bits 8:11 - Divider for USB Clock."]
     #[inline(always)]
+    #[must_use]
     pub fn usbdiv(&mut self) -> USBDIV_W<8> {
         USBDIV_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for PMC_USB_SPEC {
 #[doc = "`write(|w| ..)` method takes [pmc_usb::W](W) writer structure"]
 impl crate::Writable for PMC_USB_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets PMC_USB to value 0"]
 impl crate::Resettable for PMC_USB_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

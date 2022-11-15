@@ -152,8 +152,5 @@ impl crate::Readable for EBCISR_SPEC {
 }
 #[doc = "`reset()` method sets EBCISR to value 0"]
 impl crate::Resettable for EBCISR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

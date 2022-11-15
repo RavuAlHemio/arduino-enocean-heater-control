@@ -51,17 +51,19 @@ impl R {
     #[doc = "Bits 8:31 - Write Protect KEY (Write-only)"]
     #[inline(always)]
     pub fn wpkey(&self) -> WPKEY_R {
-        WPKEY_R::new(((self.bits >> 8) & 0x00ff_ffff) as u32)
+        WPKEY_R::new((self.bits >> 8) & 0x00ff_ffff)
     }
 }
 impl W {
     #[doc = "Bit 0 - Write Protect ENable"]
     #[inline(always)]
+    #[must_use]
     pub fn wpen(&mut self) -> WPEN_W<0> {
         WPEN_W::new(self)
     }
     #[doc = "Bits 8:31 - Write Protect KEY (Write-only)"]
     #[inline(always)]
+    #[must_use]
     pub fn wpkey(&mut self) -> WPKEY_W<8> {
         WPKEY_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for MATRIX_WPMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [matrix_wpmr::W](W) writer structure"]
 impl crate::Writable for MATRIX_WPMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MATRIX_WPMR to value 0"]
 impl crate::Resettable for MATRIX_WPMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

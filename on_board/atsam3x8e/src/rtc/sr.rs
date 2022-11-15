@@ -16,7 +16,7 @@ impl From<crate::R<SR_SPEC>> for R {
 #[doc = "Field `ACKUPD` reader - Acknowledge for Update"]
 pub type ACKUPD_R = crate::BitReader<ACKUPD_A>;
 #[doc = "Acknowledge for Update\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ACKUPD_A {
     #[doc = "0: Time and calendar registers cannot be updated."]
     FREERUN = 0,
@@ -52,7 +52,7 @@ impl ACKUPD_R {
 #[doc = "Field `ALARM` reader - Alarm Flag"]
 pub type ALARM_R = crate::BitReader<ALARM_A>;
 #[doc = "Alarm Flag\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ALARM_A {
     #[doc = "0: No alarm matching condition occurred."]
     NO_ALARMEVENT = 0,
@@ -88,7 +88,7 @@ impl ALARM_R {
 #[doc = "Field `SEC` reader - Second Event"]
 pub type SEC_R = crate::BitReader<SEC_A>;
 #[doc = "Second Event\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SEC_A {
     #[doc = "0: No second event has occurred since the last clear."]
     NO_SECEVENT = 0,
@@ -124,7 +124,7 @@ impl SEC_R {
 #[doc = "Field `TIMEV` reader - Time Event"]
 pub type TIMEV_R = crate::BitReader<TIMEV_A>;
 #[doc = "Time Event\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TIMEV_A {
     #[doc = "0: No time event has occurred since the last clear."]
     NO_TIMEVENT = 0,
@@ -160,7 +160,7 @@ impl TIMEV_R {
 #[doc = "Field `CALEV` reader - Calendar Event"]
 pub type CALEV_R = crate::BitReader<CALEV_A>;
 #[doc = "Calendar Event\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CALEV_A {
     #[doc = "0: No calendar event has occurred since the last clear."]
     NO_CALEVENT = 0,
@@ -231,8 +231,5 @@ impl crate::Readable for SR_SPEC {
 }
 #[doc = "`reset()` method sets SR to value 0"]
 impl crate::Resettable for SR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

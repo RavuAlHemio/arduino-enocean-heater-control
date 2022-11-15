@@ -47,8 +47,5 @@ impl crate::Readable for QIMR_SPEC {
 }
 #[doc = "`reset()` method sets QIMR to value 0"]
 impl crate::Resettable for QIMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Reduce MII"]
     #[inline(always)]
+    #[must_use]
     pub fn rmii(&mut self) -> RMII_W<0> {
         RMII_W::new(self)
     }
     #[doc = "Bit 1 - Clock Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn clken(&mut self) -> CLKEN_W<1> {
         CLKEN_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for USRIO_SPEC {
 #[doc = "`write(|w| ..)` method takes [usrio::W](W) writer structure"]
 impl crate::Writable for USRIO_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets USRIO to value 0"]
 impl crate::Resettable for USRIO_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

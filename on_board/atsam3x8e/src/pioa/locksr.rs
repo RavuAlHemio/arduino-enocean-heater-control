@@ -250,8 +250,5 @@ impl crate::Readable for LOCKSR_SPEC {
 }
 #[doc = "`reset()` method sets LOCKSR to value 0"]
 impl crate::Resettable for LOCKSR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

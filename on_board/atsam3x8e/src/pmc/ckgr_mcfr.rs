@@ -40,8 +40,5 @@ impl crate::Readable for CKGR_MCFR_SPEC {
 }
 #[doc = "`reset()` method sets CKGR_MCFR to value 0"]
 impl crate::Resettable for CKGR_MCFR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

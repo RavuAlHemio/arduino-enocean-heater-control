@@ -26,11 +26,13 @@ pub type KEY_W<'a, const O: u8> = crate::FieldWriter<'a, u32, CR_SPEC, u32, u32,
 impl W {
     #[doc = "Bit 0 - Enables the TRNG to provide random values"]
     #[inline(always)]
+    #[must_use]
     pub fn enable(&mut self) -> ENABLE_W<0> {
         ENABLE_W::new(self)
     }
     #[doc = "Bits 8:31 - Security Key"]
     #[inline(always)]
+    #[must_use]
     pub fn key(&mut self) -> KEY_W<8> {
         KEY_W::new(self)
     }
@@ -49,4 +51,6 @@ impl crate::RegisterSpec for CR_SPEC {
 #[doc = "`write(|w| ..)` method takes [cr::W](W) writer structure"]
 impl crate::Writable for CR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

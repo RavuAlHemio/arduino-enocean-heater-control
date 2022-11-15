@@ -37,7 +37,7 @@ impl From<crate::W<MR_SPEC>> for W {
 #[doc = "Field `PAR` reader - Parity Type"]
 pub type PAR_R = crate::FieldReader<u8, PAR_A>;
 #[doc = "Parity Type\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum PAR_A {
     #[doc = "0: Even Parity"]
@@ -128,7 +128,7 @@ impl<'a, const O: u8> PAR_W<'a, O> {
 #[doc = "Field `CHMODE` reader - Channel Mode"]
 pub type CHMODE_R = crate::FieldReader<u8, CHMODE_A>;
 #[doc = "Channel Mode\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum CHMODE_A {
     #[doc = "0: Normal Mode"]
@@ -218,11 +218,13 @@ impl R {
 impl W {
     #[doc = "Bits 9:11 - Parity Type"]
     #[inline(always)]
+    #[must_use]
     pub fn par(&mut self) -> PAR_W<9> {
         PAR_W::new(self)
     }
     #[doc = "Bits 14:15 - Channel Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn chmode(&mut self) -> CHMODE_W<14> {
         CHMODE_W::new(self)
     }
@@ -245,11 +247,10 @@ impl crate::Readable for MR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mr::W](W) writer structure"]
 impl crate::Writable for MR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MR to value 0"]
 impl crate::Resettable for MR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

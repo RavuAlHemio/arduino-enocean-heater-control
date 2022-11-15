@@ -37,7 +37,7 @@ impl From<crate::W<MR_SPEC>> for W {
 #[doc = "Field `TRGEN` reader - Trigger Enable"]
 pub type TRGEN_R = crate::BitReader<TRGEN_A>;
 #[doc = "Trigger Enable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TRGEN_A {
     #[doc = "0: Hardware triggers are disabled. Starting a conversion is only possible by software."]
     DIS = 0,
@@ -87,7 +87,7 @@ impl<'a, const O: u8> TRGEN_W<'a, O> {
 #[doc = "Field `TRGSEL` reader - Trigger Selection"]
 pub type TRGSEL_R = crate::FieldReader<u8, TRGSEL_A>;
 #[doc = "Trigger Selection\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TRGSEL_A {
     #[doc = "0: External : ADCTRG"]
@@ -191,7 +191,7 @@ impl<'a, const O: u8> TRGSEL_W<'a, O> {
 #[doc = "Field `SLEEP` reader - Sleep Mode"]
 pub type SLEEP_R = crate::BitReader<SLEEP_A>;
 #[doc = "Sleep Mode\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SLEEP_A {
     #[doc = "0: Normal Mode: The ADC Core and reference voltage circuitry are kept ON between conversions"]
     NORMAL = 0,
@@ -241,7 +241,7 @@ impl<'a, const O: u8> SLEEP_W<'a, O> {
 #[doc = "Field `FWUP` reader - Fast Wake Up"]
 pub type FWUP_R = crate::BitReader<FWUP_A>;
 #[doc = "Fast Wake Up\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FWUP_A {
     #[doc = "0: If SLEEP is 1 then both ADC Core and reference voltage circuitry are OFF between conversions"]
     OFF = 0,
@@ -291,7 +291,7 @@ impl<'a, const O: u8> FWUP_W<'a, O> {
 #[doc = "Field `FREERUN` reader - Free Run Mode"]
 pub type FREERUN_R = crate::BitReader<FREERUN_A>;
 #[doc = "Free Run Mode\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FREERUN_A {
     #[doc = "0: Normal Mode"]
     OFF = 0,
@@ -345,7 +345,7 @@ pub type PRESCAL_W<'a, const O: u8> = crate::FieldWriter<'a, u32, MR_SPEC, u8, u
 #[doc = "Field `STARTUP` reader - Start Up Time"]
 pub type STARTUP_R = crate::FieldReader<u8, STARTUP_A>;
 #[doc = "Start Up Time\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum STARTUP_A {
     #[doc = "0: 0 periods of ADCClock"]
@@ -579,7 +579,7 @@ impl<'a, const O: u8> STARTUP_W<'a, O> {
 #[doc = "Field `SETTLING` reader - Analog Settling Time"]
 pub type SETTLING_R = crate::FieldReader<u8, SETTLING_A>;
 #[doc = "Analog Settling Time\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SETTLING_A {
     #[doc = "0: 3 periods of ADCClock"]
@@ -658,7 +658,7 @@ impl<'a, const O: u8> SETTLING_W<'a, O> {
 #[doc = "Field `ANACH` reader - Analog Change"]
 pub type ANACH_R = crate::BitReader<ANACH_A>;
 #[doc = "Analog Change\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ANACH_A {
     #[doc = "0: No analog change on channel switching: DIFF0, GAIN0 and OFF0 are used for all channels"]
     NONE = 0,
@@ -716,7 +716,7 @@ pub type TRANSFER_W<'a, const O: u8> = crate::FieldWriter<'a, u32, MR_SPEC, u8, 
 #[doc = "Field `USEQ` reader - Use Sequence Enable"]
 pub type USEQ_R = crate::BitReader<USEQ_A>;
 #[doc = "Use Sequence Enable\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum USEQ_A {
     #[doc = "0: Normal Mode: The controller converts channels in a simple numeric order depending only on the channel index."]
     NUM_ORDER = 0,
@@ -828,61 +828,73 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Trigger Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn trgen(&mut self) -> TRGEN_W<0> {
         TRGEN_W::new(self)
     }
     #[doc = "Bits 1:3 - Trigger Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn trgsel(&mut self) -> TRGSEL_W<1> {
         TRGSEL_W::new(self)
     }
     #[doc = "Bit 5 - Sleep Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn sleep(&mut self) -> SLEEP_W<5> {
         SLEEP_W::new(self)
     }
     #[doc = "Bit 6 - Fast Wake Up"]
     #[inline(always)]
+    #[must_use]
     pub fn fwup(&mut self) -> FWUP_W<6> {
         FWUP_W::new(self)
     }
     #[doc = "Bit 7 - Free Run Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn freerun(&mut self) -> FREERUN_W<7> {
         FREERUN_W::new(self)
     }
     #[doc = "Bits 8:15 - Prescaler Rate Selection"]
     #[inline(always)]
+    #[must_use]
     pub fn prescal(&mut self) -> PRESCAL_W<8> {
         PRESCAL_W::new(self)
     }
     #[doc = "Bits 16:19 - Start Up Time"]
     #[inline(always)]
+    #[must_use]
     pub fn startup(&mut self) -> STARTUP_W<16> {
         STARTUP_W::new(self)
     }
     #[doc = "Bits 20:21 - Analog Settling Time"]
     #[inline(always)]
+    #[must_use]
     pub fn settling(&mut self) -> SETTLING_W<20> {
         SETTLING_W::new(self)
     }
     #[doc = "Bit 23 - Analog Change"]
     #[inline(always)]
+    #[must_use]
     pub fn anach(&mut self) -> ANACH_W<23> {
         ANACH_W::new(self)
     }
     #[doc = "Bits 24:27 - Tracking Time"]
     #[inline(always)]
+    #[must_use]
     pub fn tracktim(&mut self) -> TRACKTIM_W<24> {
         TRACKTIM_W::new(self)
     }
     #[doc = "Bits 28:29 - Transfer Period"]
     #[inline(always)]
+    #[must_use]
     pub fn transfer(&mut self) -> TRANSFER_W<28> {
         TRANSFER_W::new(self)
     }
     #[doc = "Bit 31 - Use Sequence Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn useq(&mut self) -> USEQ_W<31> {
         USEQ_W::new(self)
     }
@@ -905,11 +917,10 @@ impl crate::Readable for MR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mr::W](W) writer structure"]
 impl crate::Writable for MR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MR to value 0"]
 impl crate::Resettable for MR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

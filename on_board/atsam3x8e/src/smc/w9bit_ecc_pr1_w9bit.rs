@@ -47,8 +47,5 @@ impl crate::Readable for W9BIT_ECC_PR1_W9BIT_SPEC {
 }
 #[doc = "`reset()` method sets ECC_PR1_W9BIT to value 0"]
 impl crate::Resettable for W9BIT_ECC_PR1_W9BIT_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

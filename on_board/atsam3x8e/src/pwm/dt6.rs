@@ -57,11 +57,13 @@ impl R {
 impl W {
     #[doc = "Bits 0:15 - Dead-Time Value for PWMHx Output"]
     #[inline(always)]
+    #[must_use]
     pub fn dth(&mut self) -> DTH_W<0> {
         DTH_W::new(self)
     }
     #[doc = "Bits 16:31 - Dead-Time Value for PWMLx Output"]
     #[inline(always)]
+    #[must_use]
     pub fn dtl(&mut self) -> DTL_W<16> {
         DTL_W::new(self)
     }
@@ -84,11 +86,10 @@ impl crate::Readable for DT6_SPEC {
 #[doc = "`write(|w| ..)` method takes [dt6::W](W) writer structure"]
 impl crate::Writable for DT6_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets DT6 to value 0"]
 impl crate::Resettable for DT6_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

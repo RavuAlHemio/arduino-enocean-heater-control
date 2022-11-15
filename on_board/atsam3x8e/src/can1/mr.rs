@@ -69,7 +69,7 @@ pub type DRPT_W<'a, const O: u8> = crate::BitWriter<'a, u32, MR_SPEC, bool, O>;
 #[doc = "Field `RXSYNC` reader - Reception Synchronization Stage (not readable)"]
 pub type RXSYNC_R = crate::FieldReader<u8, RXSYNC_A>;
 #[doc = "Reception Synchronization Stage (not readable)\n\nValue on reset: 0"]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum RXSYNC_A {
     #[doc = "0: Rx Signal with Double Synchro Stages (2 Positive Edges)"]
@@ -194,46 +194,55 @@ impl R {
 impl W {
     #[doc = "Bit 0 - CAN Controller Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn canen(&mut self) -> CANEN_W<0> {
         CANEN_W::new(self)
     }
     #[doc = "Bit 1 - Disable/Enable Low Power Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn lpm(&mut self) -> LPM_W<1> {
         LPM_W::new(self)
     }
     #[doc = "Bit 2 - Disable/Enable Autobaud/Listen mode"]
     #[inline(always)]
+    #[must_use]
     pub fn abm(&mut self) -> ABM_W<2> {
         ABM_W::new(self)
     }
     #[doc = "Bit 3 - Disable/Enable Overload Frame"]
     #[inline(always)]
+    #[must_use]
     pub fn ovl(&mut self) -> OVL_W<3> {
         OVL_W::new(self)
     }
     #[doc = "Bit 4 - Timestamp messages at each end of Frame"]
     #[inline(always)]
+    #[must_use]
     pub fn teof(&mut self) -> TEOF_W<4> {
         TEOF_W::new(self)
     }
     #[doc = "Bit 5 - Disable/Enable Time Triggered Mode"]
     #[inline(always)]
+    #[must_use]
     pub fn ttm(&mut self) -> TTM_W<5> {
         TTM_W::new(self)
     }
     #[doc = "Bit 6 - Enable Timer Freeze"]
     #[inline(always)]
+    #[must_use]
     pub fn timfrz(&mut self) -> TIMFRZ_W<6> {
         TIMFRZ_W::new(self)
     }
     #[doc = "Bit 7 - Disable Repeat"]
     #[inline(always)]
+    #[must_use]
     pub fn drpt(&mut self) -> DRPT_W<7> {
         DRPT_W::new(self)
     }
     #[doc = "Bits 24:26 - Reception Synchronization Stage (not readable)"]
     #[inline(always)]
+    #[must_use]
     pub fn rxsync(&mut self) -> RXSYNC_W<24> {
         RXSYNC_W::new(self)
     }
@@ -256,11 +265,10 @@ impl crate::Readable for MR_SPEC {
 #[doc = "`write(|w| ..)` method takes [mr::W](W) writer structure"]
 impl crate::Writable for MR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets MR to value 0"]
 impl crate::Resettable for MR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

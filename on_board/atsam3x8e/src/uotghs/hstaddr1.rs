@@ -75,21 +75,25 @@ impl R {
 impl W {
     #[doc = "Bits 0:6 - USB Host Address"]
     #[inline(always)]
+    #[must_use]
     pub fn hstaddrp0(&mut self) -> HSTADDRP0_W<0> {
         HSTADDRP0_W::new(self)
     }
     #[doc = "Bits 8:14 - USB Host Address"]
     #[inline(always)]
+    #[must_use]
     pub fn hstaddrp1(&mut self) -> HSTADDRP1_W<8> {
         HSTADDRP1_W::new(self)
     }
     #[doc = "Bits 16:22 - USB Host Address"]
     #[inline(always)]
+    #[must_use]
     pub fn hstaddrp2(&mut self) -> HSTADDRP2_W<16> {
         HSTADDRP2_W::new(self)
     }
     #[doc = "Bits 24:30 - USB Host Address"]
     #[inline(always)]
+    #[must_use]
     pub fn hstaddrp3(&mut self) -> HSTADDRP3_W<24> {
         HSTADDRP3_W::new(self)
     }
@@ -112,11 +116,10 @@ impl crate::Readable for HSTADDR1_SPEC {
 #[doc = "`write(|w| ..)` method takes [hstaddr1::W](W) writer structure"]
 impl crate::Writable for HSTADDR1_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets HSTADDR1 to value 0"]
 impl crate::Resettable for HSTADDR1_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

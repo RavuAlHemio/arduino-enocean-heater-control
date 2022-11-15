@@ -38,41 +38,49 @@ pub type ETRGS_W<'a, const O: u8> = crate::BitWriter<'a, u32, IER2_SPEC, bool, O
 impl W {
     #[doc = "Bit 0 - Counter Overflow"]
     #[inline(always)]
+    #[must_use]
     pub fn covfs(&mut self) -> COVFS_W<0> {
         COVFS_W::new(self)
     }
     #[doc = "Bit 1 - Load Overrun"]
     #[inline(always)]
+    #[must_use]
     pub fn lovrs(&mut self) -> LOVRS_W<1> {
         LOVRS_W::new(self)
     }
     #[doc = "Bit 2 - RA Compare"]
     #[inline(always)]
+    #[must_use]
     pub fn cpas(&mut self) -> CPAS_W<2> {
         CPAS_W::new(self)
     }
     #[doc = "Bit 3 - RB Compare"]
     #[inline(always)]
+    #[must_use]
     pub fn cpbs(&mut self) -> CPBS_W<3> {
         CPBS_W::new(self)
     }
     #[doc = "Bit 4 - RC Compare"]
     #[inline(always)]
+    #[must_use]
     pub fn cpcs(&mut self) -> CPCS_W<4> {
         CPCS_W::new(self)
     }
     #[doc = "Bit 5 - RA Loading"]
     #[inline(always)]
+    #[must_use]
     pub fn ldras(&mut self) -> LDRAS_W<5> {
         LDRAS_W::new(self)
     }
     #[doc = "Bit 6 - RB Loading"]
     #[inline(always)]
+    #[must_use]
     pub fn ldrbs(&mut self) -> LDRBS_W<6> {
         LDRBS_W::new(self)
     }
     #[doc = "Bit 7 - External Trigger"]
     #[inline(always)]
+    #[must_use]
     pub fn etrgs(&mut self) -> ETRGS_W<7> {
         ETRGS_W::new(self)
     }
@@ -91,4 +99,6 @@ impl crate::RegisterSpec for IER2_SPEC {
 #[doc = "`write(|w| ..)` method takes [ier2::W](W) writer structure"]
 impl crate::Writable for IER2_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }

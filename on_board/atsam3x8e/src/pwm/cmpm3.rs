@@ -93,31 +93,37 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Comparison x Enable"]
     #[inline(always)]
+    #[must_use]
     pub fn cen(&mut self) -> CEN_W<0> {
         CEN_W::new(self)
     }
     #[doc = "Bits 4:7 - Comparison x Trigger"]
     #[inline(always)]
+    #[must_use]
     pub fn ctr(&mut self) -> CTR_W<4> {
         CTR_W::new(self)
     }
     #[doc = "Bits 8:11 - Comparison x Period"]
     #[inline(always)]
+    #[must_use]
     pub fn cpr(&mut self) -> CPR_W<8> {
         CPR_W::new(self)
     }
     #[doc = "Bits 12:15 - Comparison x Period Counter"]
     #[inline(always)]
+    #[must_use]
     pub fn cprcnt(&mut self) -> CPRCNT_W<12> {
         CPRCNT_W::new(self)
     }
     #[doc = "Bits 16:19 - Comparison x Update Period"]
     #[inline(always)]
+    #[must_use]
     pub fn cupr(&mut self) -> CUPR_W<16> {
         CUPR_W::new(self)
     }
     #[doc = "Bits 20:23 - Comparison x Update Period Counter"]
     #[inline(always)]
+    #[must_use]
     pub fn cuprcnt(&mut self) -> CUPRCNT_W<20> {
         CUPRCNT_W::new(self)
     }
@@ -140,11 +146,10 @@ impl crate::Readable for CMPM3_SPEC {
 #[doc = "`write(|w| ..)` method takes [cmpm3::W](W) writer structure"]
 impl crate::Writable for CMPM3_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets CMPM3 to value 0"]
 impl crate::Resettable for CMPM3_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

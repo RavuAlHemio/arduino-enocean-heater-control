@@ -131,8 +131,5 @@ impl crate::Readable for SR_SPEC {
 }
 #[doc = "`reset()` method sets SR to value 0xf009"]
 impl crate::Resettable for SR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0xf009
-    }
+    const RESET_VALUE: Self::Ux = 0xf009;
 }

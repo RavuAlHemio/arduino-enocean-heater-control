@@ -138,8 +138,5 @@ impl crate::Readable for ISR1_SPEC {
 }
 #[doc = "`reset()` method sets ISR1 to value 0"]
 impl crate::Resettable for ISR1_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }

@@ -111,41 +111,49 @@ impl R {
 impl W {
     #[doc = "Bit 0 - Gray Count ENable"]
     #[inline(always)]
+    #[must_use]
     pub fn gcen0(&mut self) -> GCEN0_W<0> {
         GCEN0_W::new(self)
     }
     #[doc = "Bit 1 - Gray Count ENable"]
     #[inline(always)]
+    #[must_use]
     pub fn gcen1(&mut self) -> GCEN1_W<1> {
         GCEN1_W::new(self)
     }
     #[doc = "Bit 2 - Gray Count ENable"]
     #[inline(always)]
+    #[must_use]
     pub fn gcen2(&mut self) -> GCEN2_W<2> {
         GCEN2_W::new(self)
     }
     #[doc = "Bit 3 - Gray Count ENable"]
     #[inline(always)]
+    #[must_use]
     pub fn gcen3(&mut self) -> GCEN3_W<3> {
         GCEN3_W::new(self)
     }
     #[doc = "Bit 16 - DOWN Count"]
     #[inline(always)]
+    #[must_use]
     pub fn down0(&mut self) -> DOWN0_W<16> {
         DOWN0_W::new(self)
     }
     #[doc = "Bit 17 - DOWN Count"]
     #[inline(always)]
+    #[must_use]
     pub fn down1(&mut self) -> DOWN1_W<17> {
         DOWN1_W::new(self)
     }
     #[doc = "Bit 18 - DOWN Count"]
     #[inline(always)]
+    #[must_use]
     pub fn down2(&mut self) -> DOWN2_W<18> {
         DOWN2_W::new(self)
     }
     #[doc = "Bit 19 - DOWN Count"]
     #[inline(always)]
+    #[must_use]
     pub fn down3(&mut self) -> DOWN3_W<19> {
         DOWN3_W::new(self)
     }
@@ -168,11 +176,10 @@ impl crate::Readable for SMMR_SPEC {
 #[doc = "`write(|w| ..)` method takes [smmr::W](W) writer structure"]
 impl crate::Writable for SMMR_SPEC {
     type Writer = W;
+    const ZERO_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
+    const ONE_TO_MODIFY_FIELDS_BITMAP: Self::Ux = 0;
 }
 #[doc = "`reset()` method sets SMMR to value 0"]
 impl crate::Resettable for SMMR_SPEC {
-    #[inline(always)]
-    fn reset_value() -> Self::Ux {
-        0
-    }
+    const RESET_VALUE: Self::Ux = 0;
 }
