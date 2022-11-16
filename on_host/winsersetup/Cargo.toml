@@ -1,0 +1,18 @@
+[package]
+name = "winsersetup"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+c2rust-bitfields = { version = "0.3" }
+clap = { version = "4.0", features = ["derive"] }
+
+[dependencies.windows]
+version = "0.43"
+features = [
+    "Win32_Devices_Communication",
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Storage_FileSystem",
+    "Win32_System_SystemServices",
+]
