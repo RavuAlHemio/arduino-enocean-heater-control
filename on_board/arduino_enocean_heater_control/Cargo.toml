@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-atsam3x8e = { path = "../atsam3x8e", features = ["rt"] }
+atsam3x8e = { path = "../atsam3x8e", features = ["critical-section", "rt"] }
 atsam3x8e_ext = { path = "../atsam3x8e_ext" }
 buildingblocks = { path = "../../buildingblocks" }
-cortex-m = { version = "0.7" }
+cortex-m = { version = "0.7", features = ["critical-section-single-core"] }
 cortex-m-rt = { version = "0.7" }
 from-to-repr = { version = "0.1.4", features = ["from_to_other"] }
