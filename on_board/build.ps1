@@ -36,6 +36,8 @@ Write-Output ("{0:#,##0.###} KiB" -f $kilobytes)
 
 If ($ComPort -ne "")
 {
+    # disable DTR on the COM port before running BOSSA
+    & '..\on_host\target\debug\winsersetup.exe' --disable-dtr $ComPort
     & 'C:\Program Files (x86)\BOSSA\bossac.exe' --arduino-erase --erase --write --boot=1 --port=$ComPort ".\$BinaryName.bin"
 }
 
