@@ -1,6 +1,7 @@
 #![no_std]
 
 
+pub mod i2c_controller;
 pub mod pin;
 pub mod setup;
 pub mod tick;
