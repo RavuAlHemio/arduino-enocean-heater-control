@@ -73,7 +73,16 @@ pub trait I2cController {
             )
         };
 
+        // wait until the TWI controller is ready to take the first byte
+        while twi.sr.read().txrdy().bit_is_clear() {
+        }
+
         for (i, b) in data.into_iter().enumerate() {
+            // feed the byte to the TWI controller for sending
+            twi.thr.write(|w| w
+                .txdata().variant(*b)
+            );
+
             if i == data.len() - 1 {
                 // we are sending the last byte; tell the peripheral that we will be stopping now
                 unsafe {
@@ -82,11 +91,6 @@ pub trait I2cController {
                     )
                 }
             }
-
-            // feed the byte to the TWI controller for sending
-            twi.thr.write(|w| w
-                .txdata().variant(*b)
-            );
 
             // wait until the TWI controller has "taken" the byte
             while twi.sr.read().txrdy().bit_is_clear() {
@@ -121,8 +125,8 @@ pub trait I2cController {
         while twi.sr.read().rxrdy().bit_is_clear() {
         }
         let received_byte = twi.rhr.read().rxdata().bits();
-        let signal_stop = handle_byte(received_byte);
-        if signal_stop {
+        let keep_going = handle_byte(received_byte);
+        if !keep_going {
             // signal that this is the last byte we want
             unsafe {
                 twi.cr.write_with_zero(|w| w

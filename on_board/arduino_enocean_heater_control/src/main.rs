@@ -13,6 +13,7 @@ use core::panic::PanicInfo;
 use core::time::Duration;
 
 use atsam3x8e::Peripherals;
+use atsam3x8e_ext::i2c_controller::{I2cController, Twi1I2cController};
 use atsam3x8e_ext::sam_pin;
 use atsam3x8e_ext::setup::system_init;
 use atsam3x8e_ext::tick::{delay, enable_tick_clock};
@@ -103,132 +104,35 @@ fn main() -> ! {
         )
     };
 
-    // give pins to I2C
-    // (PB13/A=TWCK1, PB12/A=TWD1)
-    uart::send(&mut peripherals, b"giving pins to I2C\r\n");
-    unsafe {
-        peripherals.PIOB.pdr.write_with_zero(|w| w
-            .p12().set_bit()
-            .p13().set_bit()
-        )
-    };
-    unsafe {
-        peripherals.PIOB.absr.write_with_zero(|w| w
-            .p12().clear_bit()
-            .p13().clear_bit()
-        )
-    };
+    // I2C controller setup
+    uart::send(&mut peripherals, b"setting up I2C\r\n");
+    Twi1I2cController::setup_pins(&mut peripherals);
+    Twi1I2cController::enable_clock(&mut peripherals);
+    Twi1I2cController::reset(&mut peripherals);
 
-    // pass clock to I2C (TWI1 = peripheral 23)
-    uart::send(&mut peripherals, b"clocking up I2C\r\n");
-    unsafe {
-        peripherals.PMC.pmc_pcer0.write_with_zero(|w| w
-            .pid23().set_bit()
-        )
-    };
+    // SC18IS606 max speed is 400 kHz
+    Twi1I2cController::set_speed(&mut peripherals, 400_000, clock.clock_speed);
 
-    // I2C reset
-    uart::send(&mut peripherals, b"kicking I2C in the nads\r\n");
-    unsafe {
-        peripherals.TWI1.cr.write_with_zero(|w| w
-            .swrst().set_bit()
-        )
-    };
-
-    // set I2C speed (SC18IS606 max is 400 kHz)
-    // T_low = ((CLDIV * 2**CKDIV) + 4) * T_MCK
-    // (1/400_000 Hz) = ((CLDIV * 2**CKDIV) + 4) * (1/84_000_000 Hz)
-    // (1/400_000 Hz) / (1/84_000_000 Hz) = (CLDIV * 2**CKDIV) + 4
-    // 210 = (CLDIV * 2**CKDIV) + 4
-    // 206 = (CLDIV * 2**CKDIV)
-    // while CLDIV doesn't fit into 8 bits, divide CLDIV by 2 and increment CKDIV
-    // 206 fits into 8 bits => CLDIV = 206, CKDIV = 0
-    //
-    // let's do 100 kHz instead
-    // T_low = ((CLDIV * 2**CKDIV) + 4) * T_MCK
-    // (1/100_000 Hz) = ((CLDIV * 2**CKDIV) + 4) * (1/84_000_000 Hz)
-    // (1/100_000 Hz) / (1/84_000_000 Hz) = (CLDIV * 2**CKDIV) + 4
-    // 840 = (CLDIV * 2**CKDIV) + 4
-    // 836 = (CLDIV * 2**CKDIV)
-    // while CLDIV doesn't fit into 8 bits, divide CLDIV by 2 and increment CKDIV
-    // 836 does not fit into 8 bits => CLDIV = 418, CKDIV = 1
-    // 418 does not fit into 8 bits => CLDIV = 209, CKDIV = 2
-    // 209 fits into 8 bits => CLDIV = 209, CKDIV = 2
-    //
-    // assume chdiv == cldiv
-    // ckdiv counts for both
-    uart::send(&mut peripherals, b"setting I2C speed\r\n");
-    peripherals.TWI1.cwgr.modify(|_, w| w
-        .cldiv().variant(206)
-        .chdiv().variant(206)
-        .ckdiv().variant(0)
-    );
-
-    // become the master of our own fate
-    uart::send(&mut peripherals, b"I am the master now\r\n");
-    unsafe {
-        peripherals.TWI1.cr.write_with_zero(|w| w
-            .msen().set_bit()
-            .svdis().set_bit()
-        )
-    };
+    Twi1I2cController::become_controller(&mut peripherals);
 
     // ask our bridge chip to prepare its version info
-    uart::send(&mut peripherals, b"oi, prepare version info\r\n");
-    unsafe {
-        peripherals.TWI1.mmr.modify(|_, w| w
-            .dadr().variant(0b0101_000)
-            .mread().clear_bit()
-            .iadrsz().none()
-        )
-    };
-    unsafe {
-        peripherals.TWI1.cr.write_with_zero(|w| w
-            .stop().set_bit()
-        )
-    };
-    peripherals.TWI1.thr.write(|w| w
-        .txdata().variant(0xFE)
-    );
-    while peripherals.TWI1.sr.read().txrdy().bit_is_clear() {
-    }
-    while peripherals.TWI1.sr.read().txcomp().bit_is_clear() {
-    }
+    uart::send(&mut peripherals, b"asking for things to happen\r\n");
+    Twi1I2cController::write(&mut peripherals, 0b0101_000, &[0xFE]);
 
-    // read the version info
-    uart::send(&mut peripherals, b"and who in the name of heck are you\r\n");
+    // read it
     let mut buf = [0u8; 16];
     let mut buf_index = 0;
-    unsafe {
-        peripherals.TWI1.mmr.modify(|_, w| w
-            .dadr().variant(0b0101_000)
-            .mread().set_bit()
-            .iadrsz().none()
-        )
-    };
-    unsafe {
-        peripherals.TWI1.cr.write_with_zero(|w| w
-            .start().set_bit()
-        )
-    };
-    while buf_index < buf.len() {
-        if buf_index == buf.len() - 1 {
-            // signal that this is the last byte we want
-            unsafe {
-                peripherals.TWI1.cr.write_with_zero(|w| w
-                    .stop().set_bit()
-                )
-            };
-        }
-        while peripherals.TWI1.sr.read().rxrdy().bit_is_clear() {
-        }
-        buf[buf_index] = peripherals.TWI1.rhr.read().rxdata().bits();
-        buf_index += 1;
-    }
-    while peripherals.TWI1.sr.read().txcomp().bit_is_clear() {
-    }
+    uart::send(&mut peripherals, b"blammo?\r\n");
+    Twi1I2cController::read(
+        &mut peripherals, 0b0101_000,
+        |b| {
+            buf[buf_index] = b;
+            buf_index += 1;
 
-    uart::send(&mut peripherals, b"I guess you told us\r\n");
+            // ask for more bytes if we can fit them
+            buf_index < buf.len() - 2
+        },
+    );
 
     // find NUL byte
     let buf_len = buf.iter()
