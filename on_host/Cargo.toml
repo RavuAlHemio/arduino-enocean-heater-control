@@ -6,5 +6,6 @@ members = [
     "png2bitfield",
     "png2pixels",
     "svd2ghidrac",
+    "winbmptrace",
     "winsersetup",
 ]
