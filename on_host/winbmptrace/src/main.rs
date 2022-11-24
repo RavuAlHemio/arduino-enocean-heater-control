@@ -1,5 +1,6 @@
 use std::io;
 use std::mem::size_of_val;
+use std::ptr::null_mut;
 
 use windows::w;
 use windows::core::{GUID, PCWSTR, PWSTR};
@@ -9,9 +10,10 @@ use windows::Win32::Devices::DeviceAndDriverInstallation::{
     CM_GETIDLIST_FILTER_ENUMERATOR, CM_GETIDLIST_FILTER_PRESENT, CM_Open_Class_KeyW,
     CM_OPEN_CLASS_KEY_INTERFACE, CR_SUCCESS, RegDisposition_OpenExisting,
 };
-use windows::Win32::Foundation::ERROR_NO_MORE_ITEMS;
+use windows::Win32::Foundation::{ERROR_NO_MORE_ITEMS, ERROR_SUCCESS};
 use windows::Win32::System::Registry::{
-    HKEY, KEY_ENUMERATE_SUB_KEYS, KEY_QUERY_VALUE, RegCloseKey, RegQueryInfoKeyW,
+    HKEY, KEY_ENUMERATE_SUB_KEYS, KEY_QUERY_VALUE, RegCloseKey, RegEnumKeyExW, RegOpenKeyExW,
+    RegQueryInfoKeyW,
 };
 
 
@@ -85,6 +87,134 @@ fn decode_wide_string_sequence(seq: &[u16]) -> Vec<String> {
 }
 
 
+/// Enumerates the subkeys of a registry key and runs a function on each of them.
+fn enumerate_registry_subkeys<F: FnMut(&str) -> Result<(), io::Error>>(key: HKEY, mut handle: F) -> Result<(), io::Error> {
+    let mut subkey_index = 0;
+    loop {
+        let mut subkey_name_buf = [0u16; 256];
+        let mut subkey_name_len: u32 = subkey_name_buf.len().try_into().unwrap();
+        let ret = unsafe {
+            RegEnumKeyExW(
+                key,
+                subkey_index,
+                PWSTR(subkey_name_buf.as_mut_ptr()),
+                &mut subkey_name_len,
+                None,
+                PWSTR(null_mut()),
+                None,
+                None,
+            )
+        };
+        if ret == ERROR_NO_MORE_ITEMS {
+            break;
+        } else if ret != ERROR_SUCCESS {
+            eprintln!(
+                "failed to enumerate subkey at index {}: {:?}",
+                subkey_index, ret.ok().unwrap_err(),
+            );
+            return Err(io::ErrorKind::Other.into());
+        }
+
+        todo!();
+    }
+
+    Ok(())
+}
+
+
+/// Attempts to find the interface class GUID for the probe trace capture endpoint.
+fn find_interface_class_guid(device_id: &str) -> Result<GUID, io::Error> {
+    // scan HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceClasses to find interface class
+    // don't hard-code this registry path; let Windows tell us
+    let mut iface_classes_hkey_raw = HKEY::default();
+    let ret = unsafe {
+        CM_Open_Class_KeyW(
+            None,
+            None,
+            KEY_ENUMERATE_SUB_KEYS.0,
+            RegDisposition_OpenExisting,
+            &mut iface_classes_hkey_raw,
+            CM_OPEN_CLASS_KEY_INTERFACE,
+        )
+    };
+    if ret != CR_SUCCESS {
+        eprintln!("failed to open device interface class key: {:?}", ret);
+        return Err(io::ErrorKind::Other.into());
+    }
+    let iface_classes_hkey = RegKeyHandle(iface_classes_hkey_raw);
+
+    // run through each interface class
+    let mut iface_class_index = 0;
+    loop {
+        let mut iface_class_key_name_buf = [0u16; 256];
+        let mut iface_class_key_name_len: u32 = iface_class_key_name_buf.len().try_into().unwrap();
+        let ret = unsafe {
+            RegEnumKeyExW(
+                iface_classes_hkey.0,
+                iface_class_index,
+                PWSTR(iface_class_key_name_buf.as_mut_ptr()),
+                &mut iface_class_key_name_len,
+                None,
+                PWSTR(null_mut()),
+                None,
+                None,
+            )
+        };
+        if ret == ERROR_NO_MORE_ITEMS {
+            break;
+        } else if ret != ERROR_SUCCESS {
+            eprintln!(
+                "failed to enumerate device interface class key at index {}: {:?}",
+                iface_class_index, ret.ok().unwrap_err(),
+            );
+            return Err(io::ErrorKind::Other.into());
+        }
+
+        // open the interface class subkey
+        let mut iface_class_hkey_raw = HKEY::default();
+        let ret = unsafe {
+            RegOpenKeyExW(
+                iface_classes_hkey.0,
+                PCWSTR(iface_class_key_name_buf.as_ptr()),
+                0,
+                (KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE).0,
+                &mut iface_class_hkey_raw,
+            )
+        };
+        if ret != ERROR_SUCCESS {
+            let subkey_name = unsafe {
+                PCWSTR(iface_class_key_name_buf).to_string()
+            };
+            eprintln!(
+                "failed to open interface class subkey {:?}: {:?}",
+                subkey_name, ret,
+            );
+            interface_class_index += 1;
+            continue;
+        }
+
+        // enumerate the devices in the interface class subkey
+        let mut device_index = 0;
+        loop {
+
+        }
+
+        interface_class_index += 1;
+    }
+
+    // TODO: RegEnumKeyExW on hkey
+    // gives us subkeys named "{01234567-89AB-CDEF-0123-456789ABCDEF}"
+    // which are the GUIDs of the interface classes
+
+    // TODO: RegEnumKeyExW on each interface class GUID key
+    // don't attempt to process the key names (weird escaping is going on there)
+    // value named "DeviceInstance" tells us the instance path of the device
+    // that corresponds to this interface class
+    // if its prefix is (BLACK_MAGIC_TRACE_CAPTURE_HARDWARE_ID + "\\"),
+    // we have found the correct interface class GUID
+}
+
+
 fn main() -> Result<(), io::Error> {
     let mut chars_required: u32 = 0;
     let ret = unsafe {
@@ -121,36 +251,6 @@ fn main() -> Result<(), io::Error> {
 
     for device_id in device_ids {
         let device_id_pcwstr = string_to_utf16_nul(&device_id);
-
-        // scan HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceClasses to find interface class
-        // don't hard-code this path; let Windows tell us
-        let mut hkey_raw = HKEY::default();
-        let ret = unsafe {
-            CM_Open_Class_KeyW(
-                None,
-                None,
-                (KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE).0,
-                RegDisposition_OpenExisting,
-                &mut hkey_raw,
-                CM_OPEN_CLASS_KEY_INTERFACE,
-            )
-        };
-        if ret != CR_SUCCESS {
-            eprintln!("failed to open device interface class key: {:?}", ret);
-            return Err(io::ErrorKind::Other.into());
-        }
-        let hkey = RegKeyHandle(hkey_raw);
-
-        // TODO: RegEnumKeyExW on hkey
-        // gives us subkeys named "{01234567-89AB-CDEF-0123-456789ABCDEF}"
-        // which are the GUIDs of the interface classes
-
-        // TODO: RegEnumKeyExW on each interface class GUID key
-        // don't attempt to process the key names (weird escaping is going on there)
-        // value named "DeviceInstance" tells us the instance path of the device
-        // that corresponds to this interface class
-        // if its prefix is (BLACK_MAGIC_TRACE_CAPTURE_HARDWARE_ID + "\\"),
-        // we have found the correct interface class GUID
 
         // TODO: use the interface class GUID in this call
         // instead of ZADIG_TEMPORARY_DEVICE_CLASS_GUID:
