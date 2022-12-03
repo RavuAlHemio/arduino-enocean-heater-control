@@ -5,6 +5,7 @@ members = [
     "eepxml2rust",
     "png2bitfield",
     "png2pixels",
+    "rigoletto",
     "svd2ghidrac",
     "winbmptrace",
     "winsersetup",

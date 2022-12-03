@@ -1,0 +1,11 @@
+[package]
+name = "rigoletto"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+eframe = { version = "0.19" }
+egui_extras = { version = "0.19" }
+image = { version = "0.24", features = ["bmp"] }
+once_cell = { version = "1.16" }
