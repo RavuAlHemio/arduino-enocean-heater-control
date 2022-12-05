@@ -91,6 +91,15 @@ fn main() -> ! {
 
     // try the I2C stuff
 
+    // reset all mikroBUS devices
+    sam_pin!(enable_io, peripherals, PIOC, p14, p15, p16);
+    sam_pin!(make_output, peripherals, PIOC, p14, p15, p16);
+    sam_pin!(set_high, peripherals, PIOC, p14, p15, p16);
+    crate::delay(Duration::from_millis(10));
+    sam_pin!(set_low, peripherals, PIOC, p14, p15, p16);
+    crate::delay(Duration::from_millis(10));
+    sam_pin!(set_high, peripherals, PIOC, p14, p15, p16);
+
     // enable display power
     uart::send(&mut peripherals, b"enabling display power\r\n");
     unsafe {
@@ -108,12 +117,13 @@ fn main() -> ! {
     uart::send(&mut peripherals, b"setting up I2C\r\n");
     Twi1I2cController::setup_pins(&mut peripherals);
     Twi1I2cController::enable_clock(&mut peripherals);
+
     Twi1I2cController::reset(&mut peripherals);
+    Twi1I2cController::surrender_roles(&mut peripherals);
+    Twi1I2cController::disable_dma(&mut peripherals);
 
     // SC18IS606 max speed is 400 kHz
     Twi1I2cController::set_speed(&mut peripherals, 400_000, clock.clock_speed);
-
-    Twi1I2cController::become_controller(&mut peripherals);
 
     // ask our bridge chip to prepare its version info
     uart::send(&mut peripherals, b"asking for things to happen\r\n");
@@ -123,16 +133,7 @@ fn main() -> ! {
     let mut buf = [0u8; 16];
     let mut buf_index = 0;
     uart::send(&mut peripherals, b"blammo?\r\n");
-    Twi1I2cController::read(
-        &mut peripherals, 0b0101_000,
-        |b| {
-            buf[buf_index] = b;
-            buf_index += 1;
-
-            // ask for more bytes if we can fit them
-            buf_index < buf.len() - 2
-        },
-    );
+    Twi1I2cController::read(&mut peripherals, 0b0101_000, &mut buf);
 
     // find NUL byte
     let buf_len = buf.iter()

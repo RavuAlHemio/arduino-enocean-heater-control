@@ -33,9 +33,46 @@ pub trait I2cController {
         }
     }
 
+    /// Disables receives and transmits going through the PDC (Peripheral DMA Controller).
+    fn disable_dma(peripherals: &mut Peripherals) {
+        unsafe {
+            Self::get_register_block(peripherals)
+                .ptcr.write_with_zero(|w| w
+                    .rxtdis().set_bit()
+                    .txtdis().set_bit()
+                )
+        }
+    }
+
+    /// Outputs the current TWI state to UART.
+    fn output_state_to_uart(twi: &atsam3x8e::twi0::RegisterBlock) {
+        let state = twi.sr.read().bits();
+        crate::uart::send_stolen(b"TWI state:");
+        if state & (1 << 0) != 0 { crate::uart::send_stolen(b" TXCOMP"); }
+        if state & (1 << 1) != 0 { crate::uart::send_stolen(b" RXRDY"); }
+        if state & (1 << 2) != 0 { crate::uart::send_stolen(b" TXRDY"); }
+        if state & (1 << 3) != 0 { crate::uart::send_stolen(b" SVREAD"); }
+        if state & (1 << 4) != 0 { crate::uart::send_stolen(b" SVACC"); }
+        if state & (1 << 5) != 0 { crate::uart::send_stolen(b" GACC"); }
+        if state & (1 << 6) != 0 { crate::uart::send_stolen(b" OVRE"); }
+        // 7 is unused
+        if state & (1 << 8) != 0 { crate::uart::send_stolen(b" NACK"); }
+        if state & (1 << 9) != 0 { crate::uart::send_stolen(b" Arbalest"); }
+        if state & (1 << 10) != 0 { crate::uart::send_stolen(b" SCLWS"); }
+        if state & (1 << 11) != 0 { crate::uart::send_stolen(b" EOSACC"); }
+        if state & (1 << 12) != 0 { crate::uart::send_stolen(b" ENDRX"); }
+        if state & (1 << 13) != 0 { crate::uart::send_stolen(b" ENDTX"); }
+        if state & (1 << 14) != 0 { crate::uart::send_stolen(b" RXBUFF"); }
+        if state & (1 << 15) != 0 { crate::uart::send_stolen(b" TXBUFE"); }
+        crate::uart::send_stolen(b"\r\n");
+    }
+
     /// Sets the speed for the I<sup>2</sup>C communication.
     fn set_speed(peripherals: &mut Peripherals, i2c_speed: u32, clock_speed: u32) {
-        let mut delay_value = clock_speed / i2c_speed - 4;
+        // standard I2C speed values like "100 kHz" describe one LOW + one HIGH clock period
+        // => multiply i2c_speed by 2 to obtain the value for a single period
+
+        let mut delay_value = clock_speed / (i2c_speed*2) - 4;
         let mut power = 0;
         while delay_value > 0xFF {
             delay_value /= 2;
@@ -50,20 +87,31 @@ pub trait I2cController {
             );
     }
 
-    /// Grab the controller role.
-    fn become_controller(peripherals: &mut Peripherals) {
+    /// Surrender both the controller and the peripheral role.
+    fn surrender_roles(peripherals: &mut Peripherals) {
+        let twi = Self::get_register_block(peripherals);
         unsafe {
-            Self::get_register_block(peripherals)
-                .cr.write_with_zero(|w| w
-                    .msen().set_bit()
-                    .svdis().set_bit()
-                )
+            twi.cr.write_with_zero(|w| w
+                .msdis().set_bit()
+                .svdis().set_bit()
+            )
         };
     }
 
     /// Write data to an address via I<sup>2</sup>C.
     fn write(peripherals: &mut Peripherals, address: u8, data: &[u8]) {
         let twi = Self::get_register_block(peripherals);
+
+        // wait until the TWI controller is ready to switch modes
+        while twi.sr.read().txcomp().bit_is_clear() {
+        }
+
+        unsafe {
+            twi.cr.write_with_zero(|w| w
+                .msen().set_bit()
+                .svdis().set_bit()
+            )
+        };
 
         unsafe {
             twi.mmr.modify(|_, w| w
@@ -73,10 +121,6 @@ pub trait I2cController {
             )
         };
 
-        // wait until the TWI controller is ready to take the first byte
-        while twi.sr.read().txrdy().bit_is_clear() {
-        }
-
         for (i, b) in data.into_iter().enumerate() {
             // feed the byte to the TWI controller for sending
             twi.thr.write(|w| w
@@ -84,7 +128,7 @@ pub trait I2cController {
             );
 
             if i == data.len() - 1 {
-                // we are sending the last byte; tell the peripheral that we will be stopping now
+                // we have enqueued the last byte; tell the peripheral that we will be stopping now
                 unsafe {
                     twi.cr.write_with_zero(|w| w
                         .stop().set_bit()
@@ -103,8 +147,19 @@ pub trait I2cController {
     }
 
     /// Read data from an address via I<sup>2</sup>C.
-    fn read<F: FnMut(u8) -> bool>(peripherals: &mut Peripherals, address: u8, mut handle_byte: F) {
+    fn read(peripherals: &mut Peripherals, address: u8, buffer: &mut [u8]) {
         let twi = Self::get_register_block(peripherals);
+
+        // wait until the TWI controller is ready to switch modes
+        while twi.sr.read().txcomp().bit_is_clear() {
+        }
+
+        unsafe {
+            twi.cr.write_with_zero(|w| w
+                .msen().set_bit()
+                .svdis().set_bit()
+            )
+        };
 
         unsafe {
             twi.mmr.modify(|_, w| w
@@ -121,18 +176,24 @@ pub trait I2cController {
             )
         };
 
-        // wait until a byte has been received
-        while twi.sr.read().rxrdy().bit_is_clear() {
-        }
-        let received_byte = twi.rhr.read().rxdata().bits();
-        let keep_going = handle_byte(received_byte);
-        if !keep_going {
-            // signal that this is the last byte we want
-            unsafe {
-                twi.cr.write_with_zero(|w| w
-                    .stop().set_bit()
-                )
-            };
+        let mut buffer_index = 0;
+        while buffer_index < buffer.len() {
+            // last byte to read?
+            if buffer_index == buffer.len() - 1 {
+                // yes
+                unsafe {
+                    twi.cr.write_with_zero(|w| w
+                        .stop().set_bit()
+                    )
+                };
+            }
+
+            // wait until a byte has been received
+            while twi.sr.read().rxrdy().bit_is_clear() {
+            }
+            let received_byte = twi.rhr.read().rxdata().bits();
+            buffer[buffer_index] = received_byte;
+            buffer_index += 1;
         }
 
         // wait until the TWI controller is fully done receiving
@@ -152,11 +213,32 @@ pub trait I2cController {
 pub struct Twi0I2cController;
 impl I2cController for Twi0I2cController {
     fn enable_clock(peripherals: &mut Peripherals) {
+        // stop clock
+        unsafe {
+            peripherals.PMC.pmc_pcdr0.write_with_zero(|w| w
+                .pid22().set_bit()
+            )
+        };
+
+        // no division (supported by CAN only on the SAM3X8E)
+        unsafe {
+            peripherals.PMC.pmc_pcr.write_with_zero(|w| w
+                .pid().variant(22)
+                .cmd().set_bit() // write
+                .div().periph_div_mck() // no division (divide by 1)
+            )
+        };
+
+        // start clock
         unsafe {
             peripherals.PMC.pmc_pcer0.write_with_zero(|w| w
                 .pid22().set_bit()
             )
         };
+
+        // wait for the clock to start
+        while peripherals.PMC.pmc_pcsr0.read().pid22().bit_is_clear() {
+        }
     }
 
     fn disable_clock(peripherals: &mut Peripherals) {
@@ -190,11 +272,32 @@ impl I2cController for Twi0I2cController {
 pub struct Twi1I2cController;
 impl I2cController for Twi1I2cController {
     fn enable_clock(peripherals: &mut Peripherals) {
+        // stop clock
+        unsafe {
+            peripherals.PMC.pmc_pcdr0.write_with_zero(|w| w
+                .pid23().set_bit()
+            )
+        };
+
+        // no division (supported by CAN only on the SAM3X8E)
+        unsafe {
+            peripherals.PMC.pmc_pcr.write_with_zero(|w| w
+                .pid().variant(23)
+                .cmd().set_bit() // write
+                .div().periph_div_mck() // no division (divide by 1)
+            )
+        };
+
+        // start clock
         unsafe {
             peripherals.PMC.pmc_pcer0.write_with_zero(|w| w
                 .pid23().set_bit()
             )
         };
+
+        // wait for the clock to start
+        while peripherals.PMC.pmc_pcsr0.read().pid23().bit_is_clear() {
+        }
     }
 
     fn disable_clock(peripherals: &mut Peripherals) {
