@@ -2065,6 +2065,7 @@ dependencies = [
  "clap 4.0.10",
  "eframe",
  "egui_extras",
+ "from-to-repr",
  "image",
  "once_cell",
 ]
