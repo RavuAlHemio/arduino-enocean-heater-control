@@ -307,95 +307,169 @@ impl<'a> DisplayCommand<'a> {
 }
 
 
-pub fn send_low_level_command<A: IntoIterator<Item = u8>>(peripherals: &mut Peripherals, command: u8, args: A) {
-    // select device
-    click_spi::cs1_low(peripherals);
-    multinop::<MULTINOP_COUNT>();
+/// Common operations on the OLED display (PSP27801 with SSD1351 controller).
+pub trait OledDisplay {
+    /// Low-level operation to send a command to the display.
+    fn send_low_level_command<A: IntoIterator<Item = u8>>(peripherals: &mut Peripherals, command: u8, args: A);
 
-    // set D/C low for command
-    sam_pin!(set_low, peripherals, PIOC, p25);
-    multinop::<MULTINOP_COUNT>();
+    /// Initializes communications with the display.
+    fn init_comms(peripherals: &mut Peripherals);
 
-    // send command
-    click_spi::bitbang::<MULTINOP_COUNT>(peripherals, command);
-    multinop::<MULTINOP_COUNT>();
+    /// Sends the given command to the display.
+    fn send_command(peripherals: &mut Peripherals, command: DisplayCommand) {
+        let command_code = command.code();
+        let mut buf = [0u8; 6];
+        let command_data = command.encode_data(&mut buf);
 
-    // set D/C high for data (default)
-    sam_pin!(set_high, peripherals, PIOC, p25);
-    multinop::<MULTINOP_COUNT>();
+        Self::send_low_level_command(peripherals, command_code, command_data.iter().map(|b| *b));
+    }
 
-    for arg in args {
-        click_spi::bitbang::<MULTINOP_COUNT>(peripherals, arg);
+    /// Initializes the display.
+    fn init_display(peripherals: &mut Peripherals) {
+        Self::init_comms(peripherals);
+
+        // the display only has 96x96 pixels while RAM is 128x128
+        // columns are centered, rows are top-aligned
+        Self::set_default_dimensions(peripherals);
+
+        // set display to black
+        Self::send_low_level_command(peripherals, 0x5C, (0..DISPLAY_WIDTH*DISPLAY_HEIGHT*COLOR_DEPTH).map(|_| 0x00));
+
+        // turn on display
+        Self::send_command(peripherals, DisplayCommand::SetSleepMode(false));
+    }
+
+    /// Configures the display controller to match the dimensions of the display itself.
+    fn set_default_dimensions(peripherals: &mut Peripherals) {
+        Self::send_command(peripherals, DisplayCommand::SetColumnAddress {
+            first: DISPLAY_OFFSET_X.try_into().unwrap(),
+            last: (DISPLAY_OFFSET_X + DISPLAY_WIDTH - 1).try_into().unwrap(),
+        });
+        Self::send_command(peripherals, DisplayCommand::SetRowAddress {
+            first: DISPLAY_OFFSET_Y.try_into().unwrap(),
+            last: (DISPLAY_OFFSET_Y + DISPLAY_HEIGHT - 1).try_into().unwrap(),
+        });
+    }
+
+    /// Writes a line of text on the display.
+    fn write_line(
+        peripherals: &mut Peripherals,
+        x: u32, y: u32,
+        fg_color: [u8; COLOR_DEPTH], bg_color: [u8; COLOR_DEPTH],
+        text: &str,
+    ) {
+        let (char_indexes, char_count) = str_to_char_indexes(text);
+
+        if usize::try_from(y).unwrap() > DISPLAY_HEIGHT {
+            return;
+        }
+
+        for i in 0..char_count {
+            let first_col: u32 = x + u32::try_from(i * LETTER_WIDTH).unwrap();
+            let first_col_usize: usize = first_col.try_into().unwrap();
+            if first_col_usize > DISPLAY_WIDTH {
+                break;
+            }
+
+            let character = char_by_index(char_indexes[i]);
+
+            Self::send_command(peripherals, DisplayCommand::SetColumnAddress {
+                first: (DISPLAY_OFFSET_X + first_col_usize).try_into().unwrap(),
+                last: (DISPLAY_OFFSET_X + first_col_usize + LETTER_WIDTH - 1).try_into().unwrap(),
+            });
+            Self::send_command(peripherals, DisplayCommand::SetRowAddress {
+                first: (DISPLAY_OFFSET_Y + usize::try_from(y).unwrap()).try_into().unwrap(),
+                last: (DISPLAY_OFFSET_Y + usize::try_from(y).unwrap() + LETTER_HEIGHT - 1).try_into().unwrap(),
+            });
+
+            // write image data
+            let character_colors = character.iter().flat_map(|row|
+                row.iter().flat_map(|pixel|
+                    if *pixel { fg_color } else { bg_color }
+                )
+            );
+            Self::send_low_level_command(peripherals, 0x5C, character_colors);
+        }
+
+        Self::set_default_dimensions(peripherals);
+    }
+}
+
+
+/// The OLED display in Mikrobus slot 1, controlled via SPI.
+pub struct Mikrobus1SpiOledDisplay;
+impl OledDisplay for Mikrobus1SpiOledDisplay {
+    fn send_low_level_command<A: IntoIterator<Item = u8>>(peripherals: &mut Peripherals, command: u8, args: A) {
+        // select device
+        click_spi::cs1_low(peripherals);
+        multinop::<MULTINOP_COUNT>();
+
+        // set D/C low for command
+        sam_pin!(set_low, peripherals, PIOC, p25);
+        multinop::<MULTINOP_COUNT>();
+
+        // send command
+        click_spi::bitbang::<MULTINOP_COUNT>(peripherals, command);
+        multinop::<MULTINOP_COUNT>();
+
+        // set D/C high for data (default)
+        sam_pin!(set_high, peripherals, PIOC, p25);
+        multinop::<MULTINOP_COUNT>();
+
+        for arg in args {
+            click_spi::bitbang::<MULTINOP_COUNT>(peripherals, arg);
+            multinop::<MULTINOP_COUNT>();
+        }
+
+        // deselect device
+        click_spi::cs1_high(peripherals);
         multinop::<MULTINOP_COUNT>();
     }
 
-    // deselect device
-    click_spi::cs1_high(peripherals);
-    multinop::<MULTINOP_COUNT>();
+    fn init_comms(peripherals: &mut Peripherals) {
+        // pinout at Mikrobus slot 1 on Arduino Mega Shield on Arduino Due:
+        // PA16 = R/W = read/write (tie low; we're using the 4-wire SPI interface)
+        // PC14 = RST = reset
+        // PC25 = D/C = data/command (high is data, low is command)
+        // PA28 = EN  = set high for power supply enable
+        //              (connected to TI power chip, not display controller)
+        //
+        // the following pins are managed by the SPI module, not by us:
+        // PB14 = CS  = chip select slot 1 (SPI set-low-to-talk-to-me)
+        // PB21 = SCK = SPI clock (bus)
+        // PC13 = SDO/CIPO = SPI peripheral to controller (bus)
+        // PC12 = SDI/COPI = SPI controller to peripheral (bus)
+
+        // configure pin modes
+        sam_pin!(enable_io, peripherals, PIOA, p16, p28);
+        sam_pin!(enable_io, peripherals, PIOC, p14, p25);
+        sam_pin!(make_output, peripherals, PIOA, p16, p28);
+        sam_pin!(make_output, peripherals, PIOC, p14, p25);
+
+        // R/W is low (permanently), D/C is high (data), RST is high, EN starts out low
+        sam_pin!(set_low, peripherals, PIOA, p16, p28);
+        sam_pin!(set_low, peripherals, PIOC, p14);
+        sam_pin!(set_high, peripherals, PIOC, p25);
+
+        // wait a bit
+        delay(Duration::from_millis(1));
+
+        // set EN high (turn display power on)
+        sam_pin!(set_high, peripherals, PIOA, p28);
+
+        // wait a bit while the power supply stabilizes
+        delay(Duration::from_millis(1));
+
+        // bounce the RST pin (triggers the reset)
+        sam_pin!(set_high, peripherals, PIOC, p14);
+        delay(Duration::from_millis(1));
+        sam_pin!(set_low, peripherals, PIOC, p14);
+        delay(Duration::from_millis(1));
+        sam_pin!(set_high, peripherals, PIOC, p14);
+        delay(Duration::from_millis(100));
+    }
 }
 
-
-pub fn send_command(peripherals: &mut Peripherals, command: DisplayCommand) {
-    let command_code = command.code();
-    let mut buf = [0u8; 6];
-    let command_data = command.encode_data(&mut buf);
-
-    send_low_level_command(peripherals, command_code, command_data.iter().map(|b| *b));
-}
-
-
-pub fn init_display(peripherals: &mut Peripherals) {
-    // pinout at Mikrobus slot 1 on Arduino Mega Shield on Arduino Due:
-    // PA16 = R/W = read/write (tie low; we're using the 4-wire SPI interface)
-    // PC14 = RST = reset
-    // PC25 = D/C = data/command (high is data, low is command)
-    // PA28 = EN  = set high for power supply enable
-    //              (connected to TI power chip, not display controller)
-    //
-    // the following pins are managed by the SPI module, not by us:
-    // PB14 = CS  = chip select slot 1 (SPI set-low-to-talk-to-me)
-    // PB21 = SCK = SPI clock (bus)
-    // PC13 = SDO/CIPO = SPI peripheral to controller (bus)
-    // PC12 = SDI/COPI = SPI controller to peripheral (bus)
-
-    // configure pin modes
-    sam_pin!(enable_io, peripherals, PIOA, p16, p28);
-    sam_pin!(enable_io, peripherals, PIOC, p14, p25);
-    sam_pin!(make_output, peripherals, PIOA, p16, p28);
-    sam_pin!(make_output, peripherals, PIOC, p14, p25);
-
-    // R/W is low (permanently), D/C is high (data), RST is high, EN starts out low
-    sam_pin!(set_low, peripherals, PIOA, p16, p28);
-    sam_pin!(set_low, peripherals, PIOC, p14);
-    sam_pin!(set_high, peripherals, PIOC, p25);
-
-    // wait a bit
-    delay(Duration::from_millis(1));
-
-    // set EN high (turn display power on)
-    sam_pin!(set_high, peripherals, PIOA, p28);
-
-    // wait a bit while the power supply stabilizes
-    delay(Duration::from_millis(1));
-
-    // bounce the RST pin (triggers the reset)
-    sam_pin!(set_high, peripherals, PIOC, p14);
-    delay(Duration::from_millis(1));
-    sam_pin!(set_low, peripherals, PIOC, p14);
-    delay(Duration::from_millis(1));
-    sam_pin!(set_high, peripherals, PIOC, p14);
-    delay(Duration::from_millis(100));
-
-    // the display only has 96x96 pixels while RAM is 128x128
-    // columns are centered, rows are top-aligned
-    set_default_dimensions(peripherals);
-
-    // set display to black
-    send_low_level_command(peripherals, 0x5C, (0..DISPLAY_WIDTH*DISPLAY_HEIGHT*COLOR_DEPTH).map(|_| 0x00));
-
-    // turn on display
-    send_command(peripherals, DisplayCommand::SetSleepMode(false));
-}
 
 fn str_to_char_indexes(text: &str) -> ([usize; MAX_LETTERS_PER_ROW], usize) {
     let mut ret = [0usize; MAX_LETTERS_PER_ROW];
@@ -429,57 +503,4 @@ fn char_by_index(index: usize) -> [[bool; LETTER_WIDTH]; LETTER_HEIGHT] {
         }
     }
     ret
-}
-
-fn set_default_dimensions(peripherals: &mut Peripherals) {
-    send_command(peripherals, DisplayCommand::SetColumnAddress {
-        first: DISPLAY_OFFSET_X.try_into().unwrap(),
-        last: (DISPLAY_OFFSET_X + DISPLAY_WIDTH - 1).try_into().unwrap(),
-    });
-    send_command(peripherals, DisplayCommand::SetRowAddress {
-        first: DISPLAY_OFFSET_Y.try_into().unwrap(),
-        last: (DISPLAY_OFFSET_Y + DISPLAY_HEIGHT - 1).try_into().unwrap(),
-    });
-}
-
-pub fn write_line(
-    peripherals: &mut Peripherals,
-    x: u32, y: u32,
-    fg_color: [u8; COLOR_DEPTH], bg_color: [u8; COLOR_DEPTH],
-    text: &str,
-) {
-    let (char_indexes, char_count) = str_to_char_indexes(text);
-
-    if usize::try_from(y).unwrap() > DISPLAY_HEIGHT {
-        return;
-    }
-
-    for i in 0..char_count {
-        let first_col: u32 = x + u32::try_from(i * LETTER_WIDTH).unwrap();
-        let first_col_usize: usize = first_col.try_into().unwrap();
-        if first_col_usize > DISPLAY_WIDTH {
-            break;
-        }
-
-        let character = char_by_index(char_indexes[i]);
-
-        send_command(peripherals, DisplayCommand::SetColumnAddress {
-            first: (DISPLAY_OFFSET_X + first_col_usize).try_into().unwrap(),
-            last: (DISPLAY_OFFSET_X + first_col_usize + LETTER_WIDTH - 1).try_into().unwrap(),
-        });
-        send_command(peripherals, DisplayCommand::SetRowAddress {
-            first: (DISPLAY_OFFSET_Y + usize::try_from(y).unwrap()).try_into().unwrap(),
-            last: (DISPLAY_OFFSET_Y + usize::try_from(y).unwrap() + LETTER_HEIGHT - 1).try_into().unwrap(),
-        });
-
-        // write image data
-        let character_colors = character.iter().flat_map(|row|
-            row.iter().flat_map(|pixel|
-                if *pixel { fg_color } else { bg_color }
-            )
-        );
-        send_low_level_command(peripherals, 0x5C, character_colors);
-    }
-
-    set_default_dimensions(peripherals);
 }
