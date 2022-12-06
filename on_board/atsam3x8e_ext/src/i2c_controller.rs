@@ -99,7 +99,7 @@ pub trait I2cController {
     }
 
     /// Write data to an address via I<sup>2</sup>C.
-    fn write(peripherals: &mut Peripherals, address: u8, data: &[u8]) {
+    fn write<D: IntoIterator<Item = u8>>(peripherals: &mut Peripherals, address: u8, data: D) {
         let twi = Self::get_register_block(peripherals);
 
         // wait until the TWI controller is ready to switch modes
@@ -121,13 +121,14 @@ pub trait I2cController {
             )
         };
 
-        for (i, b) in data.into_iter().enumerate() {
+        let mut data_peek = data.into_iter().peekable();
+        while let Some(b) = data_peek.next() {
             // feed the byte to the TWI controller for sending
             twi.thr.write(|w| w
-                .txdata().variant(*b)
+                .txdata().variant(b)
             );
 
-            if i == data.len() - 1 {
+            if data_peek.peek().is_none() {
                 // we have enqueued the last byte; tell the peripheral that we will be stopping now
                 unsafe {
                     twi.cr.write_with_zero(|w| w

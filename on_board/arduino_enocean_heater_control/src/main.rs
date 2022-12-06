@@ -127,7 +127,7 @@ fn main() -> ! {
 
     // ask our bridge chip to prepare its version info
     uart::send(&mut peripherals, b"asking for things to happen\r\n");
-    Twi1I2cController::write(&mut peripherals, 0b0101_000, &[0xFE]);
+    Twi1I2cController::write(&mut peripherals, 0b0101_000, [0xFE]);
 
     // read it
     let mut buf = [0u8; 16];
