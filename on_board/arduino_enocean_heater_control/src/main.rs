@@ -153,13 +153,6 @@ fn main() -> ! {
     uart::send(&mut peripherals, b"\r\n");
     uart::send(&mut peripherals, b"system and UART initialization complete\r\n");
 
-    loop {
-        cortex_m::asm::wfe();
-    }
-
-    // set up SPI
-    click_spi::setup_pins_controller(&mut peripherals);
-
     // enable RESET on the TCM515
     sam_pin!(make_output, peripherals, PIOC, p16);
     sam_pin!(set_low, peripherals, PIOC, p16);
