@@ -7,6 +7,7 @@ use core::time::Duration;
 
 use atsam3x8e::Peripherals;
 use atsam3x8e_ext::{multinop, sam_pin};
+use atsam3x8e_ext::i2c_controller::{I2cController, Twi1I2cController};
 use atsam3x8e_ext::tick::delay;
 
 use crate::bit_field::BitField;
@@ -310,42 +311,42 @@ impl<'a> DisplayCommand<'a> {
 /// Common operations on the OLED display (PSP27801 with SSD1351 controller).
 pub trait OledDisplay {
     /// Low-level operation to send a command to the display.
-    fn send_low_level_command<A: IntoIterator<Item = u8>>(peripherals: &mut Peripherals, command: u8, args: A);
+    fn send_low_level_command<A: IntoIterator<Item = u8>>(&self, peripherals: &mut Peripherals, command: u8, args: A);
 
     /// Initializes communications with the display.
-    fn init_comms(peripherals: &mut Peripherals);
+    fn init_comms(&self, peripherals: &mut Peripherals);
 
     /// Sends the given command to the display.
-    fn send_command(peripherals: &mut Peripherals, command: DisplayCommand) {
+    fn send_command(&self, peripherals: &mut Peripherals, command: DisplayCommand) {
         let command_code = command.code();
         let mut buf = [0u8; 6];
         let command_data = command.encode_data(&mut buf);
 
-        Self::send_low_level_command(peripherals, command_code, command_data.iter().map(|b| *b));
+        self.send_low_level_command(peripherals, command_code, command_data.iter().map(|b| *b));
     }
 
     /// Initializes the display.
-    fn init_display(peripherals: &mut Peripherals) {
-        Self::init_comms(peripherals);
+    fn init_display(&self, peripherals: &mut Peripherals) {
+        self.init_comms(peripherals);
 
         // the display only has 96x96 pixels while RAM is 128x128
         // columns are centered, rows are top-aligned
-        Self::set_default_dimensions(peripherals);
+        self.set_default_dimensions(peripherals);
 
         // set display to black
-        Self::send_low_level_command(peripherals, 0x5C, (0..DISPLAY_WIDTH*DISPLAY_HEIGHT*COLOR_DEPTH).map(|_| 0x00));
+        self.send_low_level_command(peripherals, 0x5C, (0..DISPLAY_WIDTH*DISPLAY_HEIGHT*COLOR_DEPTH).map(|_| 0x00));
 
         // turn on display
-        Self::send_command(peripherals, DisplayCommand::SetSleepMode(false));
+        self.send_command(peripherals, DisplayCommand::SetSleepMode(false));
     }
 
     /// Configures the display controller to match the dimensions of the display itself.
-    fn set_default_dimensions(peripherals: &mut Peripherals) {
-        Self::send_command(peripherals, DisplayCommand::SetColumnAddress {
+    fn set_default_dimensions(&self, peripherals: &mut Peripherals) {
+        self.send_command(peripherals, DisplayCommand::SetColumnAddress {
             first: DISPLAY_OFFSET_X.try_into().unwrap(),
             last: (DISPLAY_OFFSET_X + DISPLAY_WIDTH - 1).try_into().unwrap(),
         });
-        Self::send_command(peripherals, DisplayCommand::SetRowAddress {
+        self.send_command(peripherals, DisplayCommand::SetRowAddress {
             first: DISPLAY_OFFSET_Y.try_into().unwrap(),
             last: (DISPLAY_OFFSET_Y + DISPLAY_HEIGHT - 1).try_into().unwrap(),
         });
@@ -353,6 +354,7 @@ pub trait OledDisplay {
 
     /// Writes a line of text on the display.
     fn write_line(
+        &self,
         peripherals: &mut Peripherals,
         x: u32, y: u32,
         fg_color: [u8; COLOR_DEPTH], bg_color: [u8; COLOR_DEPTH],
@@ -373,11 +375,11 @@ pub trait OledDisplay {
 
             let character = char_by_index(char_indexes[i]);
 
-            Self::send_command(peripherals, DisplayCommand::SetColumnAddress {
+            self.send_command(peripherals, DisplayCommand::SetColumnAddress {
                 first: (DISPLAY_OFFSET_X + first_col_usize).try_into().unwrap(),
                 last: (DISPLAY_OFFSET_X + first_col_usize + LETTER_WIDTH - 1).try_into().unwrap(),
             });
-            Self::send_command(peripherals, DisplayCommand::SetRowAddress {
+            self.send_command(peripherals, DisplayCommand::SetRowAddress {
                 first: (DISPLAY_OFFSET_Y + usize::try_from(y).unwrap()).try_into().unwrap(),
                 last: (DISPLAY_OFFSET_Y + usize::try_from(y).unwrap() + LETTER_HEIGHT - 1).try_into().unwrap(),
             });
@@ -388,10 +390,10 @@ pub trait OledDisplay {
                     if *pixel { fg_color } else { bg_color }
                 )
             );
-            Self::send_low_level_command(peripherals, 0x5C, character_colors);
+            self.send_low_level_command(peripherals, 0x5C, character_colors);
         }
 
-        Self::set_default_dimensions(peripherals);
+        self.set_default_dimensions(peripherals);
     }
 }
 
@@ -399,7 +401,7 @@ pub trait OledDisplay {
 /// The OLED display in Mikrobus slot 1, controlled via SPI.
 pub struct Mikrobus1SpiOledDisplay;
 impl OledDisplay for Mikrobus1SpiOledDisplay {
-    fn send_low_level_command<A: IntoIterator<Item = u8>>(peripherals: &mut Peripherals, command: u8, args: A) {
+    fn send_low_level_command<A: IntoIterator<Item = u8>>(&self, peripherals: &mut Peripherals, command: u8, args: A) {
         // select device
         click_spi::cs1_low(peripherals);
         multinop::<MULTINOP_COUNT>();
@@ -426,7 +428,7 @@ impl OledDisplay for Mikrobus1SpiOledDisplay {
         multinop::<MULTINOP_COUNT>();
     }
 
-    fn init_comms(peripherals: &mut Peripherals) {
+    fn init_comms(&self, peripherals: &mut Peripherals) {
         // pinout at Mikrobus slot 1 on Arduino Mega Shield on Arduino Due:
         // PA16 = R/W = read/write (tie low; we're using the 4-wire SPI interface)
         // PC14 = RST = reset
@@ -439,6 +441,73 @@ impl OledDisplay for Mikrobus1SpiOledDisplay {
         // PB21 = SCK = SPI clock (bus)
         // PC13 = SDO/CIPO = SPI peripheral to controller (bus)
         // PC12 = SDI/COPI = SPI controller to peripheral (bus)
+
+        // configure pin modes
+        sam_pin!(enable_io, peripherals, PIOA, p16, p28);
+        sam_pin!(enable_io, peripherals, PIOC, p14, p25);
+        sam_pin!(make_output, peripherals, PIOA, p16, p28);
+        sam_pin!(make_output, peripherals, PIOC, p14, p25);
+
+        // R/W is low (permanently), D/C is high (data), RST is high, EN starts out low
+        sam_pin!(set_low, peripherals, PIOA, p16, p28);
+        sam_pin!(set_low, peripherals, PIOC, p14);
+        sam_pin!(set_high, peripherals, PIOC, p25);
+
+        // wait a bit
+        delay(Duration::from_millis(1));
+
+        // set EN high (turn display power on)
+        sam_pin!(set_high, peripherals, PIOA, p28);
+
+        // wait a bit while the power supply stabilizes
+        delay(Duration::from_millis(1));
+
+        // bounce the RST pin (triggers the reset)
+        sam_pin!(set_high, peripherals, PIOC, p14);
+        delay(Duration::from_millis(1));
+        sam_pin!(set_low, peripherals, PIOC, p14);
+        delay(Duration::from_millis(1));
+        sam_pin!(set_high, peripherals, PIOC, p14);
+        delay(Duration::from_millis(100));
+    }
+}
+
+
+/// The OLED display in Mikrobus slot 1, controlled via an I<sup>2</sup>C-SPI bridge on TWI1.
+pub struct Mikrobus1Twi1I2cOledDisplay {
+    pub i2c_address: u8,
+}
+impl OledDisplay for Mikrobus1Twi1I2cOledDisplay {
+    fn send_low_level_command<A: IntoIterator<Item = u8>>(&self, peripherals: &mut Peripherals, command: u8, args: A) {
+        // set D/C low for command
+        sam_pin!(set_low, peripherals, PIOC, p25);
+
+        // send command to our I2C address, function ID 1 (chip select 0)
+        Twi1I2cController::write(peripherals, self.i2c_address, [0x01, command]);
+
+        // set D/C high for data (default)
+        sam_pin!(set_high, peripherals, PIOC, p25);
+
+        // send data to our I2C address, function ID 1 (chip select 0)
+        let i2c_args = core::iter::once(0x01).chain(args);
+        Twi1I2cController::write(peripherals, self.i2c_address, i2c_args);
+    }
+
+    fn init_comms(&self, peripherals: &mut Peripherals) {
+        // pinout at Mikrobus slot 1 on Arduino Mega Shield on Arduino Due:
+        // PA16 = R/W  = read/write (tie low; we're using the 4-wire SPI interface)
+        // PC14 = RST  = reset
+        // PC25 = D/~C = data/~command
+        // PA28 = EN   = set high for power supply enable
+        //               (connected to TI power chip, not display controller)
+        //
+        // the following pins are managed by the I2C-SPI bridge, not by us:
+        // PB14 = ~CS = chip select slot 1 (SPI set-low-to-talk-to-me)
+        // PB21 = SCK = SPI clock (bus)
+        // PC13 = SDO/CIPO = SPI peripheral to controller (bus)
+        // PC12 = SDI/COPI = SPI controller to peripheral (bus)
+
+        // assume that TWI is already configured
 
         // configure pin modes
         sam_pin!(enable_io, peripherals, PIOA, p16, p28);
