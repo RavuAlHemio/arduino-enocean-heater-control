@@ -313,8 +313,8 @@ pub trait OledDisplay {
     /// Low-level operation to send a command to the display.
     fn send_low_level_command<A: IntoIterator<Item = u8>>(&self, peripherals: &mut Peripherals, command: u8, args: A);
 
-    /// Initializes communications with the display.
-    fn init_comms(&self, peripherals: &mut Peripherals);
+    /// Resets and initializes communications with the display.
+    fn reset_init_comms(&self, peripherals: &mut Peripherals);
 
     /// Sends the given command to the display.
     fn send_command(&self, peripherals: &mut Peripherals, command: DisplayCommand) {
@@ -327,8 +327,6 @@ pub trait OledDisplay {
 
     /// Initializes the display.
     fn init_display(&self, peripherals: &mut Peripherals) {
-        self.init_comms(peripherals);
-
         // the display only has 96x96 pixels while RAM is 128x128
         // columns are centered, rows are top-aligned
         self.set_default_dimensions(peripherals);
@@ -428,7 +426,7 @@ impl OledDisplay for Mikrobus1SpiOledDisplay {
         multinop::<MULTINOP_COUNT>();
     }
 
-    fn init_comms(&self, peripherals: &mut Peripherals) {
+    fn reset_init_comms(&self, peripherals: &mut Peripherals) {
         // pinout at Mikrobus slot 1 on Arduino Mega Shield on Arduino Due:
         // PA16 = R/W = read/write (tie low; we're using the 4-wire SPI interface)
         // PC14 = RST = reset
@@ -493,7 +491,7 @@ impl OledDisplay for Mikrobus1Twi1I2cOledDisplay {
         Twi1I2cController::write(peripherals, self.i2c_address, i2c_args);
     }
 
-    fn init_comms(&self, peripherals: &mut Peripherals) {
+    fn reset_init_comms(&self, peripherals: &mut Peripherals) {
         // pinout at Mikrobus slot 1 on Arduino Mega Shield on Arduino Due:
         // PA16 = R/W  = read/write (tie low; we're using the 4-wire SPI interface)
         // PC14 = RST  = reset

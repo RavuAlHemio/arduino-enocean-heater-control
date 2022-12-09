@@ -25,7 +25,7 @@ use buildingblocks::max_array::MaxArray;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
 
-use crate::display::DisplayCommand;
+use crate::display::{DisplayCommand, Mikrobus1Twi1I2cOledDisplay, OledDisplay};
 use crate::usart::{Usart, Usart3};
 
 
@@ -89,7 +89,18 @@ fn main() -> ! {
     // initialize UART
     uart::init(&mut peripherals);
 
-    // try the I2C stuff
+    // initialize USART (connection to TCM515) before we reset the peripherals
+    Usart3::set_pins(&mut peripherals);
+    Usart3::enable_clock(&mut peripherals);
+    Usart3::disable_pdc(&mut peripherals);
+    Usart3::reset_and_disable(&mut peripherals);
+    Usart3::set_standard_params(&mut peripherals);
+    Usart3::set_baud_rate(&clock, &mut peripherals, 57600);
+    Usart3::disable_interrupts(&mut peripherals);
+    Usart3::set_receive_buffer_enabled(true);
+    Usart3::set_receive_ready_interrupt(&mut peripherals, true);
+    Usart3::set_core_interrupt(true);
+    Usart3::set_rxtx_state(&mut peripherals, true, true);
 
     // reset all mikroBUS devices
     sam_pin!(enable_io, peripherals, PIOC, p14, p15, p16);
@@ -114,7 +125,6 @@ fn main() -> ! {
     };
 
     // I2C controller setup
-    uart::send(&mut peripherals, b"setting up I2C\r\n");
     Twi1I2cController::setup_pins(&mut peripherals);
     Twi1I2cController::enable_clock(&mut peripherals);
 
@@ -125,64 +135,23 @@ fn main() -> ! {
     // SC18IS606 max speed is 400 kHz
     Twi1I2cController::set_speed(&mut peripherals, 400_000, clock.clock_speed);
 
-    // ask our bridge chip to prepare its version info
-    uart::send(&mut peripherals, b"asking for things to happen\r\n");
-    Twi1I2cController::write(&mut peripherals, 0b0101_000, [0xFE]);
+    // display startup
+    let display = Mikrobus1Twi1I2cOledDisplay {
+        i2c_address: 0b0101_000,
+    };
+    display.init_display(&mut peripherals);
+    display.write_line(
+        &mut peripherals,
+        0, 0,
+        [0xFF, 0xFF], [0x00, 0x00],
+        "what?!",
+    );
 
-    // read it
-    let mut buf = [0u8; 16];
-    let mut buf_index = 0;
-    uart::send(&mut peripherals, b"blammo?\r\n");
-    Twi1I2cController::read(&mut peripherals, 0b0101_000, &mut buf);
-
-    // find NUL byte
-    let buf_len = buf.iter()
-        .enumerate()
-        .filter(|(_i, b)| **b == 0)
-        .map(|(i, _b)| i)
-        .nth(0)
-        .unwrap_or(buf.len());
-    uart::send(&mut peripherals, b"I2C chip version: ");
-    uart::send(&mut peripherals, &buf[0..buf_len]);
-    uart::send(&mut peripherals, b"\r\n");
-
-    let mut clock_hex : MaxArray<u8, {4*2}> = MaxArray::new();
-    hex_dump(&clock.clock_speed.to_be_bytes(), &mut clock_hex);
-    uart::send(&mut peripherals, b"clock speed: 0x");
-    uart::send(&mut peripherals, clock_hex.as_slice());
-    uart::send(&mut peripherals, b"\r\n");
-    uart::send(&mut peripherals, b"system and UART initialization complete\r\n");
-
-    // enable RESET on the TCM515
-    sam_pin!(make_output, peripherals, PIOC, p16);
-    sam_pin!(set_low, peripherals, PIOC, p16);
-
-    // set up the connection to the TCM515
-    Usart3::set_pins(&mut peripherals);
-    uart::send(&mut peripherals, b"PINS SET\r\n");
-    Usart3::enable_clock(&mut peripherals);
-    uart::send(&mut peripherals, b"CLOCK ENABLED\r\n");
-    Usart3::disable_pdc(&mut peripherals);
-    uart::send(&mut peripherals, b"PDC disabled\r\n");
-    Usart3::reset_and_disable(&mut peripherals);
-    uart::send(&mut peripherals, b"USART RESET\r\n");
-    Usart3::set_standard_params(&mut peripherals);
-    uart::send(&mut peripherals, b"STANDARD PARAMS SET\r\n");
-    Usart3::set_baud_rate(&clock, &mut peripherals, 57600);
-    uart::send(&mut peripherals, b"BAUD RATE SET\r\n");
-    Usart3::disable_interrupts(&mut peripherals);
-    uart::send(&mut peripherals, b"INTERRUPTS DISABLED\r\n");
-    Usart3::set_receive_buffer_enabled(true);
-    uart::send(&mut peripherals, b"RECEIVE BUFFER ENABLED\r\n");
-    Usart3::set_receive_ready_interrupt(&mut peripherals, true);
-    uart::send(&mut peripherals, b"RECEIVE-READY INTERRUPT ENABLED\r\n");
-    Usart3::set_core_interrupt(true);
-    uart::send(&mut peripherals, b"CORE USART3 INTERRUPT ENABLED\r\n");
-    Usart3::set_rxtx_state(&mut peripherals, true, true);
-    uart::send(&mut peripherals, b"TRANSMITTER AND RECEIVER ENABLED\r\n");
-
-    // turn off the TCM515 reset pin
-    sam_pin!(set_high, peripherals, PIOC, p16);
+    loop {
+        unsafe {
+            core::arch::arm::__wfi()
+        };
+    }
 
     /*
     // wait five seconds
