@@ -86,6 +86,16 @@ fn main() -> ! {
     let mut clock = system_init(&mut peripherals);
     enable_tick_clock(&mut core_peripherals, clock.clock_speed / 1000);
 
+    // configure reset pins for all mikroBUS devices
+    sam_pin!(enable_io, peripherals, PIOC, p14, p15, p16);
+    sam_pin!(make_output, peripherals, PIOC, p14, p15, p16);
+    sam_pin!(set_high, peripherals, PIOC, p14, p15, p16);
+
+    // configure the oscilloscope triggering pin
+    sam_pin!(enable_io, peripherals, PIOC, p28);
+    sam_pin!(make_output, peripherals, PIOC, p28);
+    sam_pin!(set_high, peripherals, PIOC, p28);
+
     // initialize UART
     uart::init(&mut peripherals);
 
@@ -102,55 +112,61 @@ fn main() -> ! {
     Usart3::set_core_interrupt(true);
     Usart3::set_rxtx_state(&mut peripherals, true, true);
 
+    // initialize I2C
+    Twi1I2cController::setup_pins(&mut peripherals);
+    Twi1I2cController::enable_clock(&mut peripherals);
+    Twi1I2cController::reset(&mut peripherals);
+    Twi1I2cController::surrender_roles(&mut peripherals);
+    Twi1I2cController::disable_dma(&mut peripherals);
+    // SC18IS606 max I2C speed is 400 kHz
+    // be a bit more conservative though
+    Twi1I2cController::set_speed(&mut peripherals, 100_000, clock.clock_speed);
+
+    // tell SC18IS606 the display config:
+    // * MSB first (ORDER = b5 = 0)
+    // * clock low when idle (CPOL = b3 = 0)
+    // * data ready when clock goes high (CPHA = b2 = 0)
+    // * clock rate 58 kHz (F = b1:0 = 11)
+    let lsb_first = false;
+    let clock_high_when_idle = false;
+    let data_ready_when_clock_goes_low = false;
+    let clock_rate_variant = 0b11;
+    let spi_config =
+        if lsb_first { 0b0010_0000 } else { 0 }
+        | if clock_high_when_idle { 0b0000_1000 } else { 0 }
+        | if data_ready_when_clock_goes_low { 0b0000_0100 } else { 0 }
+        | clock_rate_variant
+    ;
+    Twi1I2cController::write(&mut peripherals, 0b0101_000, [0xF0, spi_config]);
+
+    // initialize display
+    let display = Mikrobus1Twi1I2cOledDisplay {
+        i2c_address: 0b0101_000,
+    };
+    display.setup_pins(&mut peripherals);
+
     // reset all mikroBUS devices
-    sam_pin!(enable_io, peripherals, PIOC, p14, p15, p16);
-    sam_pin!(make_output, peripherals, PIOC, p14, p15, p16);
-    sam_pin!(set_high, peripherals, PIOC, p14, p15, p16);
     crate::delay(Duration::from_millis(10));
     sam_pin!(set_low, peripherals, PIOC, p14, p15, p16);
     crate::delay(Duration::from_millis(10));
     sam_pin!(set_high, peripherals, PIOC, p14, p15, p16);
-
-    // enable display power
-    uart::send(&mut peripherals, b"enabling display power\r\n");
-    unsafe {
-        peripherals.PIOA.oer.write_with_zero(|w| w
-            .p28().set_bit()
-        )
-    };
-    unsafe {
-        peripherals.PIOA.sodr.write_with_zero(|w| w
-            .p28().set_bit()
-        )
-    };
-
-    // I2C controller setup
-    Twi1I2cController::setup_pins(&mut peripherals);
-    Twi1I2cController::enable_clock(&mut peripherals);
-
-    Twi1I2cController::reset(&mut peripherals);
-    Twi1I2cController::surrender_roles(&mut peripherals);
-    Twi1I2cController::disable_dma(&mut peripherals);
-
-    // SC18IS606 max speed is 400 kHz
-    Twi1I2cController::set_speed(&mut peripherals, 400_000, clock.clock_speed);
+    crate::delay(Duration::from_millis(100));
 
     // display startup
-    let display = Mikrobus1Twi1I2cOledDisplay {
-        i2c_address: 0b0101_000,
-    };
     display.init_display(&mut peripherals);
+
+    // pull the oscilloscope trigger pin low
+    sam_pin!(set_low, peripherals, PIOC, p28);
+
     display.write_line(
         &mut peripherals,
         0, 0,
-        [0xFF, 0xFF], [0x00, 0x00],
+        [0x00, 0x00], [0xFF, 0xFF],
         "what?!",
     );
 
     loop {
-        unsafe {
-            core::arch::arm::__wfi()
-        };
+        cortex_m::asm::nop()
     }
 
     /*

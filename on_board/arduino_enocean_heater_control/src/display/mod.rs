@@ -313,8 +313,11 @@ pub trait OledDisplay {
     /// Low-level operation to send a command to the display.
     fn send_low_level_command<A: IntoIterator<Item = u8>>(&self, peripherals: &mut Peripherals, command: u8, args: A);
 
-    /// Resets and initializes communications with the display.
-    fn reset_init_comms(&self, peripherals: &mut Peripherals);
+    /// Sets up the pins controlling the display.
+    fn setup_pins(&self, peripherals: &mut Peripherals);
+
+    /// Resets the display. May also reset other components.
+    fn reset(&self, peripherals: &mut Peripherals);
 
     /// Sends the given command to the display.
     fn send_command(&self, peripherals: &mut Peripherals, command: DisplayCommand) {
@@ -426,7 +429,7 @@ impl OledDisplay for Mikrobus1SpiOledDisplay {
         multinop::<MULTINOP_COUNT>();
     }
 
-    fn reset_init_comms(&self, peripherals: &mut Peripherals) {
+    fn setup_pins(&self, peripherals: &mut Peripherals) {
         // pinout at Mikrobus slot 1 on Arduino Mega Shield on Arduino Due:
         // PA16 = R/W = read/write (tie low; we're using the 4-wire SPI interface)
         // PC14 = RST = reset
@@ -459,7 +462,9 @@ impl OledDisplay for Mikrobus1SpiOledDisplay {
 
         // wait a bit while the power supply stabilizes
         delay(Duration::from_millis(1));
+    }
 
+    fn reset(&self, peripherals: &mut Peripherals) {
         // bounce the RST pin (triggers the reset)
         sam_pin!(set_high, peripherals, PIOC, p14);
         delay(Duration::from_millis(1));
@@ -491,7 +496,7 @@ impl OledDisplay for Mikrobus1Twi1I2cOledDisplay {
         Twi1I2cController::write(peripherals, self.i2c_address, i2c_args);
     }
 
-    fn reset_init_comms(&self, peripherals: &mut Peripherals) {
+    fn setup_pins(&self, peripherals: &mut Peripherals) {
         // pinout at Mikrobus slot 1 on Arduino Mega Shield on Arduino Due:
         // PA16 = R/W  = read/write (tie low; we're using the 4-wire SPI interface)
         // PC14 = RST  = reset
@@ -526,7 +531,9 @@ impl OledDisplay for Mikrobus1Twi1I2cOledDisplay {
 
         // wait a bit while the power supply stabilizes
         delay(Duration::from_millis(1));
+    }
 
+    fn reset(&self, peripherals: &mut Peripherals) {
         // bounce the RST pin (triggers the reset)
         sam_pin!(set_high, peripherals, PIOC, p14);
         delay(Duration::from_millis(1));
