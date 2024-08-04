@@ -24,6 +24,9 @@ struct Args {
 
     #[clap(long, help = "Also name structs, not only typedefs")]
     pub name_structs: bool,
+
+    #[clap(long = "--bad-peripheral", help = "Index of a peripheral to skip. Can be provided multiple times.")]
+    pub bad_peripherals: Vec<usize>,
 }
 
 
@@ -71,6 +74,20 @@ impl<'d> XPathValueExt<'d> for XPathValue<'d> {
         match self {
             Self::Nodeset(ns) => Some(ns),
             _ => None,
+        }
+    }
+}
+
+
+trait StringExt {
+    fn strip_suffix_or_dont<'a, 'b>(&'a self, suffix: &'b str) -> &'a str;
+}
+impl StringExt for str {
+    fn strip_suffix_or_dont<'a, 'b>(&'a self, suffix: &'b str) -> &'a str {
+        if let Some(stripped) = self.strip_suffix(suffix) {
+            stripped
+        } else {
+            self
         }
     }
 }
@@ -190,6 +207,10 @@ fn main() {
         for (i, peripheral) in peripherals.document_order().into_iter().enumerate() {
             eprintln!("{}/{} peripherals output...", i, peripherals.size());
 
+            if args.bad_peripherals.contains(&i) {
+                continue;
+            }
+
             let peri_name = eval_xpath_string(&xpath_context, &name_string_xpath, peripheral);
             let peri_descr = eval_xpath_string(&xpath_context, &description_string_xpath, peripheral);
             let base_address_string = eval_xpath_string(&xpath_context, &base_addr_string_xpath, peripheral);
@@ -235,14 +256,17 @@ fn main() {
                 if reg_alt_group_string.len() > 0 {
                     continue;
                 }
+                if reg_size_string.len() == 0 {
+                    continue;
+                }
 
-                let reg_name = if let Some(s) = reg_name_orig.strip_suffix("[%s]") {
-                    s.to_owned()
-                } else {
-                    reg_name_orig
+                let reg_name = reg_name_orig
+                    .replace("[%s]", "")
+                    .replace("%s", "");
+                let reg_size = match u32_from_str(&reg_size_string) {
+                    Some(rs) => rs,
+                    None => panic!("failed to parse register size {:?}", reg_size_string),
                 };
-                let reg_size = u32_from_str(&reg_size_string)
-                    .expect("failed to parse register size");
                 let reg_dim = if reg_dim_string.len() > 0 {
                     u32_from_str(&reg_dim_string)
                         .expect("failed to parse register dimension")
@@ -262,15 +286,6 @@ fn main() {
 
                 max_peripheral_address = max_peripheral_address.max(base_address + reg_offset + reg_dim * reg_size / 8);
 
-                if reg_offset < register_pos {
-                    panic!("register {}.{} out of order! (at {}, expected at least {})", peri_name, reg_name, reg_offset, register_pos);
-                } else if reg_offset > register_pos {
-                    // add padding
-                    register_info.push(Register::Reserved(reg_offset - register_pos));
-                }
-                if reg_dim_incr != reg_size / 8 {
-                    panic!("unexpected register {}.{} increment: expected {}, got {}", peri_name, reg_name, reg_size / 8, reg_dim_incr);
-                }
                 if reg_dim_index_string.len() > 0 {
                     if reg_dim_index_string != format!("0-{}", reg_dim-1) {
                         panic!("register {}.{} dimension indexes are unexpected (got {:?}, expected \"0-{}\")", peri_name, reg_name, reg_dim_index_string, reg_dim-1);
@@ -285,7 +300,7 @@ fn main() {
                         format!("{}{}", reg_type, i)
                     };
                     register_defs.push(RegisterDef {
-                        address: base_address + reg_offset + i * reg_size / 8,
+                        address: base_address + reg_offset + i * reg_dim_incr,
                         register: reg_full_name.clone(),
                         type_name: reg_type,
                     });
