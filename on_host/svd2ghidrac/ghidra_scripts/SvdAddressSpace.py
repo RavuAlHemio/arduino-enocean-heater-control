@@ -60,6 +60,104 @@ class CpuInfo:
 
 # unfortunately, this information doesn't seem to exist in any SVD file
 CPU_TO_KNOWN_FIXED_DATA = {
+    "CM0plus": CpuInfo(
+        name="CM0plus",
+        fixed_data=[
+            FixedData(
+                address=0xE000E008,
+                name="SCBpart0",
+                type_name="SCBpart0",
+            ),
+            FixedData(
+                address=0xE000E010,
+                name="SysTick",
+                type_name="SysTick",
+            ),
+            FixedData(
+                address=0xE000E100,
+                name="NVICpart0",
+                type_name="NVICpart0",
+            ),
+            FixedData(
+                address=0xE000ED00,
+                name="SCBpart1",
+                type_name="SCBpart1",
+            ),
+            FixedData(
+                address=0xE000ED90,
+                name="MPU",
+                type_name="MPU",
+            ),
+            FixedData(
+                address=0xE000EF00,
+                name="NVICpart1",
+                type_name="NVICpart1",
+            ),
+            FixedData(
+                address=0x00080000,
+                name="StackBase",
+                type_name="void *",
+            ),
+            FixedData(
+                address=0x00080004,
+                name="EXC_Reset",
+                type_name="ExceptionHandler *",
+            ),
+            FixedData(
+                address=0x00080008,
+                name="EXC_NMI",
+                type_name="ExceptionHandler *",
+            ),
+            FixedData(
+                address=0x0008000C,
+                name="EXC_HardFault",
+                type_name="ExceptionHandler *",
+            ),
+            FixedData(
+                address=0x00080010,
+                name="EXC_MemMgmtFault",
+                type_name="ExceptionHandler *",
+            ),
+            FixedData(
+                address=0x00080014,
+                name="EXC_BusFault",
+                type_name="ExceptionHandler *",
+            ),
+            FixedData(
+                address=0x00080018,
+                name="EXC_UsageFault",
+                type_name="ExceptionHandler *",
+            ),
+            FixedData(
+                address=0x0008002C,
+                name="EXC_SVCall",
+                type_name="ExceptionHandler *",
+            ),
+            FixedData(
+                address=0x00080030,
+                name="EXC_DebugMonitor",
+                type_name="ExceptionHandler *",
+            ),
+            FixedData(
+                address=0x00080038,
+                name="EXC_PendSV",
+                type_name="ExceptionHandler *",
+            ),
+            FixedData(
+                address=0x0008003C,
+                name="EXC_SysTick",
+                type_name="ExceptionHandler *",
+            ),
+        ],
+        fixed_io_mapped_memory_ranges=[
+            FixedIoMappedMemoryRange(
+                name="CorePeripherals",
+                base_address=0xE0000000,
+                length=0x00100000,
+            ),
+        ],
+        interrupt_offset=0x00080040,
+    ),
     "CM3": CpuInfo(
         name="CM3",
         fixed_data=[
@@ -183,6 +281,8 @@ cpu_info = CPU_TO_KNOWN_FIXED_DATA.get(addr_space["cpu_core"])
 if cpu_info is not None:
     # write those definitions first
     cpu_data_type_manager = get_data_type_manager_by_name(state, cpu_info.name)
+    if cpu_data_type_manager is None:
+        raise ValueError("CPU data type manager {0} not found!".format(repr(cpu_info.name)))
 
     for memory_range in cpu_info.fixed_io_mapped_memory_ranges:
         try:
@@ -249,6 +349,8 @@ except MemoryConflictException:
     print("Warning: \"Peripherals\" memory block already exists; hoping for the best...")
 
 device_data_type_manager = get_data_type_manager_by_name(state, device_name)
+if device_data_type_manager is None:
+    raise ValueError("device data type manager {0} not found!".format(repr(device_name)))
 for register in addr_space["registers"]:
     register_type = device_data_type_manager.getDataType("/{0}.h/{1}".format(
         device_name,
