@@ -317,9 +317,17 @@ fn main() {
                 writeln!(&mut header, " {{").unwrap();
 
                 let fields = eval_xpath_nodeset(&xpath_context, &field_xpath, register);
+                let mut fields_vec = fields.document_order();
+                fields_vec.sort_unstable_by_key(|field| {
+                    let field_offset_string = eval_xpath_string(&xpath_context, &bit_offset_string_xpath, *field);
+                    let field_offset = u32_from_str(&field_offset_string)
+                        .expect("failed to parse field offset");
+                    field_offset
+                });
+
                 let mut current_bit = 0;
                 let mut field_reserved_index = 0;
-                for field in fields.document_order() {
+                for field in fields_vec {
                     let field_name = eval_xpath_string(&xpath_context, &name_string_xpath, field);
                     let field_descr = eval_xpath_string(&xpath_context, &description_string_xpath, field);
                     let field_offset_string = eval_xpath_string(&xpath_context, &bit_offset_string_xpath, field);
